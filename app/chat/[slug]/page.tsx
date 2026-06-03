@@ -66,7 +66,7 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
         setRestaurant(data);
         setMessages([{
           role: 'assistant',
-          content: `¡Hola! Soy el asistente de carta de ${data.name}. ¿En qué te puedo ayudar? Puedes preguntarme sobre cualquier plato, ingredientes o recomendaciones 😊`,
+          content: `¡Bienvenido/a a ${data.name}! 👋\n\nPuedes explorar la carta completa en el panel derecho — toca cualquier plato para ver ingredientes, alérgenos y precio.\n\nSi tienes alguna duda, quieres una recomendación o necesitas saber si algo lleva gluten, mariscos u otro alérgeno, pregúntame aquí directamente. Estoy para ayudarte a elegir bien. 🍽️`,
         }]);
       } catch {
         setRestaurant({ name: 'MenuBot', description: '' });
