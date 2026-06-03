@@ -103,12 +103,13 @@ export default function Home() {
             Powered by Claude AI
           </p>
           <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-tight mb-5">
-            La carta de tu restaurante,{' '}
-            <span className="text-purple-400">explicada por IA</span>
+            Que ningún cliente se pierda{' '}
+            <span className="text-purple-400">lo mejor de tu carta</span>
           </h1>
           <p className="text-gray-400 text-lg leading-relaxed mb-9">
-            MenuBot entiende platos étnicos y poco conocidos. Tus clientes preguntan en español,
-            la IA responde con detalle, ingredientes y recomendaciones personalizadas.
+            Tu asistente de carta con IA explica cada plato, responde dudas sobre ingredientes y
+            alérgenos, y recomienda qué pedir según los gustos de cada cliente — para que siempre
+            pidan con confianza y vuelvan por más.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <button
