@@ -1,13 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { getDishEmoji, formatPrice, capitalize } from '@/lib/menu';
 
 export interface Dish {
   id: number;
   name: string;
   description: string;
+  ingredients: string;
   price: number;
   category: string;
+  allergens: string;
 }
 
 interface MenuPanelProps {
@@ -17,29 +20,7 @@ interface MenuPanelProps {
   onSelectDish: (dish: Dish) => void;
 }
 
-const CATEGORY_ORDER = ['entradas', 'principales', 'postres', 'bebidas'];
-
-function getDishEmoji(name: string, category: string): string {
-  const n = name.toLowerCase();
-  if (n.includes('karaage') || n.includes('pollo')) return '🍗';
-  if (n.includes('takoyaki') || n.includes('pulpo')) return '🐙';
-  if (n.includes('gyoza') || n.includes('dumpling')) return '🥟';
-  if (n.includes('edamame') || n.includes('soya')) return '🫛';
-  if (n.includes('ramen') || n.includes('sopa')) return '🍜';
-  if (n.includes('sashimi') || n.includes('ceviche') || n.includes('pescado')) return '🐟';
-  if (n.includes('matcha') || n.includes('choco')) return '🍫';
-  if (category === 'postres') return '🍮';
-  if (category === 'bebidas') return '🥤';
-  return '🍽️';
-}
-
-function formatPrice(price: number): string {
-  return `$${price.toLocaleString('es-CL')}`;
-}
-
-function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
+const CATEGORY_ORDER = ['chef', 'ceviches', 'tiraditos', 'entradas', 'carnes', 'pescados', 'principales', 'kids', 'postres', 'cócteles', 'piscos', 'cervezas', 'sin alcohol'];
 
 export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelProps) {
   const [categories, setCategories] = useState<Record<string, Dish[]>>({});
@@ -72,23 +53,18 @@ export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelPro
     <>
       {/* Mobile backdrop */}
       {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-20 sm:hidden"
-          onClick={onToggle}
-        />
+        <div className="fixed inset-0 bg-black/50 z-20 sm:hidden" onClick={onToggle} />
       )}
 
       {/* Panel */}
-      <aside
-        className={`
-          fixed sm:relative inset-y-0 right-0 z-30 sm:z-auto
-          flex flex-col bg-gray-900 border-l border-white/5
-          transition-all duration-300 ease-in-out
-          ${isOpen ? 'w-72 translate-x-0' : 'w-72 translate-x-full sm:translate-x-0 sm:w-0 sm:overflow-hidden'}
-        `}
-      >
+      <aside className={`
+        fixed sm:relative inset-y-0 right-0 z-30 sm:z-auto
+        flex flex-col bg-gray-900 border-l border-white/5
+        transition-all duration-300 ease-in-out
+        ${isOpen ? 'w-72 translate-x-0' : 'w-72 translate-x-full sm:translate-x-0 sm:w-0 sm:overflow-hidden'}
+      `}>
         <div className="w-72 flex flex-col h-full">
-          {/* Panel header */}
+          {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 shrink-0">
             <div className="flex items-center gap-2">
               <span className="text-base">🗂️</span>
@@ -105,7 +81,7 @@ export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelPro
             </button>
           </div>
 
-          {/* Dishes list */}
+          {/* Dishes */}
           <div className="flex-1 overflow-y-auto py-2">
             {loading ? (
               <div className="flex items-center justify-center h-24">
@@ -120,7 +96,7 @@ export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelPro
             ) : (
               sortedCategories.map((cat) => (
                 <div key={cat} className="mb-1">
-                  <div className="px-4 py-2 sticky top-0 bg-gray-900">
+                  <div className="px-4 py-2 sticky top-0 bg-gray-900/95 backdrop-blur-sm">
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
                       {capitalize(cat)}
                     </span>
@@ -129,21 +105,29 @@ export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelPro
                     <button
                       key={dish.id}
                       onClick={() => onSelectDish(dish)}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-white/5 active:bg-white/10 transition text-left group"
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 active:bg-white/10 transition text-left group"
                     >
-                      {/* Emoji "photo" */}
-                      <div className="w-10 h-10 rounded-xl bg-gray-800 border border-white/5 flex items-center justify-center text-xl shrink-0 group-hover:border-purple-500/30 transition">
+                      {/* Emoji photo */}
+                      <div className="w-11 h-11 rounded-xl bg-gray-800 border border-white/5 flex items-center justify-center text-2xl shrink-0 group-hover:border-purple-500/30 transition">
                         {getDishEmoji(dish.name, dish.category)}
                       </div>
                       {/* Info */}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-200 truncate group-hover:text-white transition">
+                        <p className="text-sm font-medium text-gray-200 truncate group-hover:text-white transition leading-snug">
                           {dish.name}
                         </p>
-                        <p className="text-xs text-purple-400 font-medium mt-0.5">
+                        {dish.description && (
+                          <p className="text-xs text-gray-600 truncate mt-0.5 leading-snug">
+                            {dish.description}
+                          </p>
+                        )}
+                        <p className="text-xs text-purple-400 font-semibold mt-0.5">
                           {formatPrice(dish.price)}
                         </p>
                       </div>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-gray-700 group-hover:text-gray-400 transition shrink-0">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                      </svg>
                     </button>
                   ))}
                 </div>
@@ -152,7 +136,7 @@ export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelPro
           </div>
 
           <div className="px-4 py-3 border-t border-white/5 shrink-0">
-            <p className="text-xs text-gray-600 text-center">Toca un plato para saber más</p>
+            <p className="text-xs text-gray-600 text-center">Toca un plato para ver más</p>
           </div>
         </div>
       </aside>

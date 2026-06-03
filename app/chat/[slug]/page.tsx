@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { use, useCallback, useEffect, useRef, useState } from 'react';
 import { ChatBubble } from '@/components/ChatBubble';
 import { MenuPanel, type Dish } from '@/components/MenuPanel';
+import { DishDetail } from '@/components/DishDetail';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -40,20 +41,6 @@ function SendIcon() {
   );
 }
 
-function MenuIcon({ isOpen }: { isOpen: boolean }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-      {isOpen ? (
-        <path d="M18 6L6 18M6 6l12 12" />
-      ) : (
-        <>
-          <path d="M3 12h18M3 6h18M3 18h18" />
-        </>
-      )}
-    </svg>
-  );
-}
-
 export default function ChatPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
@@ -62,7 +49,13 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
   const [loading, setLoading] = useState(false);
   const [restaurantLoading, setRestaurantLoading] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
+  const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  // Open panel by default on desktop after mount
+  useEffect(() => {
+    if (window.innerWidth >= 640) setPanelOpen(true);
+  }, []);
 
   useEffect(() => {
     async function fetchRestaurant() {
@@ -71,17 +64,13 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
         if (!res.ok) throw new Error('Not found');
         const data = await res.json() as Restaurant;
         setRestaurant(data);
-        setMessages([
-          {
-            role: 'assistant',
-            content: `¡Hola! Soy el asistente de carta de ${data.name}. ¿En qué te puedo ayudar? Puedes preguntarme sobre cualquier plato, ingredientes o recomendaciones 😊`,
-          },
-        ]);
+        setMessages([{
+          role: 'assistant',
+          content: `¡Hola! Soy el asistente de carta de ${data.name}. ¿En qué te puedo ayudar? Puedes preguntarme sobre cualquier plato, ingredientes o recomendaciones 😊`,
+        }]);
       } catch {
         setRestaurant({ name: 'MenuBot', description: '' });
-        setMessages([
-          { role: 'assistant', content: '¡Hola! Soy el asistente de carta. ¿En qué te puedo ayudar?' },
-        ]);
+        setMessages([{ role: 'assistant', content: '¡Hola! Soy el asistente de carta. ¿En qué te puedo ayudar?' }]);
       } finally {
         setRestaurantLoading(false);
       }
@@ -125,9 +114,13 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
   }
 
   function handleSelectDish(dish: Dish) {
-    // On mobile, close the panel so the chat is visible
+    setSelectedDish(dish);
+  }
+
+  function handleAskDish(dish: Dish) {
+    setSelectedDish(null);
     if (window.innerWidth < 640) setPanelOpen(false);
-    sendMessage(`¿Qué es el ${dish.name}? Cuéntame sobre este plato.`);
+    sendMessage(`¿Qué es ${dish.name}? Cuéntame sobre este plato.`);
   }
 
   if (restaurantLoading) {
@@ -149,17 +142,11 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
         {/* Header */}
         <header className="flex-none bg-gray-900/90 backdrop-blur-md border-b border-white/5 px-4 py-3 shadow-lg">
           <div className="flex items-center gap-3">
-            {/* Back button */}
-            <Link
-              href="/"
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 transition shrink-0"
-              aria-label="Volver al inicio"
-            >
+            <Link href="/" className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/5 transition shrink-0" aria-label="Volver al inicio">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M19 12H5M12 5l-7 7 7 7" />
               </svg>
             </Link>
-
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-purple-800 flex items-center justify-center text-lg shadow-md shadow-purple-900/40 shrink-0">
               🍜
             </div>
@@ -175,9 +162,9 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
                 <p className="text-xs text-gray-400 truncate mt-0.5">{restaurant.description}</p>
               )}
             </div>
-            {/* Panel toggle */}
+            {/* Carta toggle */}
             <button
-              onClick={() => setPanelOpen((p) => !p)}
+              onClick={() => setPanelOpen(p => !p)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition shrink-0 border ${
                 panelOpen
                   ? 'bg-purple-600/20 border-purple-500/40 text-purple-300'
@@ -185,8 +172,12 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
               }`}
               aria-label="Ver carta"
             >
-              <MenuIcon isOpen={panelOpen} />
-              <span className="hidden xs:inline">Carta</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                {panelOpen
+                  ? <path d="M18 6L6 18M6 6l12 12" />
+                  : <><path d="M3 12h18M3 6h18M3 18h18" /></>}
+              </svg>
+              <span className="hidden sm:inline">Carta</span>
             </button>
           </div>
         </header>
@@ -233,9 +224,18 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
       <MenuPanel
         slug={slug}
         isOpen={panelOpen}
-        onToggle={() => setPanelOpen((p) => !p)}
+        onToggle={() => setPanelOpen(p => !p)}
         onSelectDish={handleSelectDish}
       />
+
+      {/* ── Dish detail overlay ── */}
+      {selectedDish && (
+        <DishDetail
+          dish={selectedDish}
+          onAsk={handleAskDish}
+          onClose={() => setSelectedDish(null)}
+        />
+      )}
     </div>
   );
 }
