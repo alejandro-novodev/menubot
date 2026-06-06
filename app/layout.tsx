@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -21,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="es" className={`${jakarta.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-[family-name:var(--font-jakarta)]">
-        {children}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );
