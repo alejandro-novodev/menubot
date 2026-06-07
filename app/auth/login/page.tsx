@@ -22,11 +22,7 @@ function LoginForm() {
     setError('');
     setLoading(true);
     try {
-      const res = await signIn('credentials', {
-        email,
-        password,
-        redirect: false,
-      });
+      const res = await signIn('credentials', { email, password, redirect: false });
       if (res?.error) {
         setError('Email o contraseña incorrectos.');
       } else {
@@ -69,34 +65,21 @@ function LoginForm() {
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-xs text-gray-400 mb-1">Email</label>
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 transition"
-                placeholder="tu@email.com"
-              />
+              <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition"
+                placeholder="tu@email.com" />
             </div>
             <div>
               <label className="block text-xs text-gray-400 mb-1">Contraseña</label>
-              <input
-                type="password"
-                required
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 transition"
-                placeholder="••••••••"
-              />
+              <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
+                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition"
+                placeholder="••••••••" />
             </div>
 
             {error && <p className="text-red-400 text-xs">{error}</p>}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[var(--accent)] hover:bg-[var(--accent-lite)] disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1"
-            >
+            <button type="submit" disabled={loading}
+              className="w-full bg-accent hover:bg-accent-lite disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1">
               {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </form>
@@ -104,7 +87,7 @@ function LoginForm() {
 
         <p className="text-center text-sm text-gray-500 mt-5">
           ¿No tienes cuenta?{' '}
-          <Link href="/auth/register" className="text-[var(--accent)] hover:text-purple-300 transition">
+          <Link href="/auth/register" className="text-accent hover:text-accent-lite transition">
             Regístrate gratis →
           </Link>
         </p>
@@ -114,9 +97,5 @@ function LoginForm() {
 }
 
 export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginForm />
-    </Suspense>
-  );
+  return <Suspense><LoginForm /></Suspense>;
 }
