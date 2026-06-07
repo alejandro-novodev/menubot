@@ -1,52 +1,174 @@
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
+import { query } from '@/lib/db';
 import Link from 'next/link';
+
+interface Business {
+  id: number;
+  name: string;
+  slug: string;
+  menu_completeness: number;
+  status: string;
+}
+
+interface Subscription {
+  plan: string;
+  status: string;
+  ends_at: string | null;
+}
+
+function TrialBanner({ daysLeft }: { daysLeft: number }) {
+  if (daysLeft < 0) return null;
+  const urgent = daysLeft <= 3;
+  return (
+    <div className={`flex items-center justify-between gap-4 px-5 py-3 text-sm ${urgent ? 'bg-red-900/30 border-b border-red-700/30 text-red-300' : 'bg-purple-900/20 border-b border-purple-700/20 text-purple-300'}`}>
+      <span>
+        {urgent ? '⚠️' : '⏳'}{' '}
+        {daysLeft === 0
+          ? 'Tu prueba gratuita termina hoy.'
+          : `${daysLeft} día${daysLeft !== 1 ? 's' : ''} restantes de prueba gratuita.`}
+      </span>
+      <Link href="/dashboard/billing" className="text-xs font-semibold underline underline-offset-2 shrink-0 hover:opacity-80 transition">
+        Elegir plan →
+      </Link>
+    </div>
+  );
+}
+
+function CompletenessBar({ score }: { score: number }) {
+  const color = score >= 80 ? 'bg-emerald-500' : score >= 50 ? 'bg-yellow-500' : 'bg-orange-500';
+  return (
+    <div className="mt-2">
+      <div className="flex justify-between text-xs text-gray-500 mb-1">
+        <span>Completeness</span>
+        <span className={score >= 80 ? 'text-emerald-400' : score >= 50 ? 'text-yellow-400' : 'text-orange-400'}>{score}%</span>
+      </div>
+      <div className="w-full bg-gray-800 rounded-full h-1.5">
+        <div className={`${color} h-1.5 rounded-full transition-all`} style={{ width: `${score}%` }} />
+      </div>
+    </div>
+  );
+}
 
 export default async function DashboardPage() {
   const session = await auth();
   if (!session) redirect('/auth/login');
 
+  const userId = parseInt(session.user.id);
+
+  const [bizResult, subResult] = await Promise.all([
+    query<Business>(
+      'SELECT id, name, slug, menu_completeness, status FROM businesses WHERE user_id = $1 ORDER BY created_at DESC',
+      [userId]
+    ),
+    query<Subscription>(
+      `SELECT plan, status, ends_at FROM subscriptions WHERE user_id = $1 AND status = 'active' ORDER BY created_at DESC LIMIT 1`,
+      [userId]
+    ),
+  ]);
+
+  const businesses = bizResult.rows;
+  const subscription = subResult.rows[0] ?? null;
+  const hasBusiness = businesses.length > 0;
+
+  // Calculate trial days left
+  let trialDaysLeft = -1;
+  if (subscription?.plan === 'trial' && subscription.ends_at) {
+    const ms = new Date(subscription.ends_at).getTime() - Date.now();
+    trialDaysLeft = Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
+  }
+
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+      {/* Trial banner */}
+      {trialDaysLeft >= 0 && <TrialBanner daysLeft={trialDaysLeft} />}
+
+      {/* Header */}
       <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="font-bold text-lg">
           🍜 Menu<span className="text-purple-400">Bot</span>
         </Link>
-        <div className="flex items-center gap-3 text-sm text-gray-400">
-          <span>{session.user.email}</span>
-          <Link href="/api/auth/signout" className="text-gray-600 hover:text-gray-400 transition">
+        <div className="flex items-center gap-4 text-sm text-gray-400">
+          {session.user.role === 'admin' && (
+            <Link href="/admin" className="text-purple-400 hover:text-purple-300 transition text-xs">
+              Admin →
+            </Link>
+          )}
+          <span className="hidden sm:inline">{session.user.email}</span>
+          <Link href="/api/auth/signout" className="text-gray-600 hover:text-gray-400 transition text-xs">
             Salir
           </Link>
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-6 py-10">
-        <h1 className="text-2xl font-bold mb-2">Panel de control</h1>
-        <p className="text-gray-400 mb-8">Bienvenido, {session.user.name ?? session.user.email}</p>
-
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Link
-            href="/dashboard/onboarding"
-            className="bg-purple-600/10 border border-purple-500/30 rounded-2xl p-5 hover:border-purple-500/60 transition"
-          >
-            <div className="text-2xl mb-2">🚀</div>
-            <h3 className="font-semibold text-white mb-1">Configurar tu carta</h3>
-            <p className="text-sm text-gray-400">Completa el proceso de onboarding para activar tu asistente.</p>
-          </Link>
-
-          <Link
-            href="/dashboard/menu"
-            className="bg-gray-900 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition"
-          >
-            <div className="text-2xl mb-2">🗂️</div>
-            <h3 className="font-semibold text-white mb-1">Gestionar menú</h3>
-            <p className="text-sm text-gray-400">Edita platos, completa información y mejora el score.</p>
-          </Link>
+      <main className="flex-1 max-w-4xl mx-auto w-full px-5 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-xl font-bold">Dashboard</h1>
+            <p className="text-gray-500 text-sm">Hola, {session.user.name ?? session.user.email}</p>
+          </div>
+          {!hasBusiness && (
+            <Link
+              href="/dashboard/onboarding"
+              className="bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
+            >
+              + Configurar negocio
+            </Link>
+          )}
         </div>
 
-        <div className="mt-6 bg-amber-900/20 border border-amber-700/30 rounded-xl px-4 py-3 text-sm text-amber-300">
-          ⚠️ Tu cuenta está <strong>pendiente de activación</strong>. Completa el onboarding para activar tu restaurante.
-        </div>
+        {!hasBusiness ? (
+          <div className="bg-gray-900 border border-white/5 rounded-2xl p-8 text-center">
+            <div className="text-4xl mb-3">🚀</div>
+            <h2 className="text-lg font-semibold mb-2">Comienza configurando tu negocio</h2>
+            <p className="text-gray-400 text-sm mb-6">Sube tu carta y activa tu asistente de IA en minutos.</p>
+            <Link
+              href="/dashboard/onboarding"
+              className="inline-block bg-purple-600 hover:bg-purple-500 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition"
+            >
+              Empezar →
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {businesses.map(biz => (
+              <div key={biz.id} className="bg-gray-900 border border-white/5 rounded-2xl p-5">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h2 className="font-semibold text-white">{biz.name}</h2>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${biz.status === 'active' ? 'bg-emerald-900/40 text-emerald-400' : 'bg-gray-800 text-gray-500'}`}>
+                        {biz.status === 'active' ? '● activo' : biz.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-0.5">menubot.cl/chat/{biz.slug}</p>
+                  </div>
+                  <div className="flex gap-2 shrink-0">
+                    <Link href={`/dashboard/menu?biz=${biz.id}`} className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg transition">
+                      Gestionar carta
+                    </Link>
+                    <Link href={`/chat/${biz.slug}`} target="_blank" className="text-xs text-purple-400 hover:text-purple-300 bg-purple-900/20 hover:bg-purple-900/30 border border-purple-700/20 px-3 py-1.5 rounded-lg transition">
+                      Ver carta →
+                    </Link>
+                  </div>
+                </div>
+                <CompletenessBar score={biz.menu_completeness} />
+                {biz.menu_completeness < 80 && (
+                  <Link href={`/dashboard/menu?biz=${biz.id}`} className="block mt-2 text-xs text-purple-400 hover:text-purple-300 transition">
+                    Completar información →
+                  </Link>
+                )}
+              </div>
+            ))}
+
+            <Link
+              href="/dashboard/onboarding"
+              className="block bg-gray-900/50 border border-dashed border-white/10 hover:border-purple-500/30 rounded-2xl p-5 text-center text-sm text-gray-600 hover:text-gray-400 transition"
+            >
+              + Agregar otro negocio
+            </Link>
+          </div>
+        )}
       </main>
     </div>
   );
