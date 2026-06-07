@@ -4,79 +4,14 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── MenuBot Design Tokens ───────────────────────────────────────────────── */
-/* NOTE: NO transitions on var()-based color props (Chrome repaint bug).     */
-
-:root {
-  /* Accent — overridable per restaurant */
-  --accent:       #C76B43;
-  --accent-lite:  #E0895E;
-  --accent-soft:  rgba(199, 107, 67, 0.16);
-  --shadow-accent: 0 8px 24px rgba(199, 107, 67, 0.28);
-
-  /* Light mode (default) */
-  --mb-bg:        #FAF7F3;
-  --mb-surface:   #FFFFFF;
-  --mb-line:      rgba(0, 0, 0, 0.08);
-  --mb-ink:       #231D17;
-  --mb-mut:       #8A7F76;
-  --mb-mut2:      #B3A99F;
-  --mb-chip-line: rgba(0, 0, 0, 0.18);
-  --mb-badge-line:rgba(0, 0, 0, 0.14);
-  --mb-badge-ink: #6B5F54;
-  --mb-head-bg:   rgba(250, 247, 243, 0.92);
-}
-
-/* Dark mode — only neutrals change */
-[data-theme="dark"] {
-  --mb-bg:        #1A1613;
-  --mb-surface:   #241F1B;
-  --mb-line:      rgba(255, 255, 255, 0.09);
-  --mb-ink:       #FFFFFF;
-  --mb-mut:       rgba(255, 255, 255, 0.60);
-  --mb-mut2:      rgba(255, 255, 255, 0.40);
-  --mb-chip-line: rgba(255, 255, 255, 0.20);
-  --mb-badge-line:rgba(255, 255, 255, 0.16);
-  --mb-badge-ink: rgba(255, 255, 255, 0.72);
-  --mb-head-bg:   rgba(26, 22, 19, 0.92);
-}
-
-/* ── Tailwind theme tokens (fonts only — colors handled via unlayered CSS) ── */
-@theme inline {
-  --font-display: var(--font-space-grotesk);
-  --font-text:    var(--font-archivo);
-}
-/* NOTE: accent colors are NOT declared in @theme to avoid Tailwind generating  */
-/* its own .bg-accent utility inside @layer utilities (which this file overrides).*/
-
-/* ── Accent utilities — UNLAYERED so they win over all Tailwind @layer rules ─ */
-/* Specificity: .bg-accent (0,1,0) < .hover\:bg-accent-lite:hover (0,1,1)     */
-/* On hover: the :hover rule wins due to higher specificity. Correct cascade.   */
-.bg-accent                    { background-color: var(--accent); }
-.bg-accent-lite               { background-color: var(--accent-lite); }
-.text-accent                  { color: var(--accent); }
-.text-accent-lite             { color: var(--accent-lite); }
-.border-accent                { border-color: var(--accent); }
-.hover\:bg-accent-lite:hover  { background-color: var(--accent-lite); }
-.hover\:text-accent:hover     { color: var(--accent); }
-.hover\:text-accent-lite:hover { color: var(--accent-lite); }
-.focus\:border-accent:focus   { border-color: var(--accent); }
-
+/* ── Keyframes ───────────────────────────────────────────────────────────── */
 @keyframes dishFloat {
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  25%, 75% {
-    opacity: var(--word-opacity, 0.07);
-    transform: translateY(0px);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
+  0%       { opacity: 0; transform: translateY(6px); }
+  25%, 75% { opacity: var(--word-opacity, 0.07); transform: translateY(0px); }
+  100%     { opacity: 0; transform: translateY(-6px); }
 }
 
+/* ── Shadcn @theme inline (required for Tailwind token aliases) ──────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -119,8 +54,11 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --font-display: var(--font-space-grotesk);
+  --font-text:    var(--font-archivo);
 }
 
+/* ── Shadcn base tokens (light) ─────────────────────────────────────────── */
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -134,7 +72,6 @@
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
   --accent-foreground: oklch(0.205 0 0);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
@@ -169,7 +106,6 @@
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
@@ -191,13 +127,54 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
+  html { @apply font-sans; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── MenuBot Brand Tokens — AFTER shadcn so they WIN the cascade ─────────  */
+/* ══════════════════════════════════════════════════════════════════════════ */
+:root {
+  /* Brand accent (terracotta) — overrides shadcn's near-white --accent */
+  --accent:         #C76B43;
+  --accent-lite:    #E0895E;
+  --accent-soft:    rgba(199, 107, 67, 0.16);
+  --shadow-accent:  0 8px 24px rgba(199, 107, 67, 0.28);
+
+  /* Customer-facing carta — light mode defaults */
+  --mb-bg:          #FAF7F3;
+  --mb-surface:     #FFFFFF;
+  --mb-line:        rgba(0, 0, 0, 0.08);
+  --mb-ink:         #231D17;
+  --mb-mut:         #8A7F76;
+  --mb-mut2:        #B3A99F;
+  --mb-chip-line:   rgba(0, 0, 0, 0.18);
+  --mb-badge-line:  rgba(0, 0, 0, 0.14);
+  --mb-badge-ink:   #6B5F54;
+  --mb-head-bg:     rgba(250, 247, 243, 0.92);
+}
+
+/* Dark mode for customer carta (data-theme="dark") */
+[data-theme="dark"] {
+  --mb-bg:          #1A1613;
+  --mb-surface:     #241F1B;
+  --mb-line:        rgba(255, 255, 255, 0.09);
+  --mb-ink:         #FFFFFF;
+  --mb-mut:         rgba(255, 255, 255, 0.60);
+  --mb-mut2:        rgba(255, 255, 255, 0.40);
+  --mb-chip-line:   rgba(255, 255, 255, 0.20);
+  --mb-badge-line:  rgba(255, 255, 255, 0.16);
+  --mb-badge-ink:   rgba(255, 255, 255, 0.72);
+  --mb-head-bg:     rgba(26, 22, 19, 0.92);
+}
+
+/* ── Accent utilities — unlayered, win over all Tailwind @layer rules ─────  */
+.bg-accent                     { background-color: var(--accent); }
+.bg-accent-lite                { background-color: var(--accent-lite); }
+.text-accent                   { color: var(--accent); }
+.text-accent-lite              { color: var(--accent-lite); }
+.border-accent                 { border-color: var(--accent); }
+.hover\:bg-accent-lite:hover   { background-color: var(--accent-lite); }
+.hover\:text-accent:hover      { color: var(--accent); }
+.hover\:text-accent-lite:hover { color: var(--accent-lite); }

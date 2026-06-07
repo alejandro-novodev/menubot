@@ -248,7 +248,7 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
       >
         {/* Menu — left panel, scrollable */}
         <div style={{ width: 340, flexShrink: 0, borderRight: '1px solid var(--mb-line)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-          <MenuScreen {...menuProps} showFloatingButton={false} />
+          <MenuScreen {...menuProps} showFloatingButton={false} sidebar={true} />
         </div>
 
         {/* Chat — right panel, fills remaining space */}

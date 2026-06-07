@@ -20,6 +20,8 @@ interface Props {
   onAsk: (dish?: MenuDish) => void;
   /** Hide the floating button on desktop (chat is always visible) */
   showFloatingButton?: boolean;
+  /** In sidebar mode, remove max-width centering */
+  sidebar?: boolean;
 }
 
 const CATEGORY_ORDER = [
@@ -97,7 +99,7 @@ function DishRow({ dish, last, onTap }: { dish: MenuDish; last: boolean; onTap: 
   );
 }
 
-export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true }: Props) {
+export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true, sidebar = false }: Props) {
   const allCats = Object.keys(categories);
   const sorted = [...allCats].sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a), bi = CATEGORY_ORDER.indexOf(b);
@@ -115,12 +117,13 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
     <div
       data-theme={theme}
       style={{
-        maxWidth: 460, margin: '0 auto', minHeight: '100%',
+        ...(sidebar ? {} : { maxWidth: 460, margin: '0 auto' }),
+        minHeight: '100%',
         display: 'flex', flexDirection: 'column',
         background: 'var(--mb-bg)',
         color: 'var(--mb-ink)',
         position: 'relative',
-        paddingBottom: 100,
+        paddingBottom: showFloatingButton ? 100 : 16,
       }}
     >
       {/* Header */}
