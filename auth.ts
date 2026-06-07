@@ -3,6 +3,7 @@ import Google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { query } from '@/lib/db';
+import { authConfig } from './auth.config';
 
 interface UserRow {
   id: number;
@@ -14,7 +15,7 @@ interface UserRow {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  session: { strategy: 'jwt' },
+  ...authConfig,
 
   providers: [
     Google({
@@ -43,9 +44,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
 
   callbacks: {
+    ...authConfig.callbacks,
+
     async signIn({ user, account }) {
       if (account?.provider === 'google') {
-        // Upsert user from Google OAuth
         const existing = await query<UserRow>('SELECT * FROM users WHERE email = $1', [user.email!]);
         let userId: number;
 
@@ -60,7 +62,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           userId = existing.rows[0].id;
         }
 
-        // Upsert oauth_accounts
         await query(
           `INSERT INTO oauth_accounts (user_id, provider, provider_account_id)
            VALUES ($1, $2, $3) ON CONFLICT (provider, provider_account_id) DO NOTHING`,
@@ -72,24 +73,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return true;
     },
-
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = String(user.id ?? '');
-        token.role = String((user as { role?: string }).role ?? 'owner');
-      }
-      return token;
-    },
-
-    async session({ session, token }) {
-      session.user.id = (token.id as string | undefined) ?? '';
-      session.user.role = (token.role as string | undefined) ?? 'owner';
-      return session;
-    },
-  },
-
-  pages: {
-    signIn: '/auth/login',
-    error: '/auth/error',
   },
 });
