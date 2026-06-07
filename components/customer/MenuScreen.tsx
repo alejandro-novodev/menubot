@@ -18,6 +18,8 @@ interface Props {
   cuisine: string;
   categories: Record<string, MenuDish[]>;
   onAsk: (dish?: MenuDish) => void;
+  /** Hide the floating button on desktop (chat is always visible) */
+  showFloatingButton?: boolean;
 }
 
 const CATEGORY_ORDER = [
@@ -95,7 +97,7 @@ function DishRow({ dish, last, onTap }: { dish: MenuDish; last: boolean; onTap: 
   );
 }
 
-export function MenuScreen({ restaurantName, cuisine, categories, onAsk }: Props) {
+export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true }: Props) {
   const allCats = Object.keys(categories);
   const sorted = [...allCats].sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a), bi = CATEGORY_ORDER.indexOf(b);
@@ -207,29 +209,26 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk }: Props
         ))}
       </div>
 
-      {/* Floating "Preguntar" button */}
-      <div style={{
-        position: 'fixed', bottom: 26,
-        left: '50%', transform: 'translateX(-50%)', zIndex: 20,
-      }}>
-        <button
-          onClick={() => onAsk()}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 9,
-            background: 'var(--accent)', color: '#fff',
-            border: 'none', borderRadius: 999,
-            padding: '12px 20px 12px 12px',
-            cursor: 'pointer',
-            fontFamily: 'var(--font-archivo, system-ui)',
-            fontWeight: 600, fontSize: 14.5,
-            boxShadow: 'var(--shadow-accent)',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <LogoIcon size={26} />
-          Preguntar a menubot.
-        </button>
-      </div>
+      {/* Floating "Preguntar" button — only on mobile */}
+      {showFloatingButton && (
+        <div style={{ position: 'fixed', bottom: 26, left: '50%', transform: 'translateX(-50%)', zIndex: 20 }}>
+          <button
+            onClick={() => onAsk()}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 9,
+              background: 'var(--accent)', color: '#fff',
+              border: 'none', borderRadius: 999,
+              padding: '12px 20px 12px 12px', cursor: 'pointer',
+              fontFamily: 'var(--font-archivo, system-ui)',
+              fontWeight: 600, fontSize: 14.5,
+              boxShadow: 'var(--shadow-accent)', whiteSpace: 'nowrap',
+            }}
+          >
+            <LogoIcon size={26} />
+            Preguntar a menubot.
+          </button>
+        </div>
+      )}
     </div>
   );
 }

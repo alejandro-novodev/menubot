@@ -43,15 +43,23 @@
 
 /* ── Tailwind theme tokens ────────────────────────────────────────────────── */
 @theme inline {
-  --font-display:   var(--font-space-grotesk);
-  --font-text:      var(--font-archivo);
+  --font-display: var(--font-space-grotesk);
+  --font-text:    var(--font-archivo);
+}
 
-  /* Accent colors — available as bg-accent, text-accent, border-accent */
-  --color-accent:      #C76B43;
-  --color-accent-lite: #E0895E;
+/* ── Accent utilities (declared directly — most reliable in Tailwind v4) ─── */
+@layer utilities {
+  .bg-accent               { background-color: var(--accent); }
+  .bg-accent-lite          { background-color: var(--accent-lite); }
+  .text-accent             { color: var(--accent); }
+  .text-accent-lite        { color: var(--accent-lite); }
+  .border-accent           { border-color: var(--accent); }
+  .ring-accent             { --tw-ring-color: var(--accent); }
 
-  /* Landing page dark bg */
-  --color-dark-bg:     #0D0D0D;
+  .hover\:bg-accent-lite:hover  { background-color: var(--accent-lite); }
+  .hover\:text-accent-lite:hover { color: var(--accent-lite); }
+  .hover\:text-accent:hover     { color: var(--accent); }
+  .focus\:border-accent\/50:focus { border-color: rgba(199,107,67,0.5); }
 }
 
 @keyframes dishFloat {
