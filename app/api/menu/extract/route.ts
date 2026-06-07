@@ -44,12 +44,13 @@ export async function POST(req: NextRequest) {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const businessId = parseInt(formData.get('businessId') as string);
+    // clearExisting=true on first file, false on subsequent files
+    const clearExisting = formData.get('clearExisting') !== 'false';
 
     if (!file || !businessId) {
       return NextResponse.json({ error: 'Archivo y businessId requeridos.' }, { status: 400 });
     }
 
-    // Verify ownership
     const bizCheck = await query(
       'SELECT id FROM businesses WHERE id = $1 AND user_id = $2',
       [businessId, parseInt(session.user.id)]
@@ -58,12 +59,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado para este negocio.' }, { status: 403 });
     }
 
-    // Convert file to base64
     const arrayBuffer = await file.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString('base64');
     const isPdf = file.type === 'application/pdf';
 
-    // Record upload
     const uploadResult = await query<{ id: number }>(
       `INSERT INTO menu_uploads (business_id, file_name, file_type, status)
        VALUES ($1, $2, $3, 'processing') RETURNING id`,
@@ -71,7 +70,6 @@ export async function POST(req: NextRequest) {
     );
     const uploadId = uploadResult.rows[0].id;
 
-    // Call Claude
     const content: Anthropic.MessageParam['content'] = isPdf
       ? [
           { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } },
@@ -90,20 +88,22 @@ export async function POST(req: NextRequest) {
 
     const raw = response.content[0].type === 'text' ? response.content[0].text : '';
 
-    // Parse JSON — extract from markdown code block if needed
     let parsed: { dishes: ExtractedDish[] };
     try {
       const jsonMatch = raw.match(/```(?:json)?\s*([\s\S]+?)```/) ?? [null, raw];
       parsed = JSON.parse(jsonMatch[1].trim());
     } catch {
       await query(`UPDATE menu_uploads SET status = 'failed', error_message = $1 WHERE id = $2`, ['JSON parse error', uploadId]);
-      return NextResponse.json({ error: 'No se pudo procesar el menú. Intenta con otro archivo.' }, { status: 422 });
+      return NextResponse.json({ error: 'No se pudo procesar el archivo. Intenta con otro.' }, { status: 422 });
     }
 
     const dishes = parsed.dishes ?? [];
 
-    // Clear existing dishes for this business and insert new ones
-    await query('DELETE FROM dishes WHERE business_id = $1', [businessId]);
+    // Only clear existing dishes on the FIRST file of a batch
+    if (clearExisting) {
+      await query('DELETE FROM dishes WHERE business_id = $1', [businessId]);
+    }
+
     for (const dish of dishes) {
       await query(
         `INSERT INTO dishes (business_id, name, description, price, category, ingredients, allergens)
@@ -112,15 +112,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Calculate and save completeness
-    const completeness = calcMenuCompleteness(dishes);
+    const allDishes = await query(
+      'SELECT description, price, category, ingredients, allergens FROM dishes WHERE business_id = $1',
+      [businessId]
+    );
+    const completeness = calcMenuCompleteness(allDishes.rows);
     await query('UPDATE businesses SET menu_completeness = $1 WHERE id = $2', [completeness, businessId]);
     await query(
       `UPDATE menu_uploads SET status = 'done', extracted_dishes = $1 WHERE id = $2`,
       [dishes.length, uploadId]
     );
 
-    return NextResponse.json({ success: true, extractedCount: dishes.length, completeness });
+    return NextResponse.json({
+      success: true,
+      extractedCount: dishes.length,
+      completeness,
+      totalDishes: allDishes.rows.length,
+    });
   } catch (error) {
     console.error('Extract error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

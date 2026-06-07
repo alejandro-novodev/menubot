@@ -135,97 +135,158 @@ function Step1({ onNext }: { onNext: (bizId: number, slug: string) => void }) {
   );
 }
 
-// ── Step 2: Upload Menu ────────────────────────────────────────────────────
+// ── Step 2: Upload Menu (multi-file) ──────────────────────────────────────
+type FileStatus = { file: File; status: 'pending' | 'processing' | 'done' | 'error'; count?: number; error?: string };
+
+function FileIcon({ type }: { type: string }) {
+  return <span>{type === 'application/pdf' ? '📄' : '🖼️'}</span>;
+}
+
 function Step2({ businessId, onNext }: { businessId: number; onNext: (count: number) => void }) {
   const [dragging, setDragging] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<FileStatus[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [result, setResult] = useState<{ count: number; completeness: number } | null>(null);
+  const [currentIdx, setCurrentIdx] = useState(-1);
+  const [result, setResult] = useState<{ totalDishes: number; completeness: number } | null>(null);
   const [error, setError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
 
-  function handleFile(f: File) {
-    const ok = f.type === 'application/pdf' || f.type.startsWith('image/');
-    if (!ok) { setError('Solo se aceptan PDF e imágenes (JPG, PNG).'); return; }
-    if (f.size > 16 * 1024 * 1024) { setError('El archivo es demasiado grande (máx 16 MB).'); return; }
-    setFile(f);
-    setError('');
+  function addFiles(newFiles: FileList | File[]) {
+    const arr = Array.from(newFiles);
+    const valid: FileStatus[] = [];
+    let err = '';
+    for (const f of arr) {
+      if (!f.type.startsWith('image/') && f.type !== 'application/pdf') {
+        err = 'Solo se aceptan PDF e imágenes (JPG, PNG, WEBP).';
+        continue;
+      }
+      if (f.size > 16 * 1024 * 1024) { err = `${f.name} supera 16 MB y fue omitido.`; continue; }
+      if (files.some(s => s.file.name === f.name && s.file.size === f.size)) continue; // skip duplicates
+      valid.push({ file: f, status: 'pending' });
+    }
+    setFiles(prev => [...prev, ...valid]);
+    if (err) setError(err);
+    else setError('');
   }
 
-  async function handleExtract() {
-    if (!file) return;
+  function removeFile(idx: number) {
+    setFiles(prev => prev.filter((_, i) => i !== idx));
+  }
+
+  async function processAll() {
+    if (files.length === 0 || processing) return;
     setProcessing(true);
-    setProgress(10);
     setError('');
+    let totalDishes = 0;
+    let lastCompleteness = 0;
+    let lastTotal = 0;
 
-    const ticker = setInterval(() => setProgress(p => Math.min(p + 8, 85)), 1200);
+    for (let i = 0; i < files.length; i++) {
+      setCurrentIdx(i);
+      setFiles(prev => prev.map((f, j) => j === i ? { ...f, status: 'processing' } : f));
 
-    try {
-      const form = new FormData();
-      form.append('file', file);
-      form.append('businessId', String(businessId));
-      const res = await fetch('/api/menu/extract', { method: 'POST', body: form });
-      clearInterval(ticker);
-      setProgress(100);
-      const data = await res.json() as { success?: boolean; extractedCount?: number; completeness?: number; error?: string };
-      if (!res.ok) { setError(data.error ?? 'Error al procesar.'); return; }
-      setResult({ count: data.extractedCount!, completeness: data.completeness! });
-    } catch {
-      setError('Error de conexión. Intenta de nuevo.');
-    } finally {
-      clearInterval(ticker);
-      setProcessing(false);
+      try {
+        const form = new FormData();
+        form.append('file', files[i].file);
+        form.append('businessId', String(businessId));
+        form.append('clearExisting', i === 0 ? 'true' : 'false');
+        const res = await fetch('/api/menu/extract', { method: 'POST', body: form });
+        const data = await res.json() as { success?: boolean; extractedCount?: number; completeness?: number; totalDishes?: number; error?: string };
+
+        if (!res.ok) {
+          setFiles(prev => prev.map((f, j) => j === i ? { ...f, status: 'error', error: data.error ?? 'Error' } : f));
+          continue;
+        }
+
+        const extracted = data.extractedCount ?? 0;
+        totalDishes += extracted;
+        lastCompleteness = data.completeness ?? 0;
+        lastTotal = data.totalDishes ?? totalDishes;
+        setFiles(prev => prev.map((f, j) => j === i ? { ...f, status: 'done', count: extracted } : f));
+      } catch {
+        setFiles(prev => prev.map((f, j) => j === i ? { ...f, status: 'error', error: 'Error de conexión' } : f));
+      }
     }
+
+    setCurrentIdx(-1);
+    setProcessing(false);
+    setResult({ totalDishes: lastTotal, completeness: lastCompleteness });
   }
 
   if (result) {
     return (
       <div className="text-center py-4">
         <div className="text-5xl mb-4">🎉</div>
-        <h3 className="text-xl font-bold text-white mb-2">{result.count} platos detectados</h3>
-        <p className="text-gray-400 text-sm mb-1">Completeness inicial: <span className="text-purple-400 font-semibold">{result.completeness}%</span></p>
+        <h3 className="text-xl font-bold text-white mb-2">{result.totalDishes} platos en total</h3>
+        <p className="text-gray-400 text-sm mb-1">Completeness inicial: <span className="text-accent font-semibold">{result.completeness}%</span></p>
         <p className="text-gray-500 text-xs mb-6">Vamos a completar la información que falta.</p>
-        <button onClick={() => onNext(result.count)} className="w-full bg-purple-600 hover:bg-purple-500 text-white font-semibold rounded-xl py-2.5 text-sm transition">
+        <button onClick={() => onNext(result.totalDishes)} className="w-full bg-accent hover:bg-accent-lite text-white font-semibold rounded-xl py-2.5 text-sm transition">
           Completar carta →
         </button>
       </div>
     );
   }
 
+  const pendingCount = files.filter(f => f.status === 'pending').length;
+  const overallProgress = files.length > 0
+    ? Math.round((files.filter(f => f.status === 'done' || f.status === 'error').length / files.length) * 100)
+    : 0;
+
   return (
     <div className="space-y-4">
+      {/* Drop zone */}
       <div
         onDragOver={e => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
-        onDrop={e => { e.preventDefault(); setDragging(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+        onDrop={e => { e.preventDefault(); setDragging(false); if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files); }}
         onClick={() => fileRef.current?.click()}
-        className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition ${dragging ? 'border-purple-500 bg-purple-900/10' : 'border-white/10 hover:border-white/20'}`}
+        className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition ${dragging ? 'border-accent bg-accent/5' : 'border-white/10 hover:border-white/20'}`}
       >
-        <input ref={fileRef} type="file" accept=".pdf,image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-        {file ? (
-          <>
-            <div className="text-3xl mb-2">{file.type === 'application/pdf' ? '📄' : '🖼️'}</div>
-            <p className="text-white text-sm font-medium">{file.name}</p>
-            <p className="text-gray-500 text-xs mt-1">{(file.size / 1024).toFixed(0)} KB — Click para cambiar</p>
-          </>
-        ) : (
-          <>
-            <div className="text-4xl mb-3">📤</div>
-            <p className="text-white text-sm font-medium mb-1">Arrastra tu menú aquí</p>
-            <p className="text-gray-500 text-xs">PDF, JPG, PNG — hasta 16 MB</p>
-          </>
-        )}
+        <input
+          ref={fileRef} type="file" accept=".pdf,image/*" multiple className="hidden"
+          onChange={e => { if (e.target.files?.length) addFiles(e.target.files); e.target.value = ''; }}
+        />
+        <div className="text-3xl mb-2">📤</div>
+        <p className="text-white text-sm font-medium mb-0.5">
+          {files.length > 0 ? 'Agregar más archivos' : 'Arrastra tu menú aquí'}
+        </p>
+        <p className="text-gray-500 text-xs">PDF, JPG, PNG · Múltiples archivos · Máx 16 MB por archivo</p>
       </div>
 
+      {/* File list */}
+      {files.length > 0 && (
+        <div className="space-y-1.5">
+          {files.map((fs, i) => (
+            <div key={i} className="flex items-center gap-3 bg-gray-800/60 border border-white/5 rounded-xl px-3 py-2.5">
+              <FileIcon type={fs.file.type} />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-white truncate font-medium">{fs.file.name}</p>
+                <p className="text-xs text-gray-500">
+                  {(fs.file.size / 1024).toFixed(0)} KB
+                  {fs.status === 'done' && <span className="text-emerald-400 ml-2">✓ {fs.count} platos</span>}
+                  {fs.status === 'error' && <span className="text-red-400 ml-2">✗ {fs.error}</span>}
+                  {fs.status === 'processing' && <span className="text-accent ml-2 animate-pulse">Procesando...</span>}
+                </p>
+              </div>
+              {fs.status === 'pending' && !processing && (
+                <button onClick={() => removeFile(i)} className="text-gray-600 hover:text-gray-400 transition text-lg leading-none shrink-0">×</button>
+              )}
+              {fs.status === 'done' && <span className="text-emerald-400 text-sm shrink-0">✓</span>}
+              {fs.status === 'processing' && <span className="shrink-0 w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin inline-block" />}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Overall progress */}
       {processing && (
         <div>
           <div className="flex justify-between text-xs text-gray-400 mb-1">
-            <span>Analizando con IA...</span>
-            <span>{progress}%</span>
+            <span>Procesando con IA… ({currentIdx + 1}/{files.length})</span>
+            <span>{overallProgress}%</span>
           </div>
           <div className="w-full bg-gray-800 rounded-full h-2">
-            <div className="bg-purple-600 h-2 rounded-full transition-all duration-700" style={{ width: `${progress}%` }} />
+            <div className="bg-accent h-2 rounded-full transition-all duration-500" style={{ width: `${overallProgress}%` }} />
           </div>
         </div>
       )}
@@ -233,8 +294,8 @@ function Step2({ businessId, onNext }: { businessId: number; onNext: (count: num
       {error && <p className="text-red-400 text-xs">{error}</p>}
 
       <button
-        onClick={handleExtract} disabled={!file || processing}
-        className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all"
+        onClick={processAll} disabled={files.length === 0 || processing}
+        className="w-full bg-accent hover:bg-accent-lite disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all"
       >
         {processing ? 'Procesando...' : 'Analizar menú con IA →'}
       </button>
