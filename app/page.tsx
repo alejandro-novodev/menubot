@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { DishWordCloud } from '@/components/landing/DishWordCloud';
 import { ChatPreview } from '@/components/landing/ChatPreview';
 import { ContactModal } from '@/components/landing/ContactModal';
+import { Wordmark } from '@/components/brand/Wordmark';
 
 const PRICING = [
   {
@@ -100,9 +101,8 @@ export default function Home() {
       {/* ── Navbar ── */}
       <nav className="fixed top-0 inset-x-0 z-40 bg-gray-950/85 backdrop-blur-md border-b border-white/5">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-lg shrink-0">
-            <span>🍜</span>
-            <span>Menu<span className="text-purple-400">Bot</span></span>
+          <Link href="/" className="shrink-0">
+            <Wordmark size="md" className="text-white" />
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/chat" className="text-sm text-gray-400 hover:text-white transition hidden sm:block">
@@ -113,7 +113,7 @@ export default function Home() {
             </Link>
             <Link
               href="/auth/register"
-              className="text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white px-4 py-1.5 rounded-xl transition"
+              className="text-sm font-semibold bg-[var(--accent)] hover:bg-[var(--accent-lite)] text-white px-4 py-1.5 rounded-xl transition"
             >
               Registrarse gratis
             </Link>
@@ -125,13 +125,13 @@ export default function Home() {
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
         <DishWordCloud />
         <div className="relative z-10 text-center px-5 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-purple-900/30 border border-purple-500/30 rounded-full px-4 py-1.5 mb-6">
+          <div className="inline-flex items-center gap-2 bg-[var(--accent-soft)] border border-[var(--accent)]/30 rounded-full px-4 py-1.5 mb-6">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-xs text-purple-300 font-medium">14 días gratis · Sin tarjeta de crédito</span>
           </div>
           <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-tight mb-5">
             Que ningún cliente se pierda{' '}
-            <span className="text-purple-400">lo mejor de tu carta</span>
+            <span className="text-[var(--accent)]">lo mejor de tu carta</span>
           </h1>
           <p className="text-gray-400 text-lg leading-relaxed mb-9">
             Tu asistente de carta con IA explica cada plato, responde dudas sobre ingredientes y
@@ -141,7 +141,7 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/auth/register"
-              className="rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all px-7 py-3 text-base font-semibold text-white shadow-lg shadow-purple-900/30 w-full sm:w-auto"
+              className="rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-lite)] active:scale-95 transition-all px-7 py-3 text-base font-semibold text-white shadow-lg shadow-purple-900/30 w-full sm:w-auto"
             >
               Empezar gratis — 14 días →
             </Link>
@@ -222,11 +222,11 @@ export default function Home() {
             {PRICING.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative flex flex-col rounded-2xl p-6 ${plan.featured ? 'bg-purple-600/10 border border-purple-500/40 shadow-lg shadow-purple-900/20' : 'bg-gray-900 border border-white/5'}`}
+                className={`relative flex flex-col rounded-2xl p-6 ${plan.featured ? 'bg-[var(--accent)]/10 border border-purple-500/40 shadow-lg shadow-purple-900/20' : 'bg-gray-900 border border-white/5'}`}
               >
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Más popular</span>
+                    <span className="bg-[var(--accent)] text-white text-xs font-semibold px-3 py-1 rounded-full">Más popular</span>
                   </div>
                 )}
                 <div className="mb-5">
@@ -240,7 +240,7 @@ export default function Home() {
                 <ul className="flex-1 space-y-2.5 mb-6">
                   {plan.features.map((f) => (
                     <li key={f.text} className="flex items-start gap-2 text-sm">
-                      <span className={`mt-0.5 shrink-0 ${f.ok ? 'text-purple-400' : 'text-gray-700'}`}>{f.ok ? '✓' : '—'}</span>
+                      <span className={`mt-0.5 shrink-0 ${f.ok ? 'text-[var(--accent)]' : 'text-gray-700'}`}>{f.ok ? '✓' : '—'}</span>
                       <span className={f.ok ? 'text-gray-300' : 'text-gray-600'}>{f.text}</span>
                     </li>
                   ))}
@@ -249,7 +249,7 @@ export default function Home() {
                   href={`/auth/register?plan=${plan.id}`}
                   className={`block text-center rounded-xl py-2.5 text-sm font-semibold transition-all ${
                     plan.featured
-                      ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                      ? 'bg-[var(--accent)] hover:bg-[var(--accent-lite)] text-white'
                       : 'bg-gray-800 hover:bg-gray-700 text-gray-200 border border-white/10'
                   }`}
                 >
@@ -260,7 +260,7 @@ export default function Home() {
           </div>
           <p className="text-center text-xs text-gray-600 mt-6">
             ¿Necesitas un plan personalizado o quieres que te contactemos?{' '}
-            <button onClick={() => openModal()} className="text-purple-400 hover:text-purple-300 transition underline underline-offset-2">
+            <button onClick={() => openModal()} className="text-[var(--accent)] hover:text-purple-300 transition underline underline-offset-2">
               Solicitar acceso
             </button>
           </p>
@@ -278,7 +278,7 @@ export default function Home() {
           </p>
           <Link
             href="/auth/register"
-            className="inline-block rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all px-9 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-900/30"
+            className="inline-block rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-lite)] active:scale-95 transition-all px-9 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-900/30"
           >
             Crear cuenta gratis →
           </Link>

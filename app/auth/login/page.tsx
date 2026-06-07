@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
+import { Wordmark } from '@/components/brand/Wordmark';
 
 function LoginForm() {
   const router = useRouter();
@@ -44,8 +45,8 @@ function LoginForm() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block text-2xl font-bold text-white mb-1">
-            🍜 Menu<span className="text-purple-400">Bot</span>
+          <Link href="/" className="inline-block mb-1">
+            <Wordmark size="lg" className="text-white" />
           </Link>
           <p className="text-gray-400 text-sm">Accede a tu panel de restaurante</p>
         </div>
@@ -94,7 +95,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1"
+              className="w-full bg-[var(--accent)] hover:bg-[var(--accent-lite)] disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1"
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
@@ -103,7 +104,7 @@ function LoginForm() {
 
         <p className="text-center text-sm text-gray-500 mt-5">
           ¿No tienes cuenta?{' '}
-          <Link href="/auth/register" className="text-purple-400 hover:text-purple-300 transition">
+          <Link href="/auth/register" className="text-[var(--accent)] hover:text-purple-300 transition">
             Regístrate gratis →
           </Link>
         </p>

@@ -1,6 +1,8 @@
 'use client';
 
-interface ChatBubbleProps {
+import { LogoIcon } from '@/components/brand/Wordmark';
+
+export interface ChatBubbleProps {
   message: string;
   role: 'user' | 'assistant';
 }
@@ -8,25 +10,36 @@ interface ChatBubbleProps {
 export function ChatBubble({ message, role }: ChatBubbleProps) {
   const isUser = role === 'user';
 
-  return (
-    <div className={`flex items-end gap-2 mb-4 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-      <div
-        className={`flex-none w-8 h-8 rounded-full flex items-center justify-center text-base shrink-0 shadow-md ${
-          isUser
-            ? 'bg-gradient-to-br from-purple-500 to-purple-700'
-            : 'bg-gradient-to-br from-gray-600 to-gray-800 border border-white/10'
-        }`}
-      >
-        {isUser ? '👤' : '🍜'}
+  if (isUser) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+        <div style={{
+          maxWidth: '82%',
+          background: 'var(--accent)',
+          color: '#fff',
+          borderRadius: '16px 16px 4px 16px',
+          padding: '11px 15px',
+          fontFamily: 'var(--font-archivo, system-ui)',
+          fontSize: 14, lineHeight: 1.45, fontWeight: 500,
+        }}>
+          {message}
+        </div>
       </div>
+    );
+  }
 
-      <div
-        className={`max-w-[78%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words shadow-sm ${
-          isUser
-            ? 'bg-gradient-to-br from-purple-600 to-purple-700 text-white rounded-br-none'
-            : 'bg-gray-800 text-gray-100 rounded-bl-none border border-white/5'
-        }`}
-      >
+  return (
+    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 12, maxWidth: '88%' }}>
+      <LogoIcon size={28} />
+      <div style={{
+        background: 'var(--mb-surface)',
+        border: '1px solid var(--mb-line)',
+        borderRadius: '4px 16px 16px 16px',
+        padding: '11px 14px',
+        fontFamily: 'var(--font-archivo, system-ui)',
+        fontSize: 14, lineHeight: 1.5,
+        color: 'var(--mb-ink)',
+      }}>
         {message}
       </div>
     </div>

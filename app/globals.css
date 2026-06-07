@@ -4,6 +4,49 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ── MenuBot Design Tokens ───────────────────────────────────────────────── */
+/* NOTE: NO transitions on var()-based color props (Chrome repaint bug).     */
+
+:root {
+  /* Accent — overridable per restaurant */
+  --accent:       #C76B43;
+  --accent-lite:  #E0895E;
+  --accent-soft:  rgba(199, 107, 67, 0.16);
+  --shadow-accent: 0 8px 24px rgba(199, 107, 67, 0.28);
+
+  /* Light mode (default) */
+  --mb-bg:        #FAF7F3;
+  --mb-surface:   #FFFFFF;
+  --mb-line:      rgba(0, 0, 0, 0.08);
+  --mb-ink:       #231D17;
+  --mb-mut:       #8A7F76;
+  --mb-mut2:      #B3A99F;
+  --mb-chip-line: rgba(0, 0, 0, 0.18);
+  --mb-badge-line:rgba(0, 0, 0, 0.14);
+  --mb-badge-ink: #6B5F54;
+  --mb-head-bg:   rgba(250, 247, 243, 0.92);
+}
+
+/* Dark mode — only neutrals change */
+[data-theme="dark"] {
+  --mb-bg:        #1A1613;
+  --mb-surface:   #241F1B;
+  --mb-line:      rgba(255, 255, 255, 0.09);
+  --mb-ink:       #FFFFFF;
+  --mb-mut:       rgba(255, 255, 255, 0.60);
+  --mb-mut2:      rgba(255, 255, 255, 0.40);
+  --mb-chip-line: rgba(255, 255, 255, 0.20);
+  --mb-badge-line:rgba(255, 255, 255, 0.16);
+  --mb-badge-ink: rgba(255, 255, 255, 0.72);
+  --mb-head-bg:   rgba(26, 22, 19, 0.92);
+}
+
+/* ── Fonts ────────────────────────────────────────────────────────────────── */
+@theme inline {
+  --font-display: var(--font-space-grotesk);
+  --font-text:    var(--font-archivo);
+}
+
 @keyframes dishFloat {
   0% {
     opacity: 0;

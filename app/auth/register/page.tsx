@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { Wordmark } from '@/components/brand/Wordmark';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -50,8 +51,8 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-block text-2xl font-bold text-white mb-1">
-            🍜 Menu<span className="text-purple-400">Bot</span>
+          <Link href="/" className="inline-block mb-1">
+            <Wordmark size="lg" className="text-white" />
           </Link>
           <p className="text-gray-400 text-sm">Crea tu cuenta y configura tu asistente de carta</p>
         </div>
@@ -112,7 +113,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1"
+              className="w-full bg-[var(--accent)] hover:bg-[var(--accent-lite)] disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1"
             >
               {loading ? 'Creando cuenta...' : 'Crear cuenta gratis →'}
             </button>
@@ -125,7 +126,7 @@ export default function RegisterPage() {
 
         <p className="text-center text-sm text-gray-500 mt-5">
           ¿Ya tienes cuenta?{' '}
-          <Link href="/auth/login" className="text-purple-400 hover:text-purple-300 transition">
+          <Link href="/auth/login" className="text-[var(--accent)] hover:text-purple-300 transition">
             Iniciar sesión
           </Link>
         </p>
