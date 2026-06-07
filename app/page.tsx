@@ -3,69 +3,86 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { DishWordCloud } from '@/components/landing/DishWordCloud';
-import { PricingCard } from '@/components/landing/PricingCard';
 import { ChatPreview } from '@/components/landing/ChatPreview';
 import { ContactModal } from '@/components/landing/ContactModal';
 
 const PRICING = [
   {
+    id: 'starter',
     name: 'Starter',
     price: '$9.990',
     description: 'Para restaurantes que están comenzando.',
     features: [
-      { text: '1 restaurante', included: true },
-      { text: '500 chats / mes', included: true },
-      { text: 'Asistente en español', included: true },
-      { text: 'Analytics básico', included: false },
-      { text: 'Marca blanca', included: false },
-      { text: 'Soporte prioritario', included: false },
+      { text: '1 restaurante', ok: true },
+      { text: '500 chats / mes', ok: true },
+      { text: 'Asistente en español', ok: true },
+      { text: 'Extracción PDF e imágenes', ok: true },
+      { text: 'QR y link compartible', ok: true },
+      { text: 'Analytics', ok: false },
+      { text: 'Marca blanca', ok: false },
     ],
   },
   {
+    id: 'pro',
     name: 'Pro',
     price: '$24.990',
     description: 'Para restaurantes que quieren crecer.',
     featured: true,
     features: [
-      { text: '1 restaurante', included: true },
-      { text: 'Chats ilimitados', included: true },
-      { text: 'Asistente en español', included: true },
-      { text: 'Analytics básico', included: true },
-      { text: 'Marca blanca', included: false },
-      { text: 'Soporte prioritario', included: false },
+      { text: '1 restaurante', ok: true },
+      { text: 'Chats ilimitados', ok: true },
+      { text: 'Asistente en español', ok: true },
+      { text: 'Extracción PDF e imágenes', ok: true },
+      { text: 'QR y link compartible', ok: true },
+      { text: 'Analytics básico', ok: true },
+      { text: 'Marca blanca', ok: false },
     ],
   },
   {
+    id: 'multi',
     name: 'Multi',
     price: '$59.990',
     description: 'Para cadenas y grupos gastronómicos.',
     features: [
-      { text: 'Hasta 5 locales', included: true },
-      { text: 'Chats ilimitados', included: true },
-      { text: 'Asistente en español', included: true },
-      { text: 'Analytics avanzado', included: true },
-      { text: 'Marca blanca', included: true },
-      { text: 'Soporte prioritario', included: true },
+      { text: 'Hasta 5 locales', ok: true },
+      { text: 'Chats ilimitados', ok: true },
+      { text: 'Asistente en español', ok: true },
+      { text: 'Extracción PDF e imágenes', ok: true },
+      { text: 'QR y link compartible', ok: true },
+      { text: 'Analytics avanzado', ok: true },
+      { text: 'Marca blanca', ok: true },
     ],
   },
 ];
 
 const HOW_IT_WORKS = [
   {
+    step: '01',
+    icon: '🚀',
+    title: 'Crea tu cuenta',
+    desc: '14 días gratis, sin tarjeta. Regístrate en menos de un minuto y configura el perfil de tu negocio.',
+  },
+  {
+    step: '02',
     icon: '📄',
-    title: 'Sube tu menú',
-    desc: 'PDF, foto, Excel o texto libre. La IA analiza el formato que ya tienes y extrae cada plato automáticamente.',
+    title: 'Sube tu carta',
+    desc: 'PDF, foto o imagen. La IA extrae todos los platos, precios e ingredientes automáticamente.',
   },
   {
-    icon: '🤖',
-    title: 'La IA lo procesa',
-    desc: 'Un agente te hace preguntas para completar descripciones, precios, ingredientes y categorías de cada plato.',
-  },
-  {
+    step: '03',
     icon: '💬',
     title: 'Comparte con tus clientes',
-    desc: 'Un link único que tus clientes abren para chatear con el asistente de tu carta. Sin apps, sin descargas.',
+    desc: 'Un QR o link único. Tus clientes chatean con el asistente directamente, sin apps ni descargas.',
   },
+];
+
+const FEATURES = [
+  { icon: '🤖', title: 'IA que entiende tu carta', desc: 'Lee platos étnicos, nombres difíciles y preparaciones complejas. Responde en español chileno.' },
+  { icon: '📄', title: 'Importa desde PDF o foto', desc: 'Sube el menú impreso, una foto del pizarrón o un PDF digital. La IA lo procesa en segundos.' },
+  { icon: '📊', title: 'Score de completeness', desc: 'Sabe exactamente qué información falta en tu carta y te guía para completarla paso a paso.' },
+  { icon: '📲', title: 'QR listo para imprimir', desc: 'Descarga el QR de tu carta en alta resolución. Ponlo en las mesas, en Instagram o en Google Maps.' },
+  { icon: '🔗', title: 'Link corto compartible', desc: 'Una URL corta para compartir en WhatsApp, Instagram bio o Google Business Profile.' },
+  { icon: '🍺', title: 'Más que restaurantes', desc: 'Bares, hoteles, spas, retail — cualquier negocio con una carta o catálogo puede usar MenuBot.' },
 ];
 
 export default function Home() {
@@ -79,29 +96,39 @@ export default function Home() {
 
   return (
     <div className="bg-gray-950 text-white min-h-screen">
-      {/* Navbar */}
-      <nav className="fixed top-0 inset-x-0 z-40 bg-gray-950/80 backdrop-blur-md border-b border-white/5">
-        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
+
+      {/* ── Navbar ── */}
+      <nav className="fixed top-0 inset-x-0 z-40 bg-gray-950/85 backdrop-blur-md border-b border-white/5">
+        <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
+          <Link href="/" className="flex items-center gap-2 font-semibold text-lg shrink-0">
             <span>🍜</span>
             <span>Menu<span className="text-purple-400">Bot</span></span>
           </Link>
-          <button
-            onClick={() => openModal()}
-            className="text-sm font-medium text-purple-400 hover:text-purple-300 transition"
-          >
-            Solicitar acceso →
-          </button>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link href="/chat" className="text-sm text-gray-400 hover:text-white transition hidden sm:block">
+              Ver demo
+            </Link>
+            <Link href="/auth/login" className="text-sm text-gray-400 hover:text-white transition">
+              Iniciar sesión
+            </Link>
+            <Link
+              href="/auth/register"
+              className="text-sm font-semibold bg-purple-600 hover:bg-purple-500 text-white px-4 py-1.5 rounded-xl transition"
+            >
+              Registrarse gratis
+            </Link>
+          </div>
         </div>
       </nav>
 
-      {/* Hero */}
+      {/* ── Hero ── */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-14">
         <DishWordCloud />
         <div className="relative z-10 text-center px-5 max-w-2xl mx-auto">
-          <p className="text-purple-400 text-sm font-medium tracking-widest uppercase mb-4">
-            Powered by Claude AI
-          </p>
+          <div className="inline-flex items-center gap-2 bg-purple-900/30 border border-purple-500/30 rounded-full px-4 py-1.5 mb-6">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs text-purple-300 font-medium">14 días gratis · Sin tarjeta de crédito</span>
+          </div>
           <h1 className="text-5xl sm:text-6xl font-bold tracking-tight leading-tight mb-5">
             Que ningún cliente se pierda{' '}
             <span className="text-purple-400">lo mejor de tu carta</span>
@@ -112,12 +139,12 @@ export default function Home() {
             pidan con confianza y vuelvan por más.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <button
-              onClick={() => openModal()}
+            <Link
+              href="/auth/register"
               className="rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all px-7 py-3 text-base font-semibold text-white shadow-lg shadow-purple-900/30 w-full sm:w-auto"
             >
-              Solicitar acceso
-            </button>
+              Empezar gratis — 14 días →
+            </Link>
             <Link
               href="/chat"
               className="rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition px-7 py-3 text-base font-medium text-gray-300 w-full sm:w-auto text-center"
@@ -125,21 +152,22 @@ export default function Home() {
               Ver demo →
             </Link>
           </div>
+          <p className="text-xs text-gray-600 mt-4">Sin tarjeta · Sin contrato · Cancela cuando quieras</p>
         </div>
-        {/* Bottom fade */}
         <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-gray-950 to-transparent" />
       </section>
 
-      {/* How it works */}
+      {/* ── How it works ── */}
       <section className="bg-gray-900 py-20 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-3">Cómo funciona</h2>
-            <p className="text-gray-400">En tres pasos, tu restaurante tiene su asistente de carta listo.</p>
+            <h2 className="text-3xl font-bold mb-3">Activo en minutos</h2>
+            <p className="text-gray-400">Tres pasos y tu restaurante tiene su asistente de carta.</p>
           </div>
           <div className="grid sm:grid-cols-3 gap-6">
-            {HOW_IT_WORKS.map((step, i) => (
-              <div key={i} className="bg-gray-950/60 rounded-2xl border border-white/5 p-6">
+            {HOW_IT_WORKS.map((step) => (
+              <div key={step.step} className="bg-gray-950/60 rounded-2xl border border-white/5 p-6 relative">
+                <span className="absolute top-4 right-4 text-xs font-mono text-gray-700">{step.step}</span>
                 <div className="text-3xl mb-4">{step.icon}</div>
                 <h3 className="text-white font-semibold mb-2">{step.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{step.desc}</p>
@@ -149,7 +177,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Demo preview */}
+      {/* ── Demo preview ── */}
       <section className="py-20 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
@@ -163,53 +191,119 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Pricing */}
+      {/* ── Features ── */}
       <section className="bg-gray-900 py-20 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-3">Planes</h2>
-            <p className="text-gray-400">Precios en pesos chilenos, sin contratos largos.</p>
+            <h2 className="text-3xl font-bold mb-3">Todo lo que incluye</h2>
+            <p className="text-gray-400">Desde la importación del menú hasta el QR listo para imprimir.</p>
           </div>
-          <div className="grid sm:grid-cols-3 gap-6 items-start">
-            {PRICING.map((plan) => (
-              <PricingCard
-                key={plan.name}
-                {...plan}
-                onContact={(p) => openModal(p)}
-              />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {FEATURES.map((f) => (
+              <div key={f.title} className="bg-gray-950/50 border border-white/5 rounded-2xl p-5">
+                <div className="text-2xl mb-3">{f.icon}</div>
+                <h3 className="text-white font-semibold text-sm mb-1.5">{f.title}</h3>
+                <p className="text-gray-500 text-xs leading-relaxed">{f.desc}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA final */}
-      <section className="py-20 px-5 text-center">
-        <div className="max-w-xl mx-auto">
-          <h2 className="text-3xl font-bold mb-3">¿Listo para empezar?</h2>
-          <p className="text-gray-400 mb-8">
-            Cuéntanos sobre tu restaurante y configuramos tu asistente de carta en menos de 24 horas.
+      {/* ── Pricing ── */}
+      <section className="py-20 px-5">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-4">
+            <h2 className="text-3xl font-bold mb-3">Planes</h2>
+            <p className="text-gray-400">Precios en pesos chilenos. Los primeros 14 días son gratis en cualquier plan.</p>
+          </div>
+          <p className="text-center text-xs text-emerald-400 mb-10">✓ 14 días de prueba gratuita · Sin tarjeta de crédito · Cancela cuando quieras</p>
+          <div className="grid sm:grid-cols-3 gap-6 items-start">
+            {PRICING.map((plan) => (
+              <div
+                key={plan.id}
+                className={`relative flex flex-col rounded-2xl p-6 ${plan.featured ? 'bg-purple-600/10 border border-purple-500/40 shadow-lg shadow-purple-900/20' : 'bg-gray-900 border border-white/5'}`}
+              >
+                {plan.featured && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <span className="bg-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Más popular</span>
+                  </div>
+                )}
+                <div className="mb-5">
+                  <h3 className={`text-lg font-semibold mb-1 ${plan.featured ? 'text-purple-300' : 'text-white'}`}>{plan.name}</h3>
+                  <p className="text-gray-500 text-sm">{plan.description}</p>
+                </div>
+                <div className="mb-6">
+                  <span className="text-3xl font-bold text-white">{plan.price}</span>
+                  <span className="text-gray-500 text-sm ml-1">/mes</span>
+                </div>
+                <ul className="flex-1 space-y-2.5 mb-6">
+                  {plan.features.map((f) => (
+                    <li key={f.text} className="flex items-start gap-2 text-sm">
+                      <span className={`mt-0.5 shrink-0 ${f.ok ? 'text-purple-400' : 'text-gray-700'}`}>{f.ok ? '✓' : '—'}</span>
+                      <span className={f.ok ? 'text-gray-300' : 'text-gray-600'}>{f.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={`/auth/register?plan=${plan.id}`}
+                  className={`block text-center rounded-xl py-2.5 text-sm font-semibold transition-all ${
+                    plan.featured
+                      ? 'bg-purple-600 hover:bg-purple-500 text-white'
+                      : 'bg-gray-800 hover:bg-gray-700 text-gray-200 border border-white/10'
+                  }`}
+                >
+                  Empezar gratis →
+                </Link>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-xs text-gray-600 mt-6">
+            ¿Necesitas un plan personalizado o quieres que te contactemos?{' '}
+            <button onClick={() => openModal()} className="text-purple-400 hover:text-purple-300 transition underline underline-offset-2">
+              Solicitar acceso
+            </button>
           </p>
-          <button
-            onClick={() => openModal()}
-            className="rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all px-8 py-3 text-base font-semibold text-white shadow-lg shadow-purple-900/30"
-          >
-            Solicitar acceso →
-          </button>
         </div>
       </section>
 
-      {/* Footer */}
+      {/* ── CTA final ── */}
+      <section className="bg-gray-900 py-20 px-5 text-center">
+        <div className="max-w-xl mx-auto">
+          <div className="text-4xl mb-4">🍜</div>
+          <h2 className="text-3xl font-bold mb-3">¿Listo para empezar?</h2>
+          <p className="text-gray-400 mb-8">
+            Regístrate gratis, sube tu carta y activa tu asistente de IA en menos de 5 minutos.
+            Sin tarjeta, sin contrato.
+          </p>
+          <Link
+            href="/auth/register"
+            className="inline-block rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 transition-all px-9 py-3.5 text-base font-semibold text-white shadow-lg shadow-purple-900/30"
+          >
+            Crear cuenta gratis →
+          </Link>
+          <p className="text-xs text-gray-600 mt-4">
+            ¿Ya tienes cuenta?{' '}
+            <Link href="/auth/login" className="text-gray-400 hover:text-white transition underline underline-offset-2">
+              Iniciar sesión
+            </Link>
+          </p>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
       <footer className="border-t border-white/5 py-6 px-5">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
           <span>© {new Date().getFullYear()} Novodev SPA. Todos los derechos reservados.</span>
-          <div className="flex gap-4">
-            <span className="hover:text-gray-400 cursor-pointer transition">Términos</span>
-            <span className="hover:text-gray-400 cursor-pointer transition">Privacidad</span>
+          <div className="flex gap-5">
+            <button onClick={() => openModal()} className="hover:text-gray-400 transition">Contacto</button>
+            <Link href="/chat" className="hover:text-gray-400 transition">Demo</Link>
+            <Link href="/auth/login" className="hover:text-gray-400 transition">Iniciar sesión</Link>
           </div>
         </div>
       </footer>
 
-      {/* Modal */}
+      {/* Modal contacto B2B */}
       <ContactModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
