@@ -2,6 +2,7 @@ import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { query } from '@/lib/db';
 import Link from 'next/link';
+import { QRCard } from '@/components/dashboard/QRCard';
 
 interface Business {
   id: number;
@@ -90,14 +91,11 @@ export default async function DashboardPage() {
         </Link>
         <div className="flex items-center gap-4 text-sm text-gray-400">
           {session.user.role === 'admin' && (
-            <Link href="/admin" className="text-purple-400 hover:text-purple-300 transition text-xs">
-              Admin →
-            </Link>
+            <Link href="/admin" className="text-purple-400 hover:text-purple-300 transition text-xs">Admin →</Link>
           )}
-          <span className="hidden sm:inline">{session.user.email}</span>
-          <Link href="/api/auth/signout" className="text-gray-600 hover:text-gray-400 transition text-xs">
-            Salir
-          </Link>
+          <Link href="/dashboard/billing" className="text-gray-400 hover:text-white transition text-xs">Plan</Link>
+          <span className="hidden sm:inline text-gray-600">{session.user.email}</span>
+          <Link href="/api/auth/signout" className="text-gray-600 hover:text-gray-400 transition text-xs">Salir</Link>
         </div>
       </header>
 
@@ -158,6 +156,9 @@ export default async function DashboardPage() {
                     Completar información →
                   </Link>
                 )}
+                <div className="mt-4">
+                  <QRCard slug={biz.slug} businessName={biz.name} />
+                </div>
               </div>
             ))}
 
