@@ -7,6 +7,24 @@ export interface ChatBubbleProps {
   role: 'user' | 'assistant';
 }
 
+/**
+ * Minimal, dependency-free renderer for the lightweight markdown the assistant
+ * emits: **bold** spans and `---` dividers. Newlines are preserved via the
+ * container's `white-space: pre-wrap`, so no explicit <br/> handling is needed.
+ */
+function renderContent(message: string) {
+  const parts = message.split(/(\*\*[^*]+\*\*|\s*-{3,}\s*)/g);
+  return parts.map((part, i) => {
+    if (/^\*\*[^*]+\*\*$/.test(part)) {
+      return <strong key={i} style={{ fontWeight: 700 }}>{part.slice(2, -2)}</strong>;
+    }
+    if (/^\s*-{3,}\s*$/.test(part)) {
+      return <span key={i} style={{ display: 'block', height: 1, background: 'currentColor', opacity: 0.18, margin: '10px 0' }} />;
+    }
+    return part;
+  });
+}
+
 export function ChatBubble({ message, role }: ChatBubbleProps) {
   const isUser = role === 'user';
 
@@ -21,8 +39,9 @@ export function ChatBubble({ message, role }: ChatBubbleProps) {
           padding: '11px 15px',
           fontFamily: 'var(--font-archivo, system-ui)',
           fontSize: 14, lineHeight: 1.45, fontWeight: 500,
+          whiteSpace: 'pre-wrap', wordBreak: 'break-word',
         }}>
-          {message}
+          {renderContent(message)}
         </div>
       </div>
     );
@@ -39,8 +58,9 @@ export function ChatBubble({ message, role }: ChatBubbleProps) {
         fontFamily: 'var(--font-archivo, system-ui)',
         fontSize: 14, lineHeight: 1.5,
         color: 'var(--mb-ink)',
+        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
       }}>
-        {message}
+        {renderContent(message)}
       </div>
     </div>
   );

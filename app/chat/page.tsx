@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Wordmark } from '@/components/brand/Wordmark';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface Restaurant {
   id: number;
@@ -34,59 +35,78 @@ export default function ChatIndexPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
-      <header className="border-b border-white/5 px-5 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition">
+    <div style={{ minHeight: '100svh', background: 'var(--mb-bg)', color: 'var(--mb-ink)', display: 'flex', flexDirection: 'column' }}>
+      <header style={{
+        borderBottom: '1px solid var(--mb-line)', padding: '14px 20px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+        background: 'var(--mb-head-bg)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+      }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: 'var(--font-archivo, system-ui)', fontSize: 13, color: 'var(--mb-mut)', textDecoration: 'none' }}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <path d="M19 12H5M12 5l-7 7 7 7" />
           </svg>
           Volver
         </Link>
-        <Wordmark size="md" className="text-white" />
-        <div className="w-16" />
+        <Wordmark size="md" />
+        <ThemeToggle />
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center px-5 py-12">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-10">
-            <h1 className="text-2xl font-bold text-white mb-2">Elige un restaurante</h1>
-            <p className="text-gray-500 text-sm">Selecciona un local para ver su carta y chatear con el asistente.</p>
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+        <div style={{ width: '100%', maxWidth: 440 }}>
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            <h1 style={{ fontFamily: 'var(--font-space-grotesk, system-ui)', fontWeight: 700, fontSize: 26, letterSpacing: '-0.03em', color: 'var(--mb-ink)', margin: 0 }}>
+              Elige un restaurante
+            </h1>
+            <p style={{ fontFamily: 'var(--font-archivo, system-ui)', fontSize: 14, color: 'var(--mb-mut)', margin: '8px 0 0' }}>
+              Selecciona un local para ver su carta y chatear con el asistente.
+            </p>
           </div>
 
           {loading ? (
-            <div className="flex justify-center gap-1.5 py-12">
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 6, padding: '48px 0' }}>
               {[0, 150, 300].map(d => (
                 <span key={d} style={{ width: 8, height: 8, borderRadius: 99, background: 'var(--accent)', display: 'inline-block', animation: `bounce 1.2s ease-in-out ${d}ms infinite` }} />
               ))}
             </div>
           ) : restaurants.length === 0 ? (
-            <div className="text-center py-12 text-gray-500 text-sm">
-              <p>No hay restaurantes disponibles.</p>
-              <p className="mt-1">Ejecuta <code className="bg-gray-800 px-1 rounded text-xs">npm run seed</code> para cargar los datos.</p>
+            <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--mb-mut)', fontFamily: 'var(--font-archivo, system-ui)', fontSize: 13.5 }}>
+              <p style={{ margin: 0 }}>No hay restaurantes disponibles.</p>
+              <p style={{ margin: '6px 0 0' }}>
+                Ejecuta <code style={{ background: 'var(--mb-surface)', border: '1px solid var(--mb-line)', padding: '1px 6px', borderRadius: 6, fontSize: 12 }}>npm run seed</code> para cargar los datos.
+              </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {restaurants.map(r => (
                 <Link
                   key={r.id}
                   href={`/chat/${r.slug}`}
-                  className="group flex items-center gap-4 bg-gray-900 border border-white/5 hover:border-white/15 rounded-2xl p-4 transition-all"
+                  className="mb-dish-row"
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 15,
+                    background: 'var(--mb-surface)', border: '1px solid var(--mb-line)',
+                    borderRadius: 18, padding: 15, textDecoration: 'none',
+                  }}
                 >
-                  <div className="w-14 h-14 rounded-xl bg-gray-800 border border-white/5 flex items-center justify-center text-3xl shrink-0">
+                  <div style={{
+                    width: 54, height: 54, borderRadius: 14, background: 'var(--mb-bg)',
+                    border: '1px solid var(--mb-line)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 28, flexShrink: 0,
+                  }}>
                     {SLUG_EMOJI[r.slug] ?? '🍽️'}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-semibold text-white text-sm">{r.name}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                      <span style={{ fontFamily: 'var(--font-space-grotesk, system-ui)', fontWeight: 600, fontSize: 15.5, letterSpacing: '-0.01em', color: 'var(--mb-ink)' }}>{r.name}</span>
                       {SLUG_BADGE[r.slug] && (
-                        <span className="text-xs text-gray-600 bg-gray-800 border border-white/5 px-2 py-0.5 rounded-full">
+                        <span style={{ fontFamily: 'var(--font-archivo, system-ui)', fontSize: 11, fontWeight: 600, color: 'var(--mb-mut)', background: 'var(--mb-bg)', border: '1px solid var(--mb-line)', padding: '2px 8px', borderRadius: 999 }}>
                           {SLUG_BADGE[r.slug]}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 truncate">{r.description}</p>
+                    <p style={{ margin: 0, fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12.5, lineHeight: 1.45, color: 'var(--mb-mut)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{r.description}</p>
                   </div>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className="text-gray-700 group-hover:text-gray-400 transition shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </Link>
@@ -96,8 +116,8 @@ export default function ChatIndexPage() {
         </div>
       </main>
 
-      <footer className="border-t border-white/5 py-5 text-center text-xs text-gray-700">
-        Un producto de <span className="text-gray-600">Novodev SPA</span>
+      <footer style={{ borderTop: '1px solid var(--mb-line)', padding: '18px 0', textAlign: 'center', fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12, color: 'var(--mb-mut2)' }}>
+        Un producto de <span style={{ color: 'var(--mb-mut)' }}>Novodev SPA</span>
       </footer>
     </div>
   );

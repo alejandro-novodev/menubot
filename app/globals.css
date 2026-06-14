@@ -11,6 +11,12 @@
   100%     { opacity: 0; transform: translateY(-6px); }
 }
 
+/* Typing / loading indicator dots */
+@keyframes bounce {
+  0%, 60%, 100% { transform: translateY(0);     opacity: 0.45; }
+  30%           { transform: translateY(-5px);  opacity: 1; }
+}
+
 /* ── Shadcn @theme inline (required for Tailwind token aliases) ──────────── */
 @theme inline {
   --color-background: var(--background);
@@ -128,7 +134,10 @@
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  body { @apply bg-background text-foreground; }
+  body {
+    background-color: var(--mb-bg);
+    color: var(--mb-ink);
+  }
   html { @apply font-sans; }
 }
 
@@ -168,6 +177,50 @@
   --mb-badge-ink:   rgba(255, 255, 255, 0.72);
   --mb-head-bg:     rgba(26, 22, 19, 0.92);
 }
+
+/* ── App shell utilities (design tokens) ─────────────────────────────────  */
+.app-bg       { background-color: var(--mb-bg); }
+.app-surface  { background-color: var(--mb-surface); }
+.app-surface2 { background-color: color-mix(in srgb, var(--mb-surface) 60%, var(--mb-bg)); }
+.app-ink      { color: var(--mb-ink); }
+.app-mut      { color: var(--mb-mut); }
+.app-line     { border-color: var(--mb-line); }
+.app-border   { border: 1px solid var(--mb-line); }
+.app-head     { background-color: var(--mb-head-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
+/* ══════════════════════════════════════════════════════════════════════════ */
+/* ── Customer chat / menu UI — interactive polish ────────────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════ */
+
+/* Tap-to-ask dish rows */
+.mb-dish-row      { border-radius: 14px; transition: background-color 0.15s ease; }
+.mb-dish-row:hover { background-color: color-mix(in srgb, var(--mb-ink) 5%, transparent); }
+.mb-dish-cta      { opacity: 0.55; transition: opacity 0.15s ease, color 0.15s ease; }
+.mb-dish-row:hover .mb-dish-cta { opacity: 1; color: var(--accent); }
+
+/* Category filter chips */
+.mb-chip { transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+.mb-chip:hover:not([data-active="true"]) { border-color: var(--mb-mut); color: var(--mb-ink); }
+
+/* Suggested-question chips */
+.mb-suggest { transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease; }
+.mb-suggest:hover { border-color: var(--accent); color: var(--accent); background-color: var(--accent-soft); }
+
+/* Send button */
+.mb-send { transition: transform 0.12s ease, box-shadow 0.15s ease, background-color 0.15s ease; }
+.mb-send:not(:disabled):hover  { transform: translateY(-1px); }
+.mb-send:not(:disabled):active { transform: translateY(0); }
+
+/* Slim, themed scrollbars for the menu + chat panes */
+.mb-scroll { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--mb-ink) 16%, transparent) transparent; }
+.mb-scroll::-webkit-scrollbar       { width: 8px; height: 8px; }
+.mb-scroll::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--mb-ink) 14%, transparent); border-radius: 99px; }
+.mb-scroll::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--mb-ink) 24%, transparent); }
+.mb-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* Hide scrollbar entirely (category chip rail) */
+.mb-noscroll { scrollbar-width: none; -ms-overflow-style: none; }
+.mb-noscroll::-webkit-scrollbar { display: none; }
 
 /* ── Accent utilities — unlayered, win over all Tailwind @layer rules ─────  */
 .bg-accent                     { background-color: var(--accent); }

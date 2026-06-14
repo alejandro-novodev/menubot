@@ -15,28 +15,30 @@ describe('ChatBubble', () => {
     expect(screen.getByText('¡Hola! Tenemos Karaage y Ramen.')).toBeInTheDocument();
   });
 
-  it('applies purple styling for user messages', () => {
+  it('applies accent styling for user messages', () => {
     const { container } = render(<ChatBubble message="test" role="user" />);
-    const bubble = container.querySelector('.from-purple-600');
-    expect(bubble).not.toBeNull();
+    const hasAccent = Array.from(container.querySelectorAll<HTMLElement>('*'))
+      .some(el => el.style?.background?.includes('--accent'));
+    expect(hasAccent).toBe(true);
   });
 
-  it('applies gray styling for assistant messages', () => {
+  it('applies surface styling for assistant messages', () => {
     const { container } = render(<ChatBubble message="test" role="assistant" />);
-    const bubble = container.querySelector('.bg-gray-800');
-    expect(bubble).not.toBeNull();
+    const hasSurface = Array.from(container.querySelectorAll<HTMLElement>('*'))
+      .some(el => el.style?.background?.includes('--mb-surface'));
+    expect(hasSurface).toBe(true);
   });
 
   it('aligns user messages to the right', () => {
     const { container } = render(<ChatBubble message="test" role="user" />);
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).toContain('flex-row-reverse');
+    expect(wrapper.style.justifyContent).toBe('flex-end');
   });
 
-  it('aligns assistant messages to the left', () => {
+  it('does not right-align assistant messages', () => {
     const { container } = render(<ChatBubble message="test" role="assistant" />);
     const wrapper = container.firstChild as HTMLElement;
-    expect(wrapper.className).not.toContain('flex-row-reverse');
+    expect(wrapper.style.justifyContent).not.toBe('flex-end');
   });
 
   it('renders multiline messages correctly', () => {
@@ -44,5 +46,11 @@ describe('ChatBubble', () => {
     const { container } = render(<ChatBubble message={multiline} role="assistant" />);
     expect(container.textContent).toContain('Primera línea');
     expect(container.textContent).toContain('Segunda línea');
+  });
+
+  it('renders **bold** markdown as <strong>', () => {
+    const { container } = render(<ChatBubble message="Prueba **Edamame** rico" role="assistant" />);
+    const strong = container.querySelector('strong');
+    expect(strong?.textContent).toBe('Edamame');
   });
 });

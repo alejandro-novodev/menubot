@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Space_Grotesk, Archivo } from 'next/font/google';
 import { SessionProvider } from 'next-auth/react';
+import { ThemeProvider } from '@/components/ThemeProvider';
 import './globals.css';
 
 const spaceGrotesk = Space_Grotesk({
@@ -24,17 +25,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html
       lang="es"
+      data-theme="light"
       className={`${spaceGrotesk.variable} ${archivo.variable} h-full antialiased`}
     >
-      <link
-        rel="preconnect"
-        href="https://fonts.googleapis.com"
-      />
-      <body
-        className="min-h-full flex flex-col"
-        style={{ fontFamily: 'var(--font-archivo, system-ui, sans-serif)' }}
-      >
-        <SessionProvider>{children}</SessionProvider>
+      <body className="min-h-full flex flex-col" style={{ fontFamily: 'var(--font-archivo, system-ui, sans-serif)' }}>
+        <ThemeProvider>
+          <SessionProvider>{children}</SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
