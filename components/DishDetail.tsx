@@ -32,7 +32,7 @@ export function DishDetail({ dish, onAsk, onClose }: DishDetailProps) {
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
       {/* Card */}
-      <div className="relative w-full sm:max-w-sm sm:mx-4 bg-gray-900 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+      <div className="relative w-full sm:max-w-sm sm:mx-4 bg-[#241F1B] sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
 
         {/* Visual header */}
         <div className={`relative bg-gradient-to-b ${gradient} flex flex-col items-center justify-center pt-8 pb-6 shrink-0`}>
@@ -56,7 +56,7 @@ export function DishDetail({ dish, onAsk, onClose }: DishDetailProps) {
         <div className="flex-1 overflow-y-auto px-5 py-4">
           <div className="flex items-start justify-between gap-3 mb-3">
             <h2 className="text-xl font-bold text-white leading-tight flex-1">{dish.name}</h2>
-            <span className="text-xl font-bold text-purple-400 shrink-0">{formatPrice(dish.price)}</span>
+            <span className="text-xl font-bold text-accent shrink-0">{formatPrice(dish.price)}</span>
           </div>
 
           {dish.description && (
@@ -91,7 +91,7 @@ export function DishDetail({ dish, onAsk, onClose }: DishDetailProps) {
           </button>
           <button
             onClick={() => onAsk(dish)}
-            className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 active:scale-95 text-white text-sm font-semibold transition-all"
+            className="flex-1 py-2.5 rounded-xl bg-accent hover:bg-accent-lite active:scale-95 text-white text-sm font-semibold transition-all"
           >
             Preguntar al asistente →
           </button>

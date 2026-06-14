@@ -45,8 +45,8 @@ export function BillingClient({ planId, businessId, isCurrent, isFeatured }: Pro
       disabled={loading}
       className={`w-full py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-50 ${
         isFeatured
-          ? 'bg-purple-600 hover:bg-purple-500 text-white'
-          : 'bg-gray-800 hover:bg-gray-700 text-gray-200 border border-white/10'
+          ? 'bg-accent hover:bg-accent-lite text-white'
+          : 'bg-[#2E2823] hover:bg-gray-700 text-gray-200 border border-white/10'
       }`}
     >
       {loading ? 'Procesando...' : 'Elegir plan →'}

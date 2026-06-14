@@ -38,7 +38,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#1A1613] flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-1">
@@ -47,7 +47,7 @@ function LoginForm() {
           <p className="text-gray-400 text-sm">Accede a tu panel de restaurante</p>
         </div>
 
-        <div className="bg-gray-900 border border-white/10 rounded-2xl p-6">
+        <div className="bg-[#241F1B] border border-white/10 rounded-2xl p-6">
           <button
             onClick={handleGoogle}
             className="w-full flex items-center justify-center gap-2.5 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-xl py-2.5 text-sm transition mb-4"
@@ -66,20 +66,20 @@ function LoginForm() {
             <div>
               <label className="block text-xs text-gray-400 mb-1">Email</label>
               <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
-                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition"
+                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition"
                 placeholder="tu@email.com" />
             </div>
             <div>
               <label className="block text-xs text-gray-400 mb-1">Contraseña</label>
               <input type="password" required value={password} onChange={e => setPassword(e.target.value)}
-                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition"
+                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/30 transition"
                 placeholder="••••••••" />
             </div>
 
             {error && <p className="text-red-400 text-xs">{error}</p>}
 
             <button type="submit" disabled={loading}
-              className="w-full bg-accent hover:bg-accent-lite disabled:bg-gray-800 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1">
+              className="w-full bg-accent hover:bg-accent-lite disabled:bg-[#2E2823] disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1">
               {loading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </button>
           </form>

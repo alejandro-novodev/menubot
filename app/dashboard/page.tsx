@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { query } from '@/lib/db';
 import Link from 'next/link';
 import { QRCard } from '@/components/dashboard/QRCard';
+import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
 
 interface Business {
   id: number;
@@ -22,7 +23,7 @@ function TrialBanner({ daysLeft }: { daysLeft: number }) {
   if (daysLeft < 0) return null;
   const urgent = daysLeft <= 3;
   return (
-    <div className={`flex items-center justify-between gap-4 px-5 py-3 text-sm ${urgent ? 'bg-red-900/30 border-b border-red-700/30 text-red-300' : 'bg-purple-900/20 border-b border-purple-700/20 text-purple-300'}`}>
+    <div className={`flex items-center justify-between gap-4 px-5 py-3 text-sm ${urgent ? 'bg-red-900/30 border-b border-red-700/30 text-red-300' : 'bg-accent/15 border-b border-accent/25 text-accent'}`}>
       <span>
         {urgent ? '⚠️' : '⏳'}{' '}
         {daysLeft === 0
@@ -44,7 +45,7 @@ function CompletenessBar({ score }: { score: number }) {
         <span>Completeness</span>
         <span className={score >= 80 ? 'text-emerald-400' : score >= 50 ? 'text-yellow-400' : 'text-orange-400'}>{score}%</span>
       </div>
-      <div className="w-full bg-gray-800 rounded-full h-1.5">
+      <div className="w-full bg-[#2E2823] rounded-full h-1.5">
         <div className={`${color} h-1.5 rounded-full transition-all`} style={{ width: `${score}%` }} />
       </div>
     </div>
@@ -80,18 +81,18 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+    <div className="min-h-screen bg-[#1A1613] text-white flex flex-col">
       {/* Trial banner */}
       {trialDaysLeft >= 0 && <TrialBanner daysLeft={trialDaysLeft} />}
 
       {/* Header */}
       <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
         <Link href="/" className="font-bold text-lg">
-          🍜 Menu<span className="text-purple-400">Bot</span>
+          <span className="flex items-center gap-2"><LogoIcon size={26} /><Wordmark size="md" /></span>
         </Link>
         <div className="flex items-center gap-4 text-sm text-gray-400">
           {session.user.role === 'admin' && (
-            <Link href="/admin" className="text-purple-400 hover:text-purple-300 transition text-xs">Admin →</Link>
+            <Link href="/admin" className="text-accent hover:text-accent-lite transition text-xs">Admin →</Link>
           )}
           <Link href="/dashboard/billing" className="text-gray-400 hover:text-white transition text-xs">Plan</Link>
           <span className="hidden sm:inline text-gray-600">{session.user.email}</span>
@@ -108,7 +109,7 @@ export default async function DashboardPage() {
           {!hasBusiness && (
             <Link
               href="/dashboard/onboarding"
-              className="bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
+              className="bg-accent hover:bg-accent-lite text-white text-sm font-semibold px-4 py-2 rounded-xl transition"
             >
               + Configurar negocio
             </Link>
@@ -116,13 +117,13 @@ export default async function DashboardPage() {
         </div>
 
         {!hasBusiness ? (
-          <div className="bg-gray-900 border border-white/5 rounded-2xl p-8 text-center">
+          <div className="bg-[#241F1B] border border-white/5 rounded-2xl p-8 text-center">
             <div className="text-4xl mb-3">🚀</div>
             <h2 className="text-lg font-semibold mb-2">Comienza configurando tu negocio</h2>
             <p className="text-gray-400 text-sm mb-6">Sube tu carta y activa tu asistente de IA en minutos.</p>
             <Link
               href="/dashboard/onboarding"
-              className="inline-block bg-purple-600 hover:bg-purple-500 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition"
+              className="inline-block bg-accent hover:bg-accent-lite text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition"
             >
               Empezar →
             </Link>
@@ -130,12 +131,12 @@ export default async function DashboardPage() {
         ) : (
           <div className="space-y-4">
             {businesses.map(biz => (
-              <div key={biz.id} className="bg-gray-900 border border-white/5 rounded-2xl p-5">
+              <div key={biz.id} className="bg-[#241F1B] border border-white/5 rounded-2xl p-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h2 className="font-semibold text-white">{biz.name}</h2>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${biz.status === 'active' ? 'bg-emerald-900/40 text-emerald-400' : 'bg-gray-800 text-gray-500'}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${biz.status === 'active' ? 'bg-emerald-900/40 text-emerald-400' : 'bg-[#2E2823] text-gray-500'}`}>
                         {biz.status === 'active' ? '● activo' : biz.status}
                       </span>
                     </div>
@@ -145,14 +146,14 @@ export default async function DashboardPage() {
                     <Link href={`/dashboard/menu?biz=${biz.id}`} className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg transition">
                       Gestionar carta
                     </Link>
-                    <Link href={`/chat/${biz.slug}`} target="_blank" className="text-xs text-purple-400 hover:text-purple-300 bg-purple-900/20 hover:bg-purple-900/30 border border-purple-700/20 px-3 py-1.5 rounded-lg transition">
+                    <Link href={`/chat/${biz.slug}`} target="_blank" className="text-xs text-accent hover:text-accent-lite bg-accent/15 hover:bg-accent/20 border border-accent/25 px-3 py-1.5 rounded-lg transition">
                       Ver carta →
                     </Link>
                   </div>
                 </div>
                 <CompletenessBar score={biz.menu_completeness} />
                 {biz.menu_completeness < 80 && (
-                  <Link href={`/dashboard/menu?biz=${biz.id}`} className="block mt-2 text-xs text-purple-400 hover:text-purple-300 transition">
+                  <Link href={`/dashboard/menu?biz=${biz.id}`} className="block mt-2 text-xs text-accent hover:text-accent-lite transition">
                     Completar información →
                   </Link>
                 )}
@@ -164,7 +165,7 @@ export default async function DashboardPage() {
 
             <Link
               href="/dashboard/onboarding"
-              className="block bg-gray-900/50 border border-dashed border-white/10 hover:border-purple-500/30 rounded-2xl p-5 text-center text-sm text-gray-600 hover:text-gray-400 transition"
+              className="block bg-[#241F1B]/50 border border-dashed border-white/10 hover:border-accent/30 rounded-2xl p-5 text-center text-sm text-gray-600 hover:text-gray-400 transition"
             >
               + Agregar otro negocio
             </Link>

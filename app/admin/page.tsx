@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
 
 interface Stats {
   businesses: { active: number; pending: number; suspended: number; total: number };
@@ -42,7 +43,7 @@ const STATUS_STYLE: Record<string, string> = {
 
 function KpiCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="bg-gray-900 border border-white/5 rounded-2xl p-5">
+    <div className="bg-[#241F1B] border border-white/5 rounded-2xl p-5">
       <p className="text-gray-500 text-xs mb-1">{label}</p>
       <p className="text-2xl font-bold text-white">{value}</p>
       {sub && <p className="text-xs text-gray-600 mt-0.5">{sub}</p>}
@@ -75,20 +76,20 @@ export default function AdminPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+    <div className="min-h-screen bg-[#1A1613] flex items-center justify-center">
       <div className="flex gap-1.5">
-        <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:0ms]" />
-        <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:150ms]" />
-        <span className="w-2 h-2 bg-purple-500 rounded-full animate-bounce [animation-delay:300ms]" />
+        <span className="w-2 h-2 bg-accent rounded-full animate-bounce [animation-delay:0ms]" />
+        <span className="w-2 h-2 bg-accent rounded-full animate-bounce [animation-delay:150ms]" />
+        <span className="w-2 h-2 bg-accent rounded-full animate-bounce [animation-delay:300ms]" />
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-[#1A1613] text-white">
       <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
         <Link href="/dashboard" className="font-bold text-lg">
-          🍜 Menu<span className="text-purple-400">Bot</span>
+          <span className="flex items-center gap-2"><LogoIcon size={26} /><Wordmark size="md" /></span>
           <span className="ml-2 text-xs text-gray-500 font-normal">Admin</span>
         </Link>
         <Link href="/dashboard" className="text-xs text-gray-500 hover:text-gray-300 transition">← Dashboard</Link>
@@ -117,11 +118,11 @@ export default function AdminPage() {
           </h2>
           <div className="space-y-2">
             {(stats?.recentBusinesses ?? []).map(biz => (
-              <div key={biz.id} className="bg-gray-900 border border-white/5 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
+              <div key={biz.id} className="bg-[#241F1B] border border-white/5 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-white text-sm">{biz.name}</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLE[biz.status] ?? 'bg-gray-800 text-gray-500'}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLE[biz.status] ?? 'bg-[#2E2823] text-gray-500'}`}>
                       {biz.status}
                     </span>
                     <span className="text-xs text-gray-600">{PLAN_LABELS[biz.plan ?? ''] ?? biz.plan ?? '—'}</span>
@@ -156,7 +157,7 @@ export default function AdminPage() {
                   )}
                   <select
                     onChange={e => { if (e.target.value) doAction(biz.id, 'change_plan', e.target.value); e.target.value = ''; }}
-                    className="text-xs bg-gray-800 border border-white/10 text-gray-400 px-2 py-1.5 rounded-lg outline-none"
+                    className="text-xs bg-[#2E2823] border border-white/10 text-gray-400 px-2 py-1.5 rounded-lg outline-none"
                     defaultValue=""
                   >
                     <option value="" disabled>Plan</option>
@@ -184,14 +185,14 @@ export default function AdminPage() {
             </h2>
             <div className="space-y-2">
               {(stats?.waitlist ?? []).map(w => (
-                <div key={w.id} className="bg-gray-900 border border-white/5 rounded-xl px-4 py-3 flex items-center gap-3">
+                <div key={w.id} className="bg-[#241F1B] border border-white/5 rounded-xl px-4 py-3 flex items-center gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-white">{w.name} — {w.restaurant_name}</p>
                     <p className="text-xs text-gray-500">{w.email} · Plan: {w.plan ?? '—'}</p>
                   </div>
                   <a
                     href={`mailto:${w.email}`}
-                    className="text-xs text-purple-400 hover:text-purple-300 px-3 py-1.5 bg-purple-900/20 rounded-lg transition"
+                    className="text-xs text-accent hover:text-accent-lite px-3 py-1.5 bg-accent/15 rounded-lg transition"
                   >
                     Contactar →
                   </a>
