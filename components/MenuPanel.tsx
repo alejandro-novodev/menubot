@@ -59,7 +59,7 @@ export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelPro
       {/* Panel */}
       <aside className={`
         fixed sm:relative inset-y-0 right-0 z-30 sm:z-auto
-        flex flex-col bg-gray-900 border-l border-white/5
+        flex flex-col bg-[#241F1B] border-l border-white/5
         transition-all duration-300 ease-in-out
         ${isOpen ? 'w-72 translate-x-0' : 'w-72 translate-x-full sm:translate-x-0 sm:w-0 sm:overflow-hidden'}
       `}>
@@ -96,7 +96,7 @@ export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelPro
             ) : (
               sortedCategories.map((cat) => (
                 <div key={cat} className="mb-1">
-                  <div className="px-4 py-2 sticky top-0 bg-gray-900/95 backdrop-blur-sm">
+                  <div className="px-4 py-2 sticky top-0 bg-[#241F1B]/95 backdrop-blur-sm">
                     <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">
                       {capitalize(cat)}
                     </span>
@@ -108,7 +108,7 @@ export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelPro
                       className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 active:bg-white/10 transition text-left group"
                     >
                       {/* Emoji photo */}
-                      <div className="w-11 h-11 rounded-xl bg-gray-800 border border-white/5 flex items-center justify-center text-2xl shrink-0 group-hover:border-purple-500/30 transition">
+                      <div className="w-11 h-11 rounded-xl bg-[#2E2823] border border-white/5 flex items-center justify-center text-2xl shrink-0 group-hover:border-accent/30 transition">
                         {getDishEmoji(dish.name, dish.category)}
                       </div>
                       {/* Info */}
@@ -121,7 +121,7 @@ export function MenuPanel({ slug, isOpen, onToggle, onSelectDish }: MenuPanelPro
                             {dish.description}
                           </p>
                         )}
-                        <p className="text-xs text-purple-400 font-semibold mt-0.5">
+                        <p className="text-xs text-accent font-semibold mt-0.5">
                           {formatPrice(dish.price)}
                         </p>
                       </div>

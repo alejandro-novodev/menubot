@@ -70,7 +70,7 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-gray-900 border border-white/10 rounded-2xl shadow-2xl p-6">
+      <div className="relative w-full max-w-md bg-[#241F1B] border border-white/10 rounded-2xl shadow-2xl p-6">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-300 transition text-xl leading-none"
@@ -87,7 +87,7 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
             <div className="text-4xl mb-3">🎉</div>
             <p className="text-white font-medium">¡Gracias! Te contactaremos pronto.</p>
             <p className="text-gray-400 text-sm mt-1">Revisa tu correo en los próximos días.</p>
-            <button onClick={onClose} className="mt-5 text-sm text-purple-400 hover:text-purple-300 transition">
+            <button onClick={onClose} className="mt-5 text-sm text-accent hover:text-accent-lite transition">
               Cerrar
             </button>
           </div>
@@ -101,7 +101,7 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 transition"
+                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
                 placeholder="Tu nombre"
               />
             </div>
@@ -113,7 +113,7 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
                 required
                 value={restaurantName}
                 onChange={(e) => setRestaurantName(e.target.value)}
-                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 transition"
+                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
                 placeholder="Nombre de tu local"
               />
             </div>
@@ -125,7 +125,7 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 transition"
+                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
                 placeholder="tu@correo.com"
               />
             </div>
@@ -135,7 +135,7 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
               <select
                 value={plan}
                 onChange={(e) => setPlan(e.target.value)}
-                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 transition"
+                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
               >
                 <option value="">Sin preferencia</option>
                 {PLANS.map((p) => (
@@ -150,7 +150,7 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={2}
-                className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/60 focus:ring-1 focus:ring-purple-500/30 transition resize-none"
+                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition resize-none"
                 placeholder="¿Algo más que quieras comentar?"
               />
             </div>
@@ -160,7 +160,7 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1"
+              className="w-full bg-accent hover:bg-accent-lite disabled:bg-gray-700 disabled:text-gray-500 text-white font-semibold rounded-xl py-2.5 text-sm transition-all mt-1"
             >
               {loading ? 'Enviando...' : 'Solicitar acceso →'}
             </button>

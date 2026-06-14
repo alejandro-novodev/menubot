@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { formatPrice, getDishEmoji, capitalize } from '@/lib/menu';
 import { scoreLabel } from '@/lib/completeness';
+import { MenuImport } from '@/components/dashboard/MenuImport';
 
 interface Dish {
   id: number;
@@ -67,20 +68,20 @@ function DishModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
-      <div className="relative w-full max-w-md bg-gray-900 border border-white/10 rounded-2xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-md bg-[#241F1B] border border-white/10 rounded-2xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
         <h3 className="text-base font-semibold text-white mb-4">{isNew ? 'Agregar plato' : 'Editar plato'}</h3>
 
         <div className="space-y-3">
           <div>
             <label className="block text-xs text-gray-400 mb-1">Nombre *</label>
             <input value={form.name ?? ''} onChange={e => set('name', e.target.value)}
-              className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-purple-500/60 transition"
+              className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-accent/60 transition"
               placeholder="Nombre del plato" />
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1">Categoría</label>
             <select value={form.category ?? ''} onChange={e => set('category', e.target.value || null)}
-              className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-purple-500/60 transition">
+              className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-accent/60 transition">
               <option value="">Sin categoría</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{capitalize(c)}</option>)}
             </select>
@@ -88,19 +89,19 @@ function DishModal({
           <div>
             <label className="block text-xs text-gray-400 mb-1">Precio (CLP)</label>
             <input type="number" min="0" value={form.price ?? ''} onChange={e => set('price', e.target.value ? parseInt(e.target.value) : null)}
-              className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-purple-500/60 transition"
+              className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-accent/60 transition"
               placeholder="8990" />
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1">Descripción</label>
             <textarea rows={2} value={form.description ?? ''} onChange={e => set('description', e.target.value || null)}
-              className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-purple-500/60 transition resize-none"
+              className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-accent/60 transition resize-none"
               placeholder="Descripción breve..." />
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1">Ingredientes</label>
             <input value={form.ingredients ?? ''} onChange={e => set('ingredients', e.target.value || null)}
-              className="w-full bg-gray-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-purple-500/60 transition"
+              className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-accent/60 transition"
               placeholder="pollo, limón, cebolla..." />
           </div>
           <div>
@@ -115,7 +116,7 @@ function DishModal({
                     const next = selected ? curr.filter(x => x !== a) : [...curr, a];
                     set('allergens', next.join(', ') || null);
                   }}
-                    className={`px-2.5 py-1 rounded-full text-xs transition ${selected ? 'bg-purple-600 text-white' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}>
+                    className={`px-2.5 py-1 rounded-full text-xs transition ${selected ? 'bg-accent text-white' : 'bg-[#2E2823] text-gray-400 hover:bg-gray-700'}`}>
                     {a}
                   </button>
                 );
@@ -128,7 +129,7 @@ function DishModal({
 
         <div className="flex gap-2 mt-4">
           <button onClick={onClose} className="flex-none px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-400 hover:text-white transition">Cancelar</button>
-          <button onClick={save} disabled={saving} className="flex-1 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 text-white font-semibold rounded-xl py-2 text-sm transition">
+          <button onClick={save} disabled={saving} className="flex-1 bg-accent hover:bg-accent-lite disabled:bg-gray-700 text-white font-semibold rounded-xl py-2 text-sm transition">
             {saving ? 'Guardando...' : isNew ? 'Agregar plato' : 'Guardar cambios'}
           </button>
         </div>
@@ -149,6 +150,7 @@ function MenuEditor() {
   const [modalDish, setModalDish] = useState<Partial<Dish> | null | false>(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [filter, setFilter] = useState('');
+  const [showImport, setShowImport] = useState(false);
 
   const load = useCallback(async () => {
     if (!bizId) return;
@@ -194,10 +196,10 @@ function MenuEditor() {
 
   const { label: scoreTag, color: scoreColor } = scoreLabel(completeness);
 
-  if (!bizId) return <div className="min-h-screen bg-gray-950 flex items-center justify-center text-gray-500">Selecciona un negocio desde el dashboard.</div>;
+  if (!bizId) return <div className="min-h-screen bg-[#1A1613] flex items-center justify-center text-gray-500">Selecciona un negocio desde el dashboard.</div>;
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+    <div className="min-h-screen bg-[#1A1613] text-white flex flex-col">
       <header className="border-b border-white/5 px-5 py-3 flex items-center gap-3">
         <Link href="/dashboard" className="text-gray-500 hover:text-gray-300 transition">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
@@ -206,8 +208,12 @@ function MenuEditor() {
           <h1 className="font-semibold text-white text-sm truncate">{bizName || 'Menú'}</h1>
           {bizSlug && <p className="text-xs text-gray-500">/chat/{bizSlug}</p>}
         </div>
+        <button onClick={() => setShowImport(v => !v)}
+          className="border border-accent/40 text-accent hover:bg-accent/10 text-xs font-semibold px-3 py-1.5 rounded-lg transition shrink-0">
+          Importar carta
+        </button>
         <button onClick={() => setModalDish(null)}
-          className="bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shrink-0">
+          className="bg-accent hover:bg-accent-lite text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shrink-0">
           + Agregar plato
         </button>
       </header>
@@ -216,17 +222,34 @@ function MenuEditor() {
       <div className="border-b border-white/5 px-5 py-3">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs text-gray-400">{dishes.length} platos · Completeness <span className={`font-semibold ${scoreColor}`}>{completeness}% — {scoreTag}</span></span>
-          <Link href={`/chat/${bizSlug}`} target="_blank" className="text-xs text-purple-400 hover:text-purple-300 transition">Ver carta →</Link>
+          <Link href={`/chat/${bizSlug}`} target="_blank" className="text-xs text-accent hover:text-accent-lite transition">Ver carta →</Link>
         </div>
-        <div className="w-full bg-gray-800 rounded-full h-1.5">
+        <div className="w-full bg-[#2E2823] rounded-full h-1.5">
           <div className={`h-1.5 rounded-full transition-all ${completeness >= 80 ? 'bg-emerald-500' : completeness >= 50 ? 'bg-yellow-500' : 'bg-orange-500'}`} style={{ width: `${completeness}%` }} />
         </div>
       </div>
 
+      {/* Import panel */}
+      {showImport && (
+        <div className="px-5 py-3 border-b border-white/5">
+          <div className="bg-[#241F1B] border border-white/10 rounded-2xl p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-white">Importar carta</h2>
+              <button onClick={() => setShowImport(false)} className="text-gray-500 hover:text-white text-sm transition" aria-label="Cerrar">✕</button>
+            </div>
+            <MenuImport
+              businessId={bizId}
+              defaultReplace={false}
+              onImported={() => { load(); setShowImport(false); }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Search */}
       <div className="px-5 py-3 border-b border-white/5">
         <input value={filter} onChange={e => setFilter(e.target.value)}
-          className="w-full bg-gray-800/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-purple-500/40 transition"
+          className="w-full bg-[#2E2823]/50 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/40 transition"
           placeholder="Buscar plato o categoría..." />
       </div>
 
@@ -237,7 +260,7 @@ function MenuEditor() {
         ) : dishes.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-sm mb-4">No hay platos aún.</p>
-            <button onClick={() => setModalDish(null)} className="bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold px-5 py-2 rounded-xl transition">
+            <button onClick={() => setModalDish(null)} className="bg-accent hover:bg-accent-lite text-white text-sm font-semibold px-5 py-2 rounded-xl transition">
               + Agregar el primer plato
             </button>
           </div>
@@ -249,8 +272,8 @@ function MenuEditor() {
                 {catDishes.map(dish => {
                   const missing = [!dish.description, !dish.price, !dish.category, !dish.ingredients, !dish.allergens].filter(Boolean).length;
                   return (
-                    <div key={dish.id} className="flex items-center gap-3 bg-gray-900 border border-white/5 rounded-xl px-3 py-2.5 group hover:border-white/10 transition">
-                      <div className="w-9 h-9 rounded-lg bg-gray-800 flex items-center justify-center text-xl shrink-0">
+                    <div key={dish.id} className="flex items-center gap-3 bg-[#241F1B] border border-white/5 rounded-xl px-3 py-2.5 group hover:border-white/10 transition">
+                      <div className="w-9 h-9 rounded-lg bg-[#2E2823] flex items-center justify-center text-xl shrink-0">
                         {getDishEmoji(dish.name, dish.category ?? '')}
                       </div>
                       <div className="flex-1 min-w-0">

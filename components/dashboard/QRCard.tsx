@@ -11,12 +11,17 @@ interface QRCardProps {
 export function QRCard({ slug, businessName }: QRCardProps) {
   const [dataUrl, setDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const shortUrl = `${window.location.origin}/r/${slug}`;
-  const chatUrl = `${window.location.origin}/chat/${slug}`;
+  // window is only available on the client — read the origin after mount
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+
+  const shortUrl = origin ? `${origin}/r/${slug}` : '';
+  const chatUrl = origin ? `${origin}/chat/${slug}` : '';
 
   useEffect(() => {
+    if (!chatUrl) return;
     QRCode.toDataURL(chatUrl, {
       width: 512,
       margin: 2,
@@ -39,7 +44,7 @@ export function QRCard({ slug, businessName }: QRCardProps) {
   }
 
   return (
-    <div className="bg-gray-900 border border-white/5 rounded-2xl p-5">
+    <div className="bg-[#241F1B] border border-white/5 rounded-2xl p-5">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
           <h3 className="font-semibold text-white text-sm mb-1">Comparte tu carta</h3>
@@ -54,14 +59,14 @@ export function QRCard({ slug, businessName }: QRCardProps) {
             <img src={dataUrl} alt="QR Code" className="w-24 h-24 rounded-xl border border-white/10" />
           </div>
         ) : (
-          <div className="w-24 h-24 bg-gray-800 rounded-xl border border-white/10 animate-pulse shrink-0" />
+          <div className="w-24 h-24 bg-[#2E2823] rounded-xl border border-white/10 animate-pulse shrink-0" />
         )}
 
         {/* Actions */}
         <div className="flex-1 space-y-2">
-          <div className="flex items-center gap-2 bg-gray-800/60 border border-white/10 rounded-xl px-3 py-2">
+          <div className="flex items-center gap-2 bg-[#2E2823]/60 border border-white/10 rounded-xl px-3 py-2">
             <span className="text-xs text-gray-400 truncate flex-1">{shortUrl}</span>
-            <button onClick={copyLink} className="text-xs text-purple-400 hover:text-purple-300 shrink-0 transition font-medium">
+            <button onClick={copyLink} className="text-xs text-accent hover:text-accent-lite shrink-0 transition font-medium">
               {copied ? '✓ Copiado' : 'Copiar'}
             </button>
           </div>
@@ -77,7 +82,7 @@ export function QRCard({ slug, businessName }: QRCardProps) {
             <a
               href={chatUrl}
               target="_blank"
-              className="flex-1 text-xs bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/30 text-purple-300 px-3 py-2 rounded-xl transition text-center"
+              className="flex-1 text-xs bg-accent/20 hover:bg-accent/30 border border-accent/30 text-accent px-3 py-2 rounded-xl transition text-center"
             >
               Ver carta →
             </a>

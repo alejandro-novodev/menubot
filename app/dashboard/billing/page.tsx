@@ -66,7 +66,7 @@ export default async function BillingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white flex flex-col">
+    <div className="min-h-screen bg-[#1A1613] text-white flex flex-col">
       <header className="border-b border-white/5 px-5 py-4 flex items-center gap-3">
         <Link href="/dashboard" className="text-gray-500 hover:text-gray-300 transition">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
@@ -77,7 +77,7 @@ export default async function BillingPage() {
       <main className="flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-8">
         {/* Current plan */}
         {subscription && (
-          <div className="bg-gray-900 border border-white/5 rounded-2xl p-5">
+          <div className="bg-[#241F1B] border border-white/5 rounded-2xl p-5">
             <p className="text-xs text-gray-500 mb-1">Plan actual</p>
             <div className="flex items-center gap-3">
               <span className="text-2xl font-bold capitalize">{subscription.plan}</span>
@@ -98,13 +98,13 @@ export default async function BillingPage() {
           </h2>
           <div className="grid sm:grid-cols-3 gap-4">
             {PLANS.map(plan => (
-              <div key={plan.id} className={`relative rounded-2xl p-5 flex flex-col ${plan.featured ? 'bg-purple-600/10 border border-purple-500/40' : 'bg-gray-900 border border-white/5'}`}>
+              <div key={plan.id} className={`relative rounded-2xl p-5 flex flex-col ${plan.featured ? 'bg-accent/10 border border-accent/40' : 'bg-[#241F1B] border border-white/5'}`}>
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full">Más popular</span>
+                    <span className="bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full">Más popular</span>
                   </div>
                 )}
-                <h3 className={`font-semibold mb-1 ${plan.featured ? 'text-purple-300' : 'text-white'}`}>{plan.name}</h3>
+                <h3 className={`font-semibold mb-1 ${plan.featured ? 'text-accent' : 'text-white'}`}>{plan.name}</h3>
                 <p className="text-gray-500 text-xs mb-3">{plan.description}</p>
                 <div className="mb-4">
                   <span className="text-2xl font-bold">${plan.price.toLocaleString('es-CL')}</span>
@@ -113,7 +113,7 @@ export default async function BillingPage() {
                 <ul className="space-y-1.5 flex-1 mb-4">
                   {plan.features.map(f => (
                     <li key={f} className="text-xs text-gray-300 flex gap-1.5">
-                      <span className="text-purple-400">✓</span>{f}
+                      <span className="text-accent">✓</span>{f}
                     </li>
                   ))}
                 </ul>

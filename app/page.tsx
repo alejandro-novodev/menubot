@@ -78,10 +78,10 @@ export default function Home() {
   function openModal(plan = '') { setSelectedPlan(plan); setModalOpen(true); }
 
   return (
-    <div className="bg-gray-950 text-white min-h-screen">
+    <div className="bg-[#1A1613] text-white min-h-screen">
 
       {/* Navbar */}
-      <nav className="fixed top-0 inset-x-0 z-40 bg-gray-950/85 backdrop-blur-md border-b border-white/5">
+      <nav className="fixed top-0 inset-x-0 z-40 bg-[#1A1613]/85 backdrop-blur-md border-b border-white/5">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
           <Link href="/" className="shrink-0">
             <Wordmark size="md" className="text-white" />
@@ -126,11 +126,11 @@ export default function Home() {
           </div>
           <p className="text-xs text-gray-600 mt-4">Sin tarjeta · Sin contrato · Cancela cuando quieras</p>
         </div>
-        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-gray-950 to-transparent" />
+        <div className="absolute bottom-0 inset-x-0 h-24 bg-gradient-to-t from-[#1A1613] to-transparent" />
       </section>
 
       {/* Cómo funciona */}
-      <section className="bg-gray-900 py-20 px-5">
+      <section className="bg-[#241F1B] py-20 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-3">Activo en minutos</h2>
@@ -138,7 +138,7 @@ export default function Home() {
           </div>
           <div className="grid sm:grid-cols-3 gap-6">
             {HOW_IT_WORKS.map(step => (
-              <div key={step.step} className="bg-gray-950/60 rounded-2xl border border-white/5 p-6 relative">
+              <div key={step.step} className="bg-[#1A1613]/60 rounded-2xl border border-white/5 p-6 relative">
                 <span className="absolute top-4 right-4 text-xs font-mono text-gray-700">{step.step}</span>
                 <div className="text-3xl mb-4">{step.icon}</div>
                 <h3 className="text-white font-semibold mb-2">{step.title}</h3>
@@ -161,7 +161,7 @@ export default function Home() {
       </section>
 
       {/* Features */}
-      <section className="bg-gray-900 py-20 px-5">
+      <section className="bg-[#241F1B] py-20 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-3">Todo lo que incluye</h2>
@@ -169,7 +169,7 @@ export default function Home() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {FEATURES.map(f => (
-              <div key={f.title} className="bg-gray-950/50 border border-white/5 rounded-2xl p-5">
+              <div key={f.title} className="bg-[#1A1613]/50 border border-white/5 rounded-2xl p-5">
                 <div className="text-2xl mb-3">{f.icon}</div>
                 <h3 className="text-white font-semibold text-sm mb-1.5">{f.title}</h3>
                 <p className="text-gray-500 text-xs leading-relaxed">{f.desc}</p>
@@ -189,7 +189,7 @@ export default function Home() {
           <p className="text-center text-xs text-emerald-400 mb-10">✓ 14 días de prueba gratuita · Sin tarjeta · Cancela cuando quieras</p>
           <div className="grid sm:grid-cols-3 gap-6 items-start">
             {PRICING.map(plan => (
-              <div key={plan.id} className={`relative flex flex-col rounded-2xl p-6 ${plan.featured ? 'border border-accent/40 bg-accent/5 shadow-lg' : 'bg-gray-900 border border-white/5'}`}
+              <div key={plan.id} className={`relative flex flex-col rounded-2xl p-6 ${plan.featured ? 'border border-accent/40 bg-accent/5 shadow-lg' : 'bg-[#241F1B] border border-white/5'}`}
                 style={plan.featured ? { boxShadow: '0 0 40px rgba(199,107,67,0.1)' } : {}}>
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -214,7 +214,7 @@ export default function Home() {
                 </ul>
                 <Link href={`/auth/register?plan=${plan.id}`}
                   className={`block text-center rounded-xl py-2.5 text-sm font-semibold transition-all ${
-                    plan.featured ? 'bg-accent hover:bg-accent-lite text-white' : 'bg-gray-800 hover:bg-gray-700 text-gray-200 border border-white/10'
+                    plan.featured ? 'bg-accent hover:bg-accent-lite text-white' : 'bg-[#2E2823] hover:bg-gray-700 text-gray-200 border border-white/10'
                   }`}>
                   Empezar gratis →
                 </Link>
@@ -231,7 +231,7 @@ export default function Home() {
       </section>
 
       {/* CTA final */}
-      <section className="bg-gray-900 py-20 px-5 text-center">
+      <section className="bg-[#241F1B] py-20 px-5 text-center">
         <div className="max-w-xl mx-auto">
           <Wordmark size="xl" className="text-white block mb-4" />
           <h2 className="text-3xl font-bold mb-3">¿Listo para empezar?</h2>
