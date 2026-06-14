@@ -11,12 +11,17 @@ interface QRCardProps {
 export function QRCard({ slug, businessName }: QRCardProps) {
   const [dataUrl, setDataUrl] = useState('');
   const [copied, setCopied] = useState(false);
+  const [origin, setOrigin] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const shortUrl = `${window.location.origin}/r/${slug}`;
-  const chatUrl = `${window.location.origin}/chat/${slug}`;
+  // window is only available on the client — read the origin after mount
+  useEffect(() => { setOrigin(window.location.origin); }, []);
+
+  const shortUrl = origin ? `${origin}/r/${slug}` : '';
+  const chatUrl = origin ? `${origin}/chat/${slug}` : '';
 
   useEffect(() => {
+    if (!chatUrl) return;
     QRCode.toDataURL(chatUrl, {
       width: 512,
       margin: 2,
