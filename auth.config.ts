@@ -2,6 +2,9 @@ import type { NextAuthConfig } from 'next-auth';
 
 // Edge-compatible auth config — no bcryptjs, no pg imports
 export const authConfig: NextAuthConfig = {
+  // Trust the reverse proxy's X-Forwarded-* headers (Railway, etc.) so Auth.js
+  // resolves the public URL instead of the internal localhost:8080 host.
+  trustHost: true,
   session: { strategy: 'jwt' },
   providers: [], // Providers added in auth.ts (Node.js only)
   pages: {
