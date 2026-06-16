@@ -253,7 +253,10 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-white/5 py-6 px-5">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-600">
-          <span>© {new Date().getFullYear()} Novodev SPA. Todos los derechos reservados.</span>
+          <span className="flex items-center gap-2">
+            © {new Date().getFullYear()} Novodev SPA. Todos los derechos reservados.
+            <span className="text-gray-700 font-mono" title="Versión desplegada">build {process.env.NEXT_PUBLIC_APP_VERSION}</span>
+          </span>
           <div className="flex gap-5">
             <button onClick={() => openModal()} className="hover:text-gray-400 transition">Contacto</button>
             <Link href="/chat" className="hover:text-gray-400 transition">Demo</Link>

@@ -12,6 +12,17 @@ export const authConfig: NextAuthConfig = {
     error: '/auth/error',
   },
   callbacks: {
+    // Keep every post-auth redirect on our own origin. Behind a proxy a stray
+    // callbackUrl can carry the internal host (localhost:8080) — collapse any
+    // URL to baseUrl + its path so users never get sent off-origin.
+    redirect({ url, baseUrl }) {
+      try {
+        const target = new URL(url, baseUrl);
+        return `${baseUrl}${target.pathname}${target.search}`;
+      } catch {
+        return baseUrl;
+      }
+    },
     authorized({ auth, request }) {
       const isLoggedIn = !!auth?.user;
       const { pathname } = request.nextUrl;
