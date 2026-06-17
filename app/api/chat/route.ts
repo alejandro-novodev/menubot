@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { query } from '@/lib/db';
+import { resolveMenuSource } from '@/lib/menuSource';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -16,13 +17,6 @@ interface Dish {
   allergens: string;
 }
 
-interface Restaurant {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
-}
-
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
@@ -35,20 +29,15 @@ export async function POST(req: NextRequest) {
       restaurantSlug: string;
     };
 
-    const restaurantResult = await query<Restaurant>(
-      'SELECT * FROM restaurants WHERE slug = $1',
-      [restaurantSlug]
-    );
+    const source = await resolveMenuSource(restaurantSlug);
 
-    if (restaurantResult.rows.length === 0) {
+    if (!source) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
     }
 
-    const restaurant = restaurantResult.rows[0];
-
     const dishesResult = await query<Dish>(
-      'SELECT * FROM dishes WHERE restaurant_id = $1 ORDER BY category, name',
-      [restaurant.id]
+      `SELECT * FROM dishes WHERE ${source.dishColumn} = $1 ORDER BY category, name`,
+      [source.id]
     );
 
     const menuJson = JSON.stringify(
@@ -64,7 +53,7 @@ export async function POST(req: NextRequest) {
       2
     );
 
-    const systemPrompt = `Eres un asistente de carta amigable para ${restaurant.name}. Tu trabajo es ayudar a los clientes a entender los platos, ingredientes y sabores del menú, y ayudarles a elegir qué pedir según sus preferencias o restricciones alimentarias. Responde siempre en español chileno, con tono cercano y usando tú. Sé conciso y útil. Solo responde preguntas relacionadas con el menú y la comida. Los precios están en pesos chilenos (CLP). Aquí está el menú completo en JSON: ${menuJson}`;
+    const systemPrompt = `Eres un asistente de carta amigable para ${source.name}. Tu trabajo es ayudar a los clientes a entender los platos, ingredientes y sabores del menú, y ayudarles a elegir qué pedir según sus preferencias o restricciones alimentarias. Responde siempre en español chileno, con tono cercano y usando tú. Sé conciso y útil. Solo responde preguntas relacionadas con el menú y la comida. Los precios están en pesos chilenos (CLP). Aquí está el menú completo en JSON: ${menuJson}`;
 
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',

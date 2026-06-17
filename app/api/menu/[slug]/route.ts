@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
+import { resolveMenuSource } from '@/lib/menuSource';
 
 interface DishRow {
   id: number;
@@ -9,10 +10,6 @@ interface DishRow {
   category: string;
 }
 
-interface Restaurant {
-  id: number;
-}
-
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -20,21 +17,17 @@ export async function GET(
   try {
     const { slug } = await params;
 
-    const restResult = await query<Restaurant>(
-      'SELECT id FROM restaurants WHERE slug = $1',
-      [slug]
-    );
-
-    if (restResult.rows.length === 0) {
+    const source = await resolveMenuSource(slug);
+    if (!source) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
     }
 
     const dishResult = await query<DishRow>(
       `SELECT id, name, description, price, category
        FROM dishes
-       WHERE restaurant_id = $1
+       WHERE ${source.dishColumn} = $1
        ORDER BY category, name`,
-      [restResult.rows[0].id]
+      [source.id]
     );
 
     const grouped: Record<string, DishRow[]> = {};
