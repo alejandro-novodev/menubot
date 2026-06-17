@@ -144,7 +144,10 @@ export default async function DashboardPage() {
                     </div>
                     <p className="text-xs app-mut mt-0.5">menubot.cl/chat/{biz.slug}</p>
                   </div>
-                  <div className="flex gap-2 shrink-0">
+                  <div className="flex flex-wrap gap-2 shrink-0 justify-end">
+                    <Link href={`/dashboard/info?biz=${biz.id}`} className="text-xs app-mut app-ink-hover app-soft app-soft-hover border app-line px-3 py-1.5 rounded-lg transition">
+                      Información
+                    </Link>
                     <Link href={`/dashboard/menu?biz=${biz.id}`} className="text-xs app-mut app-ink-hover app-soft app-soft-hover border app-line px-3 py-1.5 rounded-lg transition">
                       Gestionar carta
                     </Link>

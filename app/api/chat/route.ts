@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { query } from '@/lib/db';
+import { resolveMenuSource, type MenuProfile } from '@/lib/menuSource';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -17,11 +18,16 @@ interface Dish {
   is_recommended: boolean;
 }
 
-interface Restaurant {
-  id: number;
-  name: string;
-  slug: string;
-  description: string;
+/** Build a human-readable restaurant-info block for the chat context. */
+function profileBlock(name: string, description: string, profile: MenuProfile | null): string {
+  const lines = [`- Nombre: ${name}`];
+  if (description) lines.push(`- Descripción: ${description}`);
+  if (profile?.address) lines.push(`- Dirección: ${profile.address}`);
+  if (profile?.maps_url) lines.push(`- Ubicación en Google Maps: ${profile.maps_url}`);
+  if (profile?.phone) lines.push(`- Teléfono: ${profile.phone}`);
+  if (profile?.hours) lines.push(`- Horario: ${profile.hours}`);
+  if (profile?.notes) lines.push(`- Información adicional: ${profile.notes}`);
+  return lines.join('\n');
 }
 
 interface ChatMessage {
@@ -36,21 +42,16 @@ export async function POST(req: NextRequest) {
       restaurantSlug: string;
     };
 
-    const restaurantResult = await query<Restaurant>(
-      'SELECT * FROM restaurants WHERE slug = $1',
-      [restaurantSlug]
-    );
+    const source = await resolveMenuSource(restaurantSlug);
 
-    if (restaurantResult.rows.length === 0) {
+    if (!source) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
     }
 
-    const restaurant = restaurantResult.rows[0];
-
     const dishesResult = await query<Dish>(
       // Exclude image/icon — never send dish photos into the AI context.
-      'SELECT id, name, description, ingredients, price, category, allergens, is_recommended FROM dishes WHERE restaurant_id = $1 ORDER BY category, name',
-      [restaurant.id]
+      `SELECT id, name, description, ingredients, price, category, allergens, is_recommended FROM dishes WHERE ${source.dishColumn} = $1 ORDER BY category, name`,
+      [source.id]
     );
 
     const menuJson = JSON.stringify(
@@ -67,13 +68,16 @@ export async function POST(req: NextRequest) {
       2
     );
 
-    const systemPrompt = `Eres el asistente de carta de ${restaurant.name}. Ayudas a los clientes a entender los platos, ingredientes, alérgenos y sabores del menú, y a elegir qué pedir según sus gustos o restricciones alimentarias.
+    const systemPrompt = `Eres el asistente de carta de ${source.name}. Ayudas a los clientes a entender los platos, ingredientes, alérgenos y sabores del menú, a elegir qué pedir según sus gustos o restricciones, y a responder dudas sobre el local (ubicación, horario, contacto).
+
+Información del restaurante:
+${profileBlock(source.name, source.description, source.profile)}
 
 Reglas:
 - Responde SIEMPRE en español chileno, con tono cercano y usando "tú". Sé conciso y útil.
-- Habla ÚNICAMENTE sobre la carta de este restaurante: sus platos, bebidas, ingredientes, alérgenos, recomendaciones y la experiencia gastronómica del local.
-- Si te preguntan algo NO relacionado con la carta o el restaurante (política, programación, clima, temas personales, cálculos, etc.), declina amablemente en UNA frase y reconduce a la carta. Ejemplo: "Solo te puedo ayudar con la carta de ${restaurant.name} 😊 ¿Quieres que te recomiende algo?".
-- No inventes platos, precios ni ingredientes que no estén en el menú. Si no sabes algo, dilo.
+- Habla ÚNICAMENTE sobre este restaurante: su carta (platos, bebidas, ingredientes, alérgenos, recomendaciones) y la información del local de arriba (ubicación, horario, contacto). Si te preguntan por la ubicación y hay un enlace de Google Maps, compártelo.
+- Si te preguntan algo NO relacionado con el restaurante (política, programación, clima, temas personales, cálculos, etc.), declina amablemente en UNA frase y reconduce a la carta. Ejemplo: "Solo te puedo ayudar con la carta de ${source.name} 😊 ¿Quieres que te recomiende algo?".
+- No inventes platos, precios, ingredientes ni datos del local que no estén arriba. Si no sabes algo, dilo.
 - Cuando el cliente pida recomendaciones, prioriza y destaca los platos con "recomendado_del_chef": true (son las sugerencias del chef) y explica brevemente por qué le podrían gustar.
 - Los precios están en pesos chilenos (CLP).
 
