@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
-  const { businessId, name, description, price, category, ingredients, allergens } = await req.json() as {
+  const { businessId, name, description, price, category, ingredients, allergens, image, icon } = await req.json() as {
     businessId: number;
     name: string;
     description?: string;
@@ -15,6 +15,8 @@ export async function POST(req: NextRequest) {
     category?: string;
     ingredients?: string;
     allergens?: string;
+    image?: string;
+    icon?: string;
   };
 
   if (!businessId || !name?.trim()) {
@@ -28,9 +30,9 @@ export async function POST(req: NextRequest) {
   if (bizCheck.rows.length === 0) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
   const result = await query<{ id: number }>(
-    `INSERT INTO dishes (business_id, name, description, price, category, ingredients, allergens)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-    [businessId, name.trim(), description ?? null, price ?? null, category ?? null, ingredients ?? null, allergens ?? null]
+    `INSERT INTO dishes (business_id, name, description, price, category, ingredients, allergens, image, icon)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
+    [businessId, name.trim(), description ?? null, price ?? null, category ?? null, ingredients ?? null, allergens ?? null, image ?? null, icon ?? null]
   );
 
   // Refresh completeness

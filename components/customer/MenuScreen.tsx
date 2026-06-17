@@ -13,6 +13,8 @@ export interface MenuDish {
   category: string | null;
   ingredients: string | null;
   allergens: string | null;
+  image?: string | null;
+  icon?: string | null;
 }
 
 interface Props {
@@ -70,10 +72,13 @@ function DishRow({ dish, onTap }: { dish: MenuDish; onTap: () => void }) {
           flexShrink: 0, width: 42, height: 42, borderRadius: 12,
           background: 'var(--mb-surface)', border: '1px solid var(--mb-line)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 21, lineHeight: 1, marginTop: 1,
+          fontSize: 21, lineHeight: 1, marginTop: 1, overflow: 'hidden',
         }}
       >
-        {getDishEmoji(dish.name, dish.category ?? '')}
+        {dish.image
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <img src={dish.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : (dish.icon || getDishEmoji(dish.name, dish.category ?? ''))}
       </span>
 
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>

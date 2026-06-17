@@ -47,7 +47,8 @@ export async function POST(req: NextRequest) {
     const restaurant = restaurantResult.rows[0];
 
     const dishesResult = await query<Dish>(
-      'SELECT * FROM dishes WHERE restaurant_id = $1 ORDER BY category, name',
+      // Exclude image/icon — never send dish photos into the AI context.
+      'SELECT id, name, description, ingredients, price, category, allergens FROM dishes WHERE restaurant_id = $1 ORDER BY category, name',
       [restaurant.id]
     );
 

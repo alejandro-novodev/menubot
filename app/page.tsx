@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { DishWordCloud } from '@/components/landing/DishWordCloud';
 import { ChatPreview } from '@/components/landing/ChatPreview';
 import { ContactModal } from '@/components/landing/ContactModal';
@@ -72,6 +73,7 @@ const FEATURES = [
 ];
 
 export default function Home() {
+  const { data: session } = useSession();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('');
 
@@ -88,10 +90,18 @@ export default function Home() {
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
             <Link href="/chat" className="text-sm text-gray-400 hover:text-white transition hidden sm:block">Ver demo</Link>
-            <Link href="/auth/login" className="text-sm text-gray-400 hover:text-white transition">Iniciar sesión</Link>
-            <Link href="/auth/register" className="text-sm font-semibold bg-accent hover:bg-accent-lite text-white px-4 py-1.5 rounded-xl transition">
-              Registrarse gratis
-            </Link>
+            {session?.user ? (
+              <Link href="/dashboard" className="text-sm font-semibold bg-accent hover:bg-accent-lite text-white px-4 py-1.5 rounded-xl transition">
+                Mi panel →
+              </Link>
+            ) : (
+              <>
+                <Link href="/auth/login" className="text-sm text-gray-400 hover:text-white transition">Iniciar sesión</Link>
+                <Link href="/auth/register" className="text-sm font-semibold bg-accent hover:bg-accent-lite text-white px-4 py-1.5 rounded-xl transition">
+                  Registrarse gratis
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
@@ -114,10 +124,10 @@ export default function Home() {
             pidan con confianza y vuelvan por más.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/auth/register"
+            <Link href={session?.user ? '/dashboard' : '/auth/register'}
               className="rounded-xl bg-accent hover:bg-accent-lite active:scale-95 transition-all px-7 py-3 text-base font-semibold text-white shadow-lg w-full sm:w-auto"
               style={{ boxShadow: '0 8px 24px rgba(199,107,67,0.3)' }}>
-              Empezar gratis — 14 días →
+              {session?.user ? 'Ir a mi panel →' : 'Empezar gratis — 14 días →'}
             </Link>
             <Link href="/chat"
               className="rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition px-7 py-3 text-base font-medium text-gray-300 w-full sm:w-auto text-center">

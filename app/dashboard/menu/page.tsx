@@ -16,19 +16,50 @@ interface Dish {
   category: string | null;
   ingredients: string | null;
   allergens: string | null;
+  image: string | null;
+  icon: string | null;
 }
 
 const ALLERGEN_OPTIONS = ['gluten', 'lácteos', 'mariscos', 'huevo', 'frutos secos', 'soya', 'ninguno'];
 const CATEGORIES = ['entradas', 'principales', 'postres', 'bebidas', 'cócteles', 'piscos', 'cervezas', 'sin alcohol', 'chef', 'kids', 'otros'];
+const DISH_ICONS = ['🍽️', '🍗', '🥩', '🐟', '🐠', '🦐', '🐙', '🥟', '🍜', '🫛', '🥗', '🌮', '🍕', '🥪', '🍔', '🍮', '🍰', '🍫', '☕', '🍹', '🍺', '🥤', '🍷'];
+
+/** Resize + compress an image file to a small JPEG data URL (stored in the DB). */
+function resizeImage(file: File, maxSize = 700, quality = 0.75): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new window.Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > height && width > maxSize) { height = Math.round((height * maxSize) / width); width = maxSize; }
+        else if (height > maxSize) { width = Math.round((width * maxSize) / height); height = maxSize; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('canvas no soportado'));
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 function DishModal({
   dish,
   businessId,
+  existingCategories,
   onClose,
   onSaved,
 }: {
   dish: Partial<Dish> | null;
   businessId: number;
+  existingCategories: string[];
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -36,6 +67,22 @@ function DishModal({
   const [form, setForm] = useState<Partial<Dish>>(dish ?? {});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [imgBusy, setImgBusy] = useState(false);
+
+  const categoryOptions = Array.from(new Set([...existingCategories, ...CATEGORIES].map(c => c.trim()).filter(Boolean)));
+
+  async function onPickImage(file: File | undefined) {
+    if (!file) return;
+    setImgBusy(true);
+    setError('');
+    try {
+      set('image', await resizeImage(file));
+    } catch {
+      setError('No se pudo procesar la imagen.');
+    } finally {
+      setImgBusy(false);
+    }
+  }
 
   function set(key: keyof Dish, val: unknown) {
     setForm(f => ({ ...f, [key]: val }));
@@ -80,11 +127,53 @@ function DishModal({
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1">Categoría</label>
-            <select value={form.category ?? ''} onChange={e => set('category', e.target.value || null)}
-              className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-accent/60 transition">
-              <option value="">Sin categoría</option>
-              {CATEGORIES.map(c => <option key={c} value={c}>{capitalize(c)}</option>)}
-            </select>
+            <input
+              list="dish-categories"
+              value={form.category ?? ''}
+              onChange={e => set('category', e.target.value || null)}
+              className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none focus:border-accent/60 transition"
+              placeholder="Elige o escribe una categoría nueva"
+            />
+            <datalist id="dish-categories">
+              {categoryOptions.map(c => <option key={c} value={capitalize(c)} />)}
+            </datalist>
+          </div>
+
+          {/* Visual: foto o ícono */}
+          <div>
+            <label className="block text-xs text-gray-400 mb-2">Imagen del plato</label>
+            <div className="flex items-start gap-3">
+              {/* Preview */}
+              <div className="w-16 h-16 rounded-xl bg-[#2E2823] border border-white/10 flex items-center justify-center overflow-hidden shrink-0 text-2xl">
+                {form.image
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={form.image} alt="" className="w-full h-full object-cover" />
+                  : (form.icon || getDishEmoji(form.name ?? '', form.category ?? ''))}
+              </div>
+              <div className="flex-1 min-w-0">
+                <label className="inline-block cursor-pointer text-xs font-semibold text-accent hover:text-accent-lite transition">
+                  {imgBusy ? 'Procesando…' : form.image ? 'Cambiar foto' : 'Subir foto'}
+                  <input type="file" accept="image/*" className="hidden" onChange={e => { onPickImage(e.target.files?.[0]); e.target.value = ''; }} />
+                </label>
+                {form.image && (
+                  <button type="button" onClick={() => set('image', null)} className="ml-3 text-xs text-gray-500 hover:text-white transition">Quitar</button>
+                )}
+                {/* Icon picker (fallback when no photo) */}
+                {!form.image && (
+                  <>
+                    <p className="text-xs text-gray-600 mt-2 mb-1">o elige un ícono</p>
+                    <div className="flex flex-wrap gap-1">
+                      {DISH_ICONS.map(ic => (
+                        <button key={ic} type="button" onClick={() => set('icon', form.icon === ic ? null : ic)}
+                          className={`w-7 h-7 rounded-lg text-base leading-none flex items-center justify-center transition ${form.icon === ic ? 'bg-accent/20 ring-1 ring-accent' : 'hover:bg-white/10'}`}>
+                          {ic}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
           <div>
             <label className="block text-xs text-gray-400 mb-1">Precio (CLP)</label>
@@ -273,8 +362,11 @@ function MenuEditor() {
                   const missing = [!dish.description, !dish.price, !dish.category, !dish.ingredients, !dish.allergens].filter(Boolean).length;
                   return (
                     <div key={dish.id} className="flex items-center gap-3 bg-[#241F1B] border border-white/5 rounded-xl px-3 py-2.5 group hover:border-white/10 transition">
-                      <div className="w-9 h-9 rounded-lg bg-[#2E2823] flex items-center justify-center text-xl shrink-0">
-                        {getDishEmoji(dish.name, dish.category ?? '')}
+                      <div className="w-9 h-9 rounded-lg bg-[#2E2823] flex items-center justify-center text-xl shrink-0 overflow-hidden">
+                        {dish.image
+                          // eslint-disable-next-line @next/next/no-img-element
+                          ? <img src={dish.image} alt="" className="w-full h-full object-cover" />
+                          : (dish.icon || getDishEmoji(dish.name, dish.category ?? ''))}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
@@ -311,6 +403,7 @@ function MenuEditor() {
         <DishModal
           dish={modalDish}
           businessId={bizId}
+          existingCategories={Array.from(new Set(dishes.map(d => d.category).filter((c): c is string => !!c)))}
           onClose={() => setModalDish(false)}
           onSaved={() => { setModalDish(false); load(); }}
         />

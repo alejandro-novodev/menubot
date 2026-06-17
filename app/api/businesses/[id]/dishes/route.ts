@@ -21,7 +21,7 @@ export async function GET(
   }
 
   const dishes = await query(
-    `SELECT id, name, description, price, category, ingredients, allergens
+    `SELECT id, name, description, price, category, ingredients, allergens, image, icon
      FROM dishes WHERE business_id = $1 ORDER BY category, name`,
     [businessId]
   );

@@ -38,7 +38,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   const body = await req.json() as Record<string, unknown>;
-  const fields = ['name', 'description', 'price', 'category', 'ingredients', 'allergens'];
+  const fields = ['name', 'description', 'price', 'category', 'ingredients', 'allergens', 'image', 'icon'];
   const updates: string[] = [];
   const values: unknown[] = [];
 
