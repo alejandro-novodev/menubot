@@ -14,6 +14,7 @@ interface Dish {
   price: number;
   category: string;
   allergens: string;
+  is_recommended: boolean;
 }
 
 interface Restaurant {
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     const dishesResult = await query<Dish>(
       // Exclude image/icon — never send dish photos into the AI context.
-      'SELECT id, name, description, ingredients, price, category, allergens FROM dishes WHERE restaurant_id = $1 ORDER BY category, name',
+      'SELECT id, name, description, ingredients, price, category, allergens, is_recommended FROM dishes WHERE restaurant_id = $1 ORDER BY category, name',
       [restaurant.id]
     );
 
@@ -60,6 +61,7 @@ export async function POST(req: NextRequest) {
         precio: d.price,
         categoria: d.category,
         alergenos: d.allergens,
+        recomendado_del_chef: d.is_recommended,
       })),
       null,
       2
@@ -72,6 +74,7 @@ Reglas:
 - Habla ÚNICAMENTE sobre la carta de este restaurante: sus platos, bebidas, ingredientes, alérgenos, recomendaciones y la experiencia gastronómica del local.
 - Si te preguntan algo NO relacionado con la carta o el restaurante (política, programación, clima, temas personales, cálculos, etc.), declina amablemente en UNA frase y reconduce a la carta. Ejemplo: "Solo te puedo ayudar con la carta de ${restaurant.name} 😊 ¿Quieres que te recomiende algo?".
 - No inventes platos, precios ni ingredientes que no estén en el menú. Si no sabes algo, dilo.
+- Cuando el cliente pida recomendaciones, prioriza y destaca los platos con "recomendado_del_chef": true (son las sugerencias del chef) y explica brevemente por qué le podrían gustar.
 - Los precios están en pesos chilenos (CLP).
 
 Menú completo (JSON):

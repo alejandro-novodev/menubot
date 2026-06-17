@@ -19,6 +19,7 @@ interface Dish {
   allergens: string | null;
   image: string | null;
   icon: string | null;
+  is_recommended: boolean;
 }
 
 const ALLERGEN_OPTIONS = ['gluten', 'lácteos', 'mariscos', 'huevo', 'frutos secos', 'soya', 'ninguno'];
@@ -139,6 +140,12 @@ function DishModal({
               {categoryOptions.map(c => <option key={c} value={capitalize(c)} />)}
             </datalist>
           </div>
+
+          <label className="flex items-center gap-2.5 cursor-pointer select-none app-surface2 border app-line rounded-xl px-3 py-2.5">
+            <input type="checkbox" checked={!!form.is_recommended} onChange={e => set('is_recommended', e.target.checked)} className="accent-[#C76B43] w-4 h-4 shrink-0" />
+            <span className="text-sm app-ink">⭐ Recomendación del chef</span>
+            <span className="text-xs app-mut2 ml-auto hidden sm:inline">se destaca y se prioriza en el chat</span>
+          </label>
 
           {/* Visual: foto o ícono */}
           <div>
@@ -372,7 +379,7 @@ function MenuEditor() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium app-ink truncate">{dish.name}</p>
+                          <p className="text-sm font-medium app-ink truncate">{dish.is_recommended && <span title="Recomendación del chef">⭐ </span>}{dish.name}</p>
                           {missing > 0 && (
                             <span className="text-xs text-orange-400 shrink-0">⚠ {missing} campo{missing !== 1 ? 's' : ''}</span>
                           )}

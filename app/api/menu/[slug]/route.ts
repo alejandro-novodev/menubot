@@ -9,6 +9,7 @@ interface DishRow {
   category: string;
   image: string | null;
   icon: string | null;
+  is_recommended: boolean;
 }
 
 interface Restaurant {
@@ -32,7 +33,7 @@ export async function GET(
     }
 
     const dishResult = await query<DishRow>(
-      `SELECT id, name, description, price, category, image, icon
+      `SELECT id, name, description, price, category, image, icon, is_recommended
        FROM dishes
        WHERE restaurant_id = $1
        ORDER BY category, name`,

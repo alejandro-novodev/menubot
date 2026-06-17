@@ -15,6 +15,7 @@ export interface MenuDish {
   allergens: string | null;
   image?: string | null;
   icon?: string | null;
+  is_recommended?: boolean;
 }
 
 interface Props {
@@ -87,7 +88,7 @@ function DishRow({ dish, onTap }: { dish: MenuDish; onTap: () => void }) {
           fontWeight: 600, fontSize: 15,
           letterSpacing: '-0.01em',
           color: 'var(--mb-ink)',
-        }}>{dish.name}</span>
+        }}>{dish.is_recommended && <span title="Recomendación del chef">⭐ </span>}{dish.name}</span>
         {dish.description && (
           <p style={{
             margin: 0, fontFamily: 'var(--font-archivo, system-ui)',
