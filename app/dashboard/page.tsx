@@ -138,8 +138,8 @@ export default async function DashboardPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h2 className="font-semibold app-ink">{biz.name}</h2>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${biz.status === 'active' ? 'bg-emerald-900/40 text-emerald-400' : 'app-surface2 app-mut'}`}>
-                        {biz.status === 'active' ? '● activo' : biz.status}
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${biz.status === 'active' ? 'bg-emerald-500 text-white' : 'app-surface2 app-mut'}`}>
+                        {biz.status === 'active' ? '● Activo' : biz.status}
                       </span>
                     </div>
                     <p className="text-xs app-mut mt-0.5">menubot.cl/chat/{biz.slug}</p>
