@@ -66,9 +66,9 @@ export default async function BillingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1A1613] text-white flex flex-col">
-      <header className="border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <Link href="/dashboard" className="text-gray-500 hover:text-gray-300 transition">
+    <div className="min-h-screen app-bg app-ink flex flex-col">
+      <header className="border-b app-line px-5 py-4 flex items-center gap-3">
+        <Link href="/dashboard" className="app-mut app-ink-hover transition">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
         </Link>
         <h1 className="font-semibold">Plan y facturación</h1>
@@ -77,8 +77,8 @@ export default async function BillingPage() {
       <main className="flex-1 max-w-3xl mx-auto w-full px-5 py-8 space-y-8">
         {/* Current plan */}
         {subscription && (
-          <div className="bg-[#241F1B] border border-white/5 rounded-2xl p-5">
-            <p className="text-xs text-gray-500 mb-1">Plan actual</p>
+          <div className="app-surface border app-line rounded-2xl p-5">
+            <p className="text-xs app-mut mb-1">Plan actual</p>
             <div className="flex items-center gap-3">
               <span className="text-2xl font-bold capitalize">{subscription.plan}</span>
               <span className="text-xs bg-emerald-900/40 text-emerald-400 px-2 py-0.5 rounded-full">{subscription.status}</span>
@@ -93,26 +93,26 @@ export default async function BillingPage() {
 
         {/* Plan cards */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-400 mb-4">
+          <h2 className="text-sm font-semibold app-mut mb-4">
             {subscription?.plan !== 'trial' ? 'Cambiar plan' : 'Elige tu plan'}
           </h2>
           <div className="grid sm:grid-cols-3 gap-4">
             {PLANS.map(plan => (
-              <div key={plan.id} className={`relative rounded-2xl p-5 flex flex-col ${plan.featured ? 'bg-accent/10 border border-accent/40' : 'bg-[#241F1B] border border-white/5'}`}>
+              <div key={plan.id} className={`relative rounded-2xl p-5 flex flex-col ${plan.featured ? 'bg-accent/10 border border-accent/40' : 'app-surface border app-line'}`}>
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <span className="bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full">Más popular</span>
                   </div>
                 )}
-                <h3 className={`font-semibold mb-1 ${plan.featured ? 'text-accent' : 'text-white'}`}>{plan.name}</h3>
-                <p className="text-gray-500 text-xs mb-3">{plan.description}</p>
+                <h3 className={`font-semibold mb-1 ${plan.featured ? 'text-accent' : 'app-ink'}`}>{plan.name}</h3>
+                <p className="app-mut text-xs mb-3">{plan.description}</p>
                 <div className="mb-4">
                   <span className="text-2xl font-bold">${plan.price.toLocaleString('es-CL')}</span>
-                  <span className="text-gray-500 text-sm">/mes</span>
+                  <span className="app-mut text-sm">/mes</span>
                 </div>
                 <ul className="space-y-1.5 flex-1 mb-4">
                   {plan.features.map(f => (
-                    <li key={f} className="text-xs text-gray-300 flex gap-1.5">
+                    <li key={f} className="text-xs app-mut flex gap-1.5">
                       <span className="text-accent">✓</span>{f}
                     </li>
                   ))}
@@ -125,14 +125,14 @@ export default async function BillingPage() {
                     isFeatured={plan.featured}
                   />
                 ) : (
-                  <Link href="/dashboard/onboarding" className="block text-center text-xs text-gray-500 py-2">
+                  <Link href="/dashboard/onboarding" className="block text-center text-xs app-mut py-2">
                     Configura tu negocio primero
                   </Link>
                 )}
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-600 text-center mt-4">
+          <p className="text-xs app-mut2 text-center mt-4">
             {process.env.NODE_ENV === 'development' ? '🔧 Modo desarrollo — pagos simulados' : 'Pagos procesados por Flow.cl · SSL · Sin contratos'}
           </p>
         </div>

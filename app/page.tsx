@@ -6,7 +6,7 @@ import { useSession } from 'next-auth/react';
 import { DishWordCloud } from '@/components/landing/DishWordCloud';
 import { ChatPreview } from '@/components/landing/ChatPreview';
 import { ContactModal } from '@/components/landing/ContactModal';
-import { Wordmark } from '@/components/brand/Wordmark';
+import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
 
 const PRICING = [
   {
@@ -85,7 +85,8 @@ export default function Home() {
       {/* Navbar */}
       <nav className="fixed top-0 inset-x-0 z-40 bg-[#1A1613]/85 backdrop-blur-md border-b border-white/5">
         <div className="max-w-5xl mx-auto px-5 h-14 flex items-center justify-between gap-4">
-          <Link href="/" className="shrink-0">
+          <Link href="/" className="shrink-0 flex items-center gap-2">
+            <LogoIcon size={28} />
             <Wordmark size="md" className="text-white" />
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">

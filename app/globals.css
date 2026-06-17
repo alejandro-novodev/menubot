@@ -184,9 +184,18 @@
 .app-surface2 { background-color: color-mix(in srgb, var(--mb-surface) 60%, var(--mb-bg)); }
 .app-ink      { color: var(--mb-ink); }
 .app-mut      { color: var(--mb-mut); }
+.app-mut2     { color: var(--mb-mut2); }
 .app-line     { border-color: var(--mb-line); }
 .app-border   { border: 1px solid var(--mb-line); }
 .app-head     { background-color: var(--mb-head-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+
+/* Theme-adaptive neutral overlays (replace white/x on dark-only surfaces).
+   Tint follows --mb-ink, so they darken on light theme and lighten on dark. */
+.app-soft        { background-color: color-mix(in srgb, var(--mb-ink) 5%, transparent); }
+.app-soft2       { background-color: color-mix(in srgb, var(--mb-ink) 9%, transparent); }
+.app-soft-hover  { transition: background-color 0.15s ease; }
+.app-soft-hover:hover  { background-color: color-mix(in srgb, var(--mb-ink) 9%, transparent); }
+.app-ink-hover:hover   { color: var(--mb-ink); }
 
 /* ══════════════════════════════════════════════════════════════════════════ */
 /* ── Customer chat / menu UI — interactive polish ────────────────────────── */

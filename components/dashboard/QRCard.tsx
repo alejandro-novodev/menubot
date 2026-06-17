@@ -44,11 +44,11 @@ export function QRCard({ slug, businessName }: QRCardProps) {
   }
 
   return (
-    <div className="bg-[#241F1B] border border-white/5 rounded-2xl p-5">
+    <div className="app-surface border app-line rounded-2xl p-5">
       <div className="flex items-start justify-between gap-4 mb-4">
         <div>
-          <h3 className="font-semibold text-white text-sm mb-1">Comparte tu carta</h3>
-          <p className="text-xs text-gray-500">Tus clientes escanean el QR para chatear con el asistente.</p>
+          <h3 className="font-semibold app-ink text-sm mb-1">Comparte tu carta</h3>
+          <p className="text-xs app-mut">Tus clientes escanean el QR para chatear con el asistente.</p>
         </div>
       </div>
 
@@ -56,16 +56,16 @@ export function QRCard({ slug, businessName }: QRCardProps) {
         {/* QR preview */}
         {dataUrl ? (
           <div className="shrink-0">
-            <img src={dataUrl} alt="QR Code" className="w-24 h-24 rounded-xl border border-white/10" />
+            <img src={dataUrl} alt="QR Code" className="w-24 h-24 rounded-xl border app-line" />
           </div>
         ) : (
-          <div className="w-24 h-24 bg-[#2E2823] rounded-xl border border-white/10 animate-pulse shrink-0" />
+          <div className="w-24 h-24 app-surface2 rounded-xl border app-line animate-pulse shrink-0" />
         )}
 
         {/* Actions */}
         <div className="flex-1 space-y-2">
-          <div className="flex items-center gap-2 bg-[#2E2823]/60 border border-white/10 rounded-xl px-3 py-2">
-            <span className="text-xs text-gray-400 truncate flex-1">{shortUrl}</span>
+          <div className="flex items-center gap-2 app-surface2 border app-line rounded-xl px-3 py-2">
+            <span className="text-xs app-mut truncate flex-1">{shortUrl}</span>
             <button onClick={copyLink} className="text-xs text-accent hover:text-accent-lite shrink-0 transition font-medium">
               {copied ? '✓ Copiado' : 'Copiar'}
             </button>
@@ -75,7 +75,7 @@ export function QRCard({ slug, businessName }: QRCardProps) {
             <button
               onClick={downloadQR}
               disabled={!dataUrl}
-              className="flex-1 text-xs bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white px-3 py-2 rounded-xl transition disabled:opacity-50"
+              className="flex-1 text-xs app-soft app-soft-hover border app-line app-mut app-ink-hover px-3 py-2 rounded-xl transition disabled:opacity-50"
             >
               ↓ QR PNG
             </button>

@@ -123,14 +123,14 @@ export function MenuImport({ businessId, onImported, defaultReplace = true, clas
   return (
     <div className={className}>
       {/* Mode tabs */}
-      <div className="flex gap-1 mb-4 p-1 rounded-xl bg-[#1A1613] border border-white/5 w-fit">
+      <div className="flex gap-1 mb-4 p-1 rounded-xl app-bg border app-line w-fit">
         {(['file', 'paste'] as const).map((m) => (
           <button
             key={m}
             type="button"
             onClick={() => setMode(m)}
             className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition ${
-              mode === m ? 'bg-accent text-white' : 'text-gray-400 hover:text-white'
+              mode === m ? 'bg-accent text-white' : 'app-mut app-ink-hover'
             }`}
           >
             {m === 'file' ? 'Subir archivo' : 'Pegar texto o enlace'}
@@ -147,7 +147,7 @@ export function MenuImport({ businessId, onImported, defaultReplace = true, clas
             onDrop={(e) => { e.preventDefault(); setDragOver(false); addFiles(e.dataTransfer.files); }}
             onClick={() => inputRef.current?.click()}
             className={`cursor-pointer rounded-2xl border-2 border-dashed px-6 py-9 text-center transition ${
-              dragOver ? 'border-accent bg-accent/5' : 'border-white/15 hover:border-accent/50'
+              dragOver ? 'border-accent bg-accent/5' : 'app-line hover:border-accent/50'
             }`}
           >
             <input
@@ -159,21 +159,21 @@ export function MenuImport({ businessId, onImported, defaultReplace = true, clas
               onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }}
             />
             <div className="text-2xl mb-2">📄</div>
-            <p className="text-white text-sm font-medium">Arrastra tu carta aquí o haz clic para subir</p>
-            <p className="text-gray-500 text-xs mt-1">{ACCEPT_HINT} · puedes subir varios</p>
+            <p className="app-ink text-sm font-medium">Arrastra tu carta aquí o haz clic para subir</p>
+            <p className="app-mut text-xs mt-1">{ACCEPT_HINT} · puedes subir varios</p>
           </div>
 
           {/* File list */}
           {files.length > 0 && (
             <ul className="mt-3 space-y-1.5">
               {files.map((f, i) => (
-                <li key={i} className="flex items-center gap-2.5 bg-[#2E2823]/60 border border-white/5 rounded-lg px-3 py-2 text-sm">
+                <li key={i} className="flex items-center gap-2.5 app-surface2 border app-line rounded-lg px-3 py-2 text-sm">
                   <StatusDot status={f.status} />
-                  <span className="flex-1 min-w-0 truncate text-gray-200">{f.file.name}</span>
-                  {f.status === 'done' && <span className="text-xs text-gray-400 shrink-0">{f.count} platos</span>}
+                  <span className="flex-1 min-w-0 truncate app-ink">{f.file.name}</span>
+                  {f.status === 'done' && <span className="text-xs app-mut shrink-0">{f.count} platos</span>}
                   {f.status === 'error' && <span className="text-xs text-[#E05B5B] shrink-0 truncate max-w-[40%]" title={f.error}>{f.error}</span>}
                   {f.status === 'pending' && !busy && (
-                    <button type="button" onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))} className="text-gray-500 hover:text-white shrink-0" aria-label="Quitar">✕</button>
+                    <button type="button" onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))} className="app-mut app-ink-hover shrink-0" aria-label="Quitar">✕</button>
                   )}
                 </li>
               ))}
@@ -187,24 +187,24 @@ export function MenuImport({ businessId, onImported, defaultReplace = true, clas
             onChange={(e) => { setPasteText(e.target.value); if (e.target.value) setPasteUrl(''); }}
             placeholder="Pega aquí el texto de tu carta…"
             rows={6}
-            className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-accent/60 resize-y"
+            className="w-full app-surface2 border app-line rounded-xl px-3.5 py-2.5 text-sm app-ink placeholder-gray-500 outline-none focus:border-accent/60 resize-y"
           />
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span className="flex-1 h-px bg-white/10" /> o pega un enlace <span className="flex-1 h-px bg-white/10" />
+          <div className="flex items-center gap-2 text-xs app-mut">
+            <span className="flex-1 h-px app-soft2" /> o pega un enlace <span className="flex-1 h-px app-soft2" />
           </div>
           <input
             type="url"
             value={pasteUrl}
             onChange={(e) => { setPasteUrl(e.target.value); if (e.target.value) setPasteText(''); }}
             placeholder="https://… (página de tu carta)"
-            className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-gray-500 outline-none focus:border-accent/60"
+            className="w-full app-surface2 border app-line rounded-xl px-3.5 py-2.5 text-sm app-ink placeholder-gray-500 outline-none focus:border-accent/60"
           />
         </div>
       )}
 
       {/* Controls */}
       <div className="flex items-center justify-between gap-3 mt-4 flex-wrap">
-        <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-xs app-mut cursor-pointer select-none">
           <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} className="accent-[#C76B43]" />
           Reemplazar la carta actual
         </label>
@@ -212,13 +212,13 @@ export function MenuImport({ businessId, onImported, defaultReplace = true, clas
           type="button"
           onClick={mode === 'file' ? processFiles : processPaste}
           disabled={busy || !canProcess}
-          className="bg-accent hover:bg-accent-lite disabled:bg-[#2E2823] disabled:text-gray-500 text-white font-semibold rounded-xl px-5 py-2 text-sm transition"
+          className="bg-accent hover:bg-accent-lite disabled:opacity-50 text-white font-semibold rounded-xl px-5 py-2 text-sm transition"
         >
           {busy ? 'Procesando…' : 'Extraer carta'}
         </button>
       </div>
 
-      {summary && <p className="mt-3 text-xs text-gray-400">{summary}</p>}
+      {summary && <p className="mt-3 text-xs app-mut">{summary}</p>}
     </div>
   );
 }

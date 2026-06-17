@@ -4,6 +4,7 @@ import { query } from '@/lib/db';
 import Link from 'next/link';
 import { QRCard } from '@/components/dashboard/QRCard';
 import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface Business {
   id: number;
@@ -41,11 +42,11 @@ function CompletenessBar({ score }: { score: number }) {
   const color = score >= 80 ? 'bg-emerald-500' : score >= 50 ? 'bg-yellow-500' : 'bg-orange-500';
   return (
     <div className="mt-2">
-      <div className="flex justify-between text-xs text-gray-500 mb-1">
+      <div className="flex justify-between text-xs app-mut mb-1">
         <span>Completeness</span>
         <span className={score >= 80 ? 'text-emerald-400' : score >= 50 ? 'text-yellow-400' : 'text-orange-400'}>{score}%</span>
       </div>
-      <div className="w-full bg-[#2E2823] rounded-full h-1.5">
+      <div className="w-full app-surface2 rounded-full h-1.5">
         <div className={`${color} h-1.5 rounded-full transition-all`} style={{ width: `${score}%` }} />
       </div>
     </div>
@@ -81,22 +82,23 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#1A1613] text-white flex flex-col">
+    <div className="min-h-screen app-bg app-ink flex flex-col">
       {/* Trial banner */}
       {trialDaysLeft >= 0 && <TrialBanner daysLeft={trialDaysLeft} />}
 
       {/* Header */}
-      <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
+      <header className="border-b app-line px-6 py-4 flex items-center justify-between">
         <Link href="/" className="font-bold text-lg">
           <span className="flex items-center gap-2"><LogoIcon size={26} /><Wordmark size="md" /></span>
         </Link>
-        <div className="flex items-center gap-4 text-sm text-gray-400">
+        <div className="flex items-center gap-4 text-sm app-mut">
           {session.user.role === 'admin' && (
             <Link href="/admin" className="text-accent hover:text-accent-lite transition text-xs">Admin →</Link>
           )}
-          <Link href="/dashboard/billing" className="text-gray-400 hover:text-white transition text-xs">Plan</Link>
-          <span className="hidden sm:inline text-gray-600">{session.user.email}</span>
-          <Link href="/api/auth/signout" className="text-gray-600 hover:text-gray-400 transition text-xs">Salir</Link>
+          <Link href="/dashboard/billing" className="app-mut app-ink-hover transition text-xs">Plan</Link>
+          <span className="hidden sm:inline app-mut2">{session.user.email}</span>
+          <Link href="/api/auth/signout" className="app-mut2 app-ink-hover transition text-xs">Salir</Link>
+          <ThemeToggle />
         </div>
       </header>
 
@@ -104,7 +106,7 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-xl font-bold">Dashboard</h1>
-            <p className="text-gray-500 text-sm">Hola, {session.user.name ?? session.user.email}</p>
+            <p className="app-mut text-sm">Hola, {session.user.name ?? session.user.email}</p>
           </div>
           {!hasBusiness && (
             <Link
@@ -117,10 +119,10 @@ export default async function DashboardPage() {
         </div>
 
         {!hasBusiness ? (
-          <div className="bg-[#241F1B] border border-white/5 rounded-2xl p-8 text-center">
+          <div className="app-surface border app-line rounded-2xl p-8 text-center">
             <div className="text-4xl mb-3">🚀</div>
             <h2 className="text-lg font-semibold mb-2">Comienza configurando tu negocio</h2>
-            <p className="text-gray-400 text-sm mb-6">Sube tu carta y activa tu asistente de IA en minutos.</p>
+            <p className="app-mut text-sm mb-6">Sube tu carta y activa tu asistente de IA en minutos.</p>
             <Link
               href="/dashboard/onboarding"
               className="inline-block bg-accent hover:bg-accent-lite text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition"
@@ -131,19 +133,19 @@ export default async function DashboardPage() {
         ) : (
           <div className="space-y-4">
             {businesses.map(biz => (
-              <div key={biz.id} className="bg-[#241F1B] border border-white/5 rounded-2xl p-5">
+              <div key={biz.id} className="app-surface border app-line rounded-2xl p-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h2 className="font-semibold text-white">{biz.name}</h2>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${biz.status === 'active' ? 'bg-emerald-900/40 text-emerald-400' : 'bg-[#2E2823] text-gray-500'}`}>
+                      <h2 className="font-semibold app-ink">{biz.name}</h2>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${biz.status === 'active' ? 'bg-emerald-900/40 text-emerald-400' : 'app-surface2 app-mut'}`}>
                         {biz.status === 'active' ? '● activo' : biz.status}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">menubot.cl/chat/{biz.slug}</p>
+                    <p className="text-xs app-mut mt-0.5">menubot.cl/chat/{biz.slug}</p>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <Link href={`/dashboard/menu?biz=${biz.id}`} className="text-xs text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 px-3 py-1.5 rounded-lg transition">
+                    <Link href={`/dashboard/menu?biz=${biz.id}`} className="text-xs app-mut app-ink-hover app-soft app-soft-hover border app-line px-3 py-1.5 rounded-lg transition">
                       Gestionar carta
                     </Link>
                     <Link href={`/chat/${biz.slug}`} target="_blank" className="text-xs text-accent hover:text-accent-lite bg-accent/15 hover:bg-accent/20 border border-accent/25 px-3 py-1.5 rounded-lg transition">
@@ -165,7 +167,7 @@ export default async function DashboardPage() {
 
             <Link
               href="/dashboard/onboarding"
-              className="block bg-[#241F1B]/50 border border-dashed border-white/10 hover:border-accent/30 rounded-2xl p-5 text-center text-sm text-gray-600 hover:text-gray-400 transition"
+              className="block app-surface border border-dashed app-line hover:border-accent/30 rounded-2xl p-5 text-center text-sm app-mut2 app-ink-hover transition"
             >
               + Agregar otro negocio
             </Link>
