@@ -24,7 +24,7 @@ interface Dish {
 
 const ALLERGEN_OPTIONS = ['gluten', 'lácteos', 'mariscos', 'huevo', 'frutos secos', 'soya', 'ninguno'];
 const CATEGORIES = ['entradas', 'principales', 'postres', 'bebidas', 'cócteles', 'piscos', 'cervezas', 'sin alcohol', 'chef', 'kids', 'otros'];
-const DISH_ICONS = ['🍽️', '🍗', '🥩', '🐟', '🐠', '🦐', '🐙', '🥟', '🍜', '🫛', '🥗', '🌮', '🍕', '🥪', '🍔', '🍮', '🍰', '🍫', '☕', '🍹', '🍺', '🥤', '🍷'];
+const DISH_ICONS = ['🍽️', '🍗', '🥩', '🐟', '🐠', '🦐', '🐙', '🥟', '🍜', '🥦', '🥗', '🌮', '🍕', '🥪', '🍔', '🍮', '🍰', '🍫', '☕', '🍹', '🍺', '🥤', '🍷'];
 
 /** Resize + compress an image file to a small JPEG data URL (stored in the DB). */
 function resizeImage(file: File, maxSize = 700, quality = 0.75): Promise<string> {
@@ -270,7 +270,33 @@ function MenuEditor() {
     setLoading(false);
   }, [bizId]);
 
-  useEffect(() => { load(); }, [load]);
+  // Inlined so setState runs only after the await (keeps
+  // react-hooks/set-state-in-effect happy); `load` is reused by the mutations.
+  useEffect(() => {
+    if (!bizId) return;
+    let cancelled = false;
+    (async () => {
+      const [dishRes, bizRes] = await Promise.all([
+        fetch(`/api/businesses/${bizId}/dishes`),
+        fetch(`/api/businesses/${bizId}/info`),
+      ]);
+      if (cancelled) return;
+      if (dishRes.ok) {
+        const data = await dishRes.json() as { dishes: Dish[] };
+        setDishes(data.dishes);
+        const scored = data.dishes.filter(d => d.description && d.price && d.category && d.ingredients && d.allergens).length;
+        setCompleteness(data.dishes.length > 0 ? Math.round((scored / data.dishes.length) * 100) : 0);
+      }
+      if (bizRes.ok) {
+        const d = await bizRes.json() as { name: string; slug: string; menu_completeness: number };
+        setBizName(d.name);
+        setBizSlug(d.slug);
+        setCompleteness(d.menu_completeness);
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [bizId]);
 
   async function deleteDish(id: number) {
     if (!confirm('¿Eliminar este plato?')) return;
@@ -297,23 +323,25 @@ function MenuEditor() {
 
   return (
     <div className="min-h-screen app-bg app-ink flex flex-col">
-      <header className="border-b app-line px-5 py-3 flex items-center gap-3">
-        <Link href="/dashboard" className="app-mut app-ink-hover transition">
+      <header className="border-b app-line px-5 py-3 flex items-center gap-3 flex-wrap">
+        <Link href="/dashboard" className="app-mut app-ink-hover transition shrink-0">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
         </Link>
         <div className="flex-1 min-w-0">
           <h1 className="font-semibold app-ink text-sm truncate">{bizName || 'Menú'}</h1>
-          {bizSlug && <p className="text-xs app-mut">/chat/{bizSlug}</p>}
+          {bizSlug && <p className="text-xs app-mut truncate">/chat/{bizSlug}</p>}
         </div>
-        <button onClick={() => setShowImport(v => !v)}
-          className="border border-accent/40 text-accent hover:bg-accent/10 text-xs font-semibold px-3 py-1.5 rounded-lg transition shrink-0">
-          Importar carta
-        </button>
-        <button onClick={() => setModalDish(null)}
-          className="bg-accent hover:bg-accent-lite text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition shrink-0">
-          + Agregar plato
-        </button>
-        <ThemeToggle />
+        <div className="flex items-center gap-2 w-full sm:w-auto sm:shrink-0">
+          <button onClick={() => setShowImport(v => !v)}
+            className="flex-1 sm:flex-none border border-accent/40 text-accent hover:bg-accent/10 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+            Importar carta
+          </button>
+          <button onClick={() => setModalDish(null)}
+            className="flex-1 sm:flex-none bg-accent hover:bg-accent-lite text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+            + Agregar plato
+          </button>
+          <ThemeToggle />
+        </div>
       </header>
 
       {/* Completeness bar */}
@@ -379,7 +407,7 @@ function MenuEditor() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium app-ink truncate">{dish.is_recommended && <span title="Recomendación del chef">⭐ </span>}{dish.name}</p>
+                          <p className="text-sm font-medium app-ink break-words min-w-0">{dish.is_recommended && <span title="Recomendación del chef">⭐ </span>}{dish.name}</p>
                           {missing > 0 && (
                             <span className="text-xs text-orange-400 shrink-0">⚠ {missing} campo{missing !== 1 ? 's' : ''}</span>
                           )}
@@ -389,7 +417,7 @@ function MenuEditor() {
                           {dish.description && ` · ${dish.description.slice(0, 40)}${dish.description.length > 40 ? '...' : ''}`}
                         </p>
                       </div>
-                      <div className="flex gap-1.5 shrink-0 opacity-0 group-hover:opacity-100 transition">
+                      <div className="flex gap-1.5 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                         <button onClick={() => setModalDish(dish)}
                           className="text-xs app-mut app-ink-hover app-soft app-soft-hover px-2.5 py-1.5 rounded-lg transition">
                           Editar
