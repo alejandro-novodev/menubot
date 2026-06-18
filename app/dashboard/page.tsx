@@ -134,17 +134,17 @@ export default async function DashboardPage() {
           <div className="space-y-4">
             {businesses.map(biz => (
               <div key={biz.id} className="app-surface border app-line rounded-2xl p-5">
-                <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h2 className="font-semibold app-ink">{biz.name}</h2>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${biz.status === 'active' ? 'bg-emerald-500 text-white' : 'app-surface2 app-mut'}`}>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center flex-wrap gap-2">
+                      <h2 className="font-semibold app-ink break-words">{biz.name}</h2>
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${biz.status === 'active' ? 'bg-emerald-500 text-white' : 'app-surface2 app-mut'}`}>
                         {biz.status === 'active' ? '● Activo' : biz.status}
                       </span>
                     </div>
-                    <p className="text-xs app-mut mt-0.5">menubot.cl/chat/{biz.slug}</p>
+                    <p className="text-xs app-mut mt-0.5 break-all">menubot.cl/chat/{biz.slug}</p>
                   </div>
-                  <div className="flex flex-wrap gap-2 shrink-0 justify-end">
+                  <div className="flex flex-wrap gap-2 sm:shrink-0 sm:justify-end">
                     <Link href={`/dashboard/info?biz=${biz.id}`} className="text-xs app-mut app-ink-hover app-soft app-soft-hover border app-line px-3 py-1.5 rounded-lg transition">
                       Información
                     </Link>
