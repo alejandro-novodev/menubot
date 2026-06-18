@@ -35,11 +35,53 @@ interface ChatMessage {
   content: string;
 }
 
+/**
+ * Log one Q&A turn (the diner's new question + the assistant's answer) to the
+ * chat capture tables, so owners can later study what customers ask. Only runs
+ * for real businesses; never throws into the chat path. Returns the sessionId.
+ */
+async function logChatTurn(
+  businessId: number,
+  sessionId: number | null,
+  userText: string,
+  assistantText: string
+): Promise<number | null> {
+  try {
+    let sid = sessionId;
+    // Validate the incoming session belongs to this business; otherwise start fresh.
+    if (sid) {
+      const ok = await query('SELECT 1 FROM chat_sessions WHERE id = $1 AND business_id = $2', [sid, businessId]);
+      if (ok.rows.length === 0) sid = null;
+    }
+    if (!sid) {
+      const created = await query<{ id: number }>(
+        'INSERT INTO chat_sessions (business_id) VALUES ($1) RETURNING id',
+        [businessId]
+      );
+      sid = created.rows[0].id;
+    }
+    await query(
+      `INSERT INTO chat_messages (session_id, role, content) VALUES ($1, 'user', $2), ($1, 'assistant', $3)`,
+      [sid, userText, assistantText]
+    );
+    // New content invalidates any prior summary so insights regenerate lazily.
+    await query(
+      'UPDATE chat_sessions SET message_count = message_count + 2, updated_at = NOW(), summarized_at = NULL WHERE id = $1',
+      [sid]
+    );
+    return sid;
+  } catch (err) {
+    console.error('Chat capture failed (non-fatal):', err);
+    return sessionId;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const { messages, restaurantSlug } = await req.json() as {
+    const { messages, restaurantSlug, sessionId } = await req.json() as {
       messages: ChatMessage[];
       restaurantSlug: string;
+      sessionId?: number | null;
     };
 
     const source = await resolveMenuSource(restaurantSlug);
@@ -99,7 +141,16 @@ ${menuJson}`;
       return NextResponse.json({ error: 'Unexpected response type' }, { status: 500 });
     }
 
-    return NextResponse.json({ message: assistantMessage.text });
+    // Capture this turn for owner insights (businesses only; never blocks on failure).
+    let newSessionId: number | null = sessionId ?? null;
+    if (source.dishColumn === 'business_id') {
+      const lastUser = [...messages].reverse().find((m) => m.role === 'user');
+      if (lastUser) {
+        newSessionId = await logChatTurn(source.id, sessionId ?? null, lastUser.content, assistantMessage.text);
+      }
+    }
+
+    return NextResponse.json({ message: assistantMessage.text, sessionId: newSessionId });
   } catch (error) {
     console.error('Chat error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

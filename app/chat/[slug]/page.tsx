@@ -204,6 +204,7 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const sessionIdRef = useRef<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -229,9 +230,10 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history, restaurantSlug: slug }),
+        body: JSON.stringify({ messages: history, restaurantSlug: slug, sessionId: sessionIdRef.current }),
       });
-      const data = await res.json() as { message: string; error?: string };
+      const data = await res.json() as { message: string; sessionId?: number | null; error?: string };
+      if (data.sessionId) sessionIdRef.current = data.sessionId;
       setMessages(m => [...m, { role: 'assistant', content: data.message || data.error || 'Error al responder.' }]);
     } catch {
       setMessages(m => [...m, { role: 'assistant', content: 'Hubo un error. Por favor intenta de nuevo.' }]);

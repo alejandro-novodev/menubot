@@ -56,7 +56,9 @@ describe('POST /api/chat', () => {
   });
 
   it('returns 404 when restaurant is not found', async () => {
-    query.mockResolvedValueOnce(emptyResult);
+    // resolveMenuSource checks businesses, then falls back to restaurants —
+    // both must come back empty for a 404.
+    query.mockResolvedValueOnce(emptyResult).mockResolvedValueOnce(emptyResult);
 
     const req = makeRequest({ messages: [], restaurantSlug: 'nonexistent' });
     const response = await POST(req);
