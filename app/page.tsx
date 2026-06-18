@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { DishWordCloud } from '@/components/landing/DishWordCloud';
-import { ChatPreview } from '@/components/landing/ChatPreview';
+import { AppShowcase } from '@/components/landing/AppShowcase';
 import { ContactModal } from '@/components/landing/ContactModal';
 import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
 
@@ -160,14 +160,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Demo */}
+      {/* Showcase */}
       <section className="py-20 px-5">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-3">Míralo en acción</h2>
-            <p className="text-gray-400">Así responde el asistente en <span className="text-white font-medium">Izakaya Nami</span>, nuestro restaurante de prueba.</p>
+            <h2 className="text-3xl font-bold mb-3">Conoce menubot por dentro</h2>
+            <p className="text-gray-400 max-w-xl mx-auto">Una carta que conversa, recomienda, divide la cuenta y te cuenta qué quieren tus clientes.</p>
           </div>
-          <ChatPreview />
+          <AppShowcase />
         </div>
       </section>
 
