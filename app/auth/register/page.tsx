@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pending, setPending] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,8 +25,11 @@ export default function RegisterPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
       });
-      const data = await res.json() as { success?: boolean; error?: string };
+      const data = await res.json() as { success?: boolean; error?: string; pendingApproval?: boolean };
       if (!res.ok) { setError(data.error ?? 'Error al registrarse.'); return; }
+      // Invite-only: don't try to sign in (it would be blocked) — show the
+      // pending-approval confirmation instead.
+      if (data.pendingApproval) { setPending(true); return; }
       const signInRes = await signIn('credentials', { email, password, redirect: false });
       router.push(signInRes?.ok ? '/dashboard/onboarding' : '/auth/login');
     } catch {
@@ -37,6 +41,28 @@ export default function RegisterPage() {
 
   async function handleGoogle() {
     await signIn('google', { callbackUrl: '/dashboard/onboarding' });
+  }
+
+  if (pending) {
+    return (
+      <div className="min-h-screen bg-[#1A1613] flex items-center justify-center px-4">
+        <div className="w-full max-w-sm text-center">
+          <Link href="/" className="inline-block mb-6">
+            <Wordmark size="lg" className="text-white" />
+          </Link>
+          <div className="bg-[#241F1B] border border-white/10 rounded-2xl p-7">
+            <div className="text-4xl mb-3">⏳</div>
+            <h1 className="text-lg font-semibold text-white mb-2">¡Cuenta creada!</h1>
+            <p className="text-sm text-gray-400 leading-relaxed">
+              Estamos en una fase de acceso por invitación. Tu cuenta quedó <span className="text-accent">pendiente de aprobación</span> — te avisaremos a <span className="text-gray-200">{email}</span> cuando esté habilitada para que puedas iniciar sesión.
+            </p>
+          </div>
+          <p className="text-sm text-gray-500 mt-5">
+            <Link href="/auth/login" className="text-accent hover:text-accent-lite transition">← Volver a iniciar sesión</Link>
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

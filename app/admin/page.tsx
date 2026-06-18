@@ -9,6 +9,18 @@ interface Stats {
   mrr: number;
   recentBusinesses: BusinessRow[];
   waitlist: WaitlistRow[];
+  users: UserRow[];
+  pendingUsers: number;
+  inviteOnly: boolean;
+}
+
+interface UserRow {
+  id: number;
+  name: string | null;
+  email: string;
+  role: string;
+  approved: boolean;
+  created_at: string;
 }
 
 interface BusinessRow {
@@ -55,6 +67,7 @@ export default function AdminPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<number | null>(null);
+  const [actioningUser, setActioningUser] = useState<number | null>(null);
 
   async function load() {
     const res = await fetch('/api/admin/stats');
@@ -62,7 +75,18 @@ export default function AdminPage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, []);
+  // Inlined so setState runs only after the await (keeps
+  // react-hooks/set-state-in-effect happy); `load` is reused by the actions.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const res = await fetch('/api/admin/stats');
+      if (cancelled) return;
+      if (res.ok) setStats(await res.json() as Stats);
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   async function doAction(bizId: number, action: string, plan?: string) {
     setActioning(bizId);
@@ -73,6 +97,17 @@ export default function AdminPage() {
     });
     await load();
     setActioning(null);
+  }
+
+  async function doUserAction(userId: number, action: 'approve' | 'revoke') {
+    setActioningUser(userId);
+    await fetch(`/api/admin/users/${userId}/action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    });
+    await load();
+    setActioningUser(null);
   }
 
   if (loading) return (
@@ -96,6 +131,18 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-6xl mx-auto px-5 py-8 space-y-8">
+        {/* Access mode banner */}
+        <div className={`rounded-xl px-4 py-3 text-sm flex items-center justify-between gap-3 ${stats?.inviteOnly ? 'bg-accent/10 border border-accent/25 text-accent' : 'bg-emerald-900/30 border border-emerald-700/30 text-emerald-300'}`}>
+          <span>
+            {stats?.inviteOnly
+              ? '🔒 Acceso por invitación — las cuentas nuevas necesitan tu aprobación para iniciar sesión.'
+              : '🌐 Acceso público — cualquiera puede registrarse e iniciar sesión.'}
+          </span>
+          {(stats?.pendingUsers ?? 0) > 0 && (
+            <span className="shrink-0 text-xs font-semibold bg-accent/20 px-2.5 py-1 rounded-full">{stats?.pendingUsers} pendiente{stats?.pendingUsers !== 1 ? 's' : ''}</span>
+          )}
+        </div>
+
         {/* KPIs */}
         <section>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-4">Métricas</h2>
@@ -108,6 +155,53 @@ export default function AdminPage() {
               value={`$${(stats?.mrr ?? 0).toLocaleString('es-CL')}`}
               sub="suscripciones activas (no trial)"
             />
+          </div>
+        </section>
+
+        {/* Users / access control */}
+        <section>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest mb-4">
+            Usuarios ({stats?.users.length ?? 0})
+          </h2>
+          <div className="space-y-2">
+            {(stats?.users ?? []).map(u => (
+              <div key={u.id} className="bg-[#241F1B] border border-white/5 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-medium text-white text-sm">{u.name ?? u.email}</span>
+                    {u.role === 'admin' && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-accent/20 text-accent">admin</span>
+                    )}
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${u.approved ? 'bg-emerald-900/40 text-emerald-400' : 'bg-yellow-900/40 text-yellow-400'}`}>
+                      {u.approved ? '● habilitado' : '○ pendiente'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {u.email} · registrado {new Date(u.created_at).toLocaleDateString('es-CL')}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  {!u.approved && (
+                    <button
+                      onClick={() => doUserAction(u.id, 'approve')}
+                      disabled={actioningUser === u.id}
+                      className="text-xs bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-400 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+                    >
+                      Habilitar
+                    </button>
+                  )}
+                  {u.approved && u.role !== 'admin' && (
+                    <button
+                      onClick={() => doUserAction(u.id, 'revoke')}
+                      disabled={actioningUser === u.id}
+                      className="text-xs bg-red-900/30 hover:bg-red-900/50 text-red-400 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+                    >
+                      Revocar
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
