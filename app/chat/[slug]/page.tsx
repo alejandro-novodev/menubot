@@ -3,13 +3,15 @@
 import { use, useCallback, useEffect, useRef, useState } from 'react';
 import { ChatBubble } from '@/components/ChatBubble';
 import { MenuScreen, type MenuDish } from '@/components/customer/MenuScreen';
+import { BillSplitter } from '@/components/customer/BillSplitter';
+import type { Socials } from '@/components/customer/SocialLinks';
 import { LogoIcon } from '@/components/brand/Wordmark';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { formatPrice } from '@/lib/menu';
 import Link from 'next/link';
 
 interface Message { role: 'user' | 'assistant'; content: string; }
-interface Restaurant { name: string; description: string; }
+interface Restaurant { name: string; description: string; socials?: Socials | null; }
 interface MenuData { categories: Record<string, MenuDish[]> }
 
 const SUGGESTIONS = [
@@ -204,6 +206,7 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+  const [showBill, setShowBill] = useState(false);
   const sessionIdRef = useRef<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -281,7 +284,11 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
     cuisine: restaurant?.description ?? '',
     categories: menuData?.categories ?? {},
     onAsk: handleDishSelect,
+    socials: restaurant?.socials ?? null,
+    onSplitBill: () => setShowBill(true),
   };
+
+  const allDishes = Object.values(menuData?.categories ?? {}).flat();
 
   const chatProps = {
     restaurantName: restaurant?.name ?? '',
@@ -297,6 +304,7 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
 
   return (
     <div style={{ height: '100svh', background: 'var(--mb-bg)', display: 'flex', flexDirection: 'column' }}>
+      {showBill && <BillSplitter dishes={allDishes} onClose={() => setShowBill(false)} />}
 
       {/* ── DESKTOP / TABLET: side by side ── */}
       <div

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { LogoIcon } from '@/components/brand/Wordmark';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { SocialLinks, type Socials } from '@/components/customer/SocialLinks';
 import { getDishEmoji, formatPrice, capitalize } from '@/lib/menu';
 
 export interface MenuDish {
@@ -27,6 +28,10 @@ interface Props {
   showFloatingButton?: boolean;
   /** In sidebar mode, remove max-width centering + own header toggle */
   sidebar?: boolean;
+  /** Social/review links for the menu footer */
+  socials?: Socials | null;
+  /** Opens the bill-split calculator. When set, a calculator button appears. */
+  onSplitBill?: () => void;
 }
 
 const CATEGORY_ORDER = [
@@ -130,7 +135,7 @@ function DishRow({ dish, onTap }: { dish: MenuDish; onTap: () => void }) {
   );
 }
 
-export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true, sidebar = false }: Props) {
+export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true, sidebar = false, socials = null, onSplitBill }: Props) {
   const sorted = Object.keys(categories).sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a), bi = CATEGORY_ORDER.indexOf(b);
     if (ai === -1 && bi === -1) return a.localeCompare(b);
@@ -181,7 +186,26 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
             <span style={{ flexShrink: 0 }}>con menubot<span style={{ color: 'var(--accent)' }}>.</span></span>
           </div>
         </div>
-        {!sidebar && <ThemeToggle />}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {onSplitBill && (
+            <button
+              onClick={onSplitBill}
+              className="mb-social"
+              aria-label="Dividir la cuenta"
+              title="Dividir la cuenta"
+              style={{
+                height: 34, padding: '0 12px', borderRadius: 999,
+                border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
+                color: 'var(--mb-ink)', cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12.5, fontWeight: 600,
+              }}
+            >
+              🧮 <span className="hidden sm:inline">Dividir</span>
+            </button>
+          )}
+          {!sidebar && <ThemeToggle />}
+        </div>
       </div>
 
       {/* Category chips */}
@@ -247,6 +271,8 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
           </div>
         )}
       </div>
+
+      <SocialLinks socials={socials} />
 
       {/* Floating "Preguntar" button — only on mobile menu view */}
       {showFloatingButton && (

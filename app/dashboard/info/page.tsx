@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -13,6 +13,12 @@ interface Info {
   phone: string | null;
   hours: string | null;
   notes: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  whatsapp: string | null;
+  tripadvisor: string | null;
+  website: string | null;
 }
 
 function InfoEditor() {
@@ -26,18 +32,23 @@ function InfoEditor() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
-  const load = useCallback(async () => {
+  // Inlined so setState runs only after the await (not in the effect's
+  // synchronous body), keeping react-hooks/set-state-in-effect happy.
+  useEffect(() => {
     if (!bizId) return;
-    const res = await fetch(`/api/businesses/${bizId}/info`);
-    if (res.ok) {
-      const d = await res.json() as Info & { slug: string };
-      setForm(d);
-      setSlug(d.slug);
-    }
-    setLoading(false);
+    let cancelled = false;
+    (async () => {
+      const res = await fetch(`/api/businesses/${bizId}/info`);
+      if (cancelled) return;
+      if (res.ok) {
+        const d = await res.json() as Info & { slug: string };
+        setForm(d);
+        setSlug(d.slug);
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
   }, [bizId]);
-
-  useEffect(() => { load(); }, [load]);
 
   function set(key: keyof Info, val: string) { setForm(f => ({ ...f, [key]: val })); setSaved(false); }
 
@@ -114,6 +125,37 @@ function InfoEditor() {
                 <label className="block text-xs app-mut mb-1">Información adicional para el asistente</label>
                 <textarea rows={3} value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} className={`${field} resize-none`}
                   placeholder="Estacionamiento, terraza pet-friendly, opciones veganas, formas de pago…" />
+              </div>
+
+              <div className="pt-2 border-t app-line">
+                <h2 className="text-sm font-semibold app-ink mt-3 mb-1">Redes sociales y reseñas</h2>
+                <p className="text-xs app-mut mb-3">Se muestran como enlaces en tu carta y el asistente puede compartirlos.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs app-mut mb-1">Instagram</label>
+                    <input value={form.instagram ?? ''} onChange={e => set('instagram', e.target.value)} className={field} placeholder="https://instagram.com/turestaurante" />
+                  </div>
+                  <div>
+                    <label className="block text-xs app-mut mb-1">Facebook</label>
+                    <input value={form.facebook ?? ''} onChange={e => set('facebook', e.target.value)} className={field} placeholder="https://facebook.com/turestaurante" />
+                  </div>
+                  <div>
+                    <label className="block text-xs app-mut mb-1">TikTok</label>
+                    <input value={form.tiktok ?? ''} onChange={e => set('tiktok', e.target.value)} className={field} placeholder="https://tiktok.com/@turestaurante" />
+                  </div>
+                  <div>
+                    <label className="block text-xs app-mut mb-1">WhatsApp</label>
+                    <input value={form.whatsapp ?? ''} onChange={e => set('whatsapp', e.target.value)} className={field} placeholder="https://wa.me/56912345678" />
+                  </div>
+                  <div>
+                    <label className="block text-xs app-mut mb-1">TripAdvisor</label>
+                    <input value={form.tripadvisor ?? ''} onChange={e => set('tripadvisor', e.target.value)} className={field} placeholder="https://tripadvisor.com/…" />
+                  </div>
+                  <div>
+                    <label className="block text-xs app-mut mb-1">Sitio web</label>
+                    <input value={form.website ?? ''} onChange={e => set('website', e.target.value)} className={field} placeholder="https://turestaurante.cl" />
+                  </div>
+                </div>
               </div>
 
               {error && <p className="text-red-400 text-xs">{error}</p>}

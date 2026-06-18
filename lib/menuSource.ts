@@ -15,6 +15,12 @@ export interface MenuProfile {
   phone: string | null;
   hours: string | null;
   notes: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  whatsapp: string | null;
+  tripadvisor: string | null;
+  website: string | null;
 }
 
 export interface MenuSource {
@@ -34,11 +40,18 @@ interface BizRow {
   phone: string | null;
   hours: string | null;
   notes: string | null;
+  instagram: string | null;
+  facebook: string | null;
+  tiktok: string | null;
+  whatsapp: string | null;
+  tripadvisor: string | null;
+  website: string | null;
 }
 
 export async function resolveMenuSource(slug: string): Promise<MenuSource | null> {
   const biz = await query<BizRow>(
-    `SELECT id, name, description, address, maps_url, phone, hours, notes
+    `SELECT id, name, description, address, maps_url, phone, hours, notes,
+            instagram, facebook, tiktok, whatsapp, tripadvisor, website
      FROM businesses WHERE slug = $1 AND status <> 'suspended' LIMIT 1`,
     [slug]
   );
@@ -49,7 +62,11 @@ export async function resolveMenuSource(slug: string): Promise<MenuSource | null
       name: b.name,
       description: b.description ?? '',
       dishColumn: 'business_id',
-      profile: { address: b.address, maps_url: b.maps_url, phone: b.phone, hours: b.hours, notes: b.notes },
+      profile: {
+        address: b.address, maps_url: b.maps_url, phone: b.phone, hours: b.hours, notes: b.notes,
+        instagram: b.instagram, facebook: b.facebook, tiktok: b.tiktok,
+        whatsapp: b.whatsapp, tripadvisor: b.tripadvisor, website: b.website,
+      },
     };
   }
 
