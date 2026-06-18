@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { HoursEditor } from '@/components/dashboard/HoursEditor';
 
 interface Info {
   name: string;
@@ -12,6 +13,7 @@ interface Info {
   maps_url: string | null;
   phone: string | null;
   hours: string | null;
+  hours_json: string | null;
   notes: string | null;
   instagram: string | null;
   facebook: string | null;
@@ -111,16 +113,15 @@ function InfoEditor() {
                   placeholder="https://maps.app.goo.gl/…" />
                 <p className="text-xs app-mut2 mt-1">En Google Maps: Compartir → Copiar enlace.</p>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs app-mut mb-1">Teléfono</label>
-                  <input value={form.phone ?? ''} onChange={e => set('phone', e.target.value)} className={field} placeholder="+56 9 1234 5678" />
-                </div>
-                <div>
-                  <label className="block text-xs app-mut mb-1">Horario</label>
-                  <input value={form.hours ?? ''} onChange={e => set('hours', e.target.value)} className={field} placeholder="Lun a Sáb, 12:00–23:00" />
-                </div>
+              <div>
+                <label className="block text-xs app-mut mb-1">Teléfono</label>
+                <input value={form.phone ?? ''} onChange={e => set('phone', e.target.value)} className={field} placeholder="+56 9 1234 5678" />
               </div>
+              <HoursEditor
+                hours={form.hours ?? null}
+                hoursJson={form.hours_json ?? null}
+                onChange={(h, hj) => { setForm(f => ({ ...f, hours: h, hours_json: hj })); setSaved(false); }}
+              />
               <div>
                 <label className="block text-xs app-mut mb-1">Información adicional para el asistente</label>
                 <textarea rows={3} value={form.notes ?? ''} onChange={e => set('notes', e.target.value)} className={`${field} resize-none`}
