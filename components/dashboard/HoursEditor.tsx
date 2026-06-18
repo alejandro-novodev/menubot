@@ -121,19 +121,20 @@ export function HoursEditor({
       ) : (
         <div className="app-soft border app-line rounded-xl p-2">
           {week.map((d, i) => (
-            <div key={i} className="flex items-center gap-2 py-1.5 px-1 border-b app-line last:border-0 flex-wrap">
-              <span className="w-9 text-xs font-semibold app-ink shrink-0">{DAYS[i]}</span>
-
-              <button
-                type="button"
-                onClick={() => setDay(i, { open: !d.open })}
-                className={`text-xs font-medium px-2.5 py-1 rounded-full border transition shrink-0 ${d.open ? 'bg-accent/15 border-accent/30 text-accent' : 'app-surface2 app-line app-mut'}`}
-              >
-                {d.open ? 'Abierto' : 'Cerrado'}
-              </button>
+            <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2 py-2 px-1 border-b app-line last:border-0">
+              <div className="flex items-center gap-2 shrink-0 sm:w-28">
+                <span className="w-9 text-xs font-semibold app-ink shrink-0">{DAYS[i]}</span>
+                <button
+                  type="button"
+                  onClick={() => setDay(i, { open: !d.open })}
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full border transition ${d.open ? 'bg-accent/15 border-accent/30 text-accent' : 'app-surface2 app-line app-mut'}`}
+                >
+                  {d.open ? 'Abierto' : 'Cerrado'}
+                </button>
+              </div>
 
               {d.open ? (
-                <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                <div className="flex flex-col gap-1.5 flex-1 min-w-0 pl-11 sm:pl-0">
                   {d.shifts.map((s, si) => (
                     <div key={si} className="flex items-center gap-1.5 flex-wrap">
                       <input type="time" value={s.from} onChange={(e) => setShift(i, si, { from: e.target.value })} className={timeInput} />
