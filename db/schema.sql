@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
 CREATE TABLE IF NOT EXISTS menu_uploads (
   id SERIAL PRIMARY KEY,
   business_id INTEGER NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
-  file_url VARCHAR(500) NOT NULL,
+  file_url VARCHAR(500),                 -- legacy; import now extracts inline
   file_name VARCHAR(255),
   file_type VARCHAR(50) DEFAULT 'pdf',   -- pdf | image
   status VARCHAR(30) NOT NULL DEFAULT 'pending',
