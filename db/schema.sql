@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
   email_verified TIMESTAMPTZ,
   password_hash VARCHAR(255),
   role VARCHAR(20) NOT NULL DEFAULT 'owner', -- owner | admin
+  approved BOOLEAN NOT NULL DEFAULT false,   -- invite-only gate; admin enables
   image VARCHAR(500),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );

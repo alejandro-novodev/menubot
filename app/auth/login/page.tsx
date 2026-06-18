@@ -17,14 +17,23 @@ function LoginForm() {
 
   const callbackUrl = params.get('callbackUrl') ?? '/dashboard';
 
+  const PENDING_MSG = 'Tu cuenta está pendiente de aprobación. Te avisaremos cuando esté habilitada.';
+  // Google sign-in redirects here with ?status=pending when not yet enabled.
+  const [notice, setNotice] = useState(params.get('status') === 'pending' ? PENDING_MSG : '');
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
+    setNotice('');
     setLoading(true);
     try {
       const res = await signIn('credentials', { email, password, redirect: false });
       if (res?.error) {
-        setError('Email o contraseña incorrectos.');
+        if ((res as { code?: string }).code === 'pending_approval') {
+          setNotice(PENDING_MSG);
+        } else {
+          setError('Email o contraseña incorrectos.');
+        }
       } else {
         router.push(callbackUrl);
       }
@@ -48,6 +57,11 @@ function LoginForm() {
         </div>
 
         <div className="bg-[#241F1B] border border-white/10 rounded-2xl p-6">
+          {notice && (
+            <div className="mb-4 rounded-xl border border-accent/30 bg-accent/10 px-3 py-2.5 text-xs text-accent">
+              ⏳ {notice}
+            </div>
+          )}
           <button
             onClick={handleGoogle}
             className="w-full flex items-center justify-center gap-2.5 bg-white hover:bg-gray-100 text-gray-900 font-semibold rounded-xl py-2.5 text-sm transition mb-4"

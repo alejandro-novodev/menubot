@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
   }
 
-  const [bizStats, subStats, recentBiz, recentWaitlist] = await Promise.all([
+  const [bizStats, subStats, recentBiz, recentWaitlist, recentUsers] = await Promise.all([
     query<{ status: string; count: string }>(`
       SELECT status, COUNT(*) as count FROM businesses GROUP BY status
     `),
@@ -30,7 +30,14 @@ export async function GET() {
       SELECT id, name, restaurant_name, email, plan, created_at
       FROM waitlist ORDER BY created_at DESC LIMIT 20
     `),
+    // Users — pending (un-approved) first so they're easy to enable.
+    query<{ id: number; name: string; email: string; role: string; approved: boolean; created_at: string }>(`
+      SELECT id, name, email, role, approved, created_at
+      FROM users ORDER BY approved ASC, created_at DESC LIMIT 100
+    `),
   ]);
+
+  const pendingUsers = recentUsers.rows.filter(u => !u.approved).length;
 
   const bizByStatus = Object.fromEntries(bizStats.rows.map(r => [r.status, parseInt(r.count)]));
   const mrr = subStats.rows
@@ -47,5 +54,8 @@ export async function GET() {
     mrr,
     recentBusinesses: recentBiz.rows,
     waitlist: recentWaitlist.rows,
+    users: recentUsers.rows,
+    pendingUsers,
+    inviteOnly: process.env.INVITE_ONLY !== 'false',
   });
 }

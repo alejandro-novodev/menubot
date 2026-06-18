@@ -28,7 +28,12 @@ export async function POST(req: NextRequest) {
       [name.trim(), email.trim(), hash]
     );
 
-    return NextResponse.json({ success: true, userId: result.rows[0].id });
+    // Invite-only phase: the account is created but can't sign in until an admin
+    // enables it. Tell the client so it shows the right message instead of
+    // attempting an auto sign-in that would be blocked.
+    const pendingApproval = process.env.INVITE_ONLY !== 'false';
+
+    return NextResponse.json({ success: true, userId: result.rows[0].id, pendingApproval });
   } catch (error) {
     console.error('Register error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
