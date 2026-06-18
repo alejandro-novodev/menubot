@@ -215,6 +215,10 @@
 .mb-suggest { transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease; }
 .mb-suggest:hover { border-color: var(--accent); color: var(--accent); background-color: var(--accent-soft); }
 
+/* Social/review links in the menu footer */
+.mb-social { transition: border-color 0.15s ease, color 0.15s ease, transform 0.12s ease; }
+.mb-social:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-1px); }
+
 /* Send button */
 .mb-send { transition: transform 0.12s ease, box-shadow 0.15s ease, background-color 0.15s ease; }
 .mb-send:not(:disabled):hover  { transform: translateY(-1px); }

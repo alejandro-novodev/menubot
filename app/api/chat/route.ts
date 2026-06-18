@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { query } from '@/lib/db';
 import { resolveMenuSource, type MenuProfile } from '@/lib/menuSource';
+import { computeBillFromNames } from '@/lib/bill';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -26,6 +27,12 @@ function profileBlock(name: string, description: string, profile: MenuProfile | 
   if (profile?.maps_url) lines.push(`- Ubicación en Google Maps: ${profile.maps_url}`);
   if (profile?.phone) lines.push(`- Teléfono: ${profile.phone}`);
   if (profile?.hours) lines.push(`- Horario: ${profile.hours}`);
+  if (profile?.whatsapp) lines.push(`- WhatsApp: ${profile.whatsapp}`);
+  if (profile?.website) lines.push(`- Sitio web: ${profile.website}`);
+  if (profile?.instagram) lines.push(`- Instagram: ${profile.instagram}`);
+  if (profile?.facebook) lines.push(`- Facebook: ${profile.facebook}`);
+  if (profile?.tiktok) lines.push(`- TikTok: ${profile.tiktok}`);
+  if (profile?.tripadvisor) lines.push(`- TripAdvisor (reseñas): ${profile.tripadvisor}`);
   if (profile?.notes) lines.push(`- Información adicional: ${profile.notes}`);
   return lines.join('\n');
 }
@@ -117,27 +124,81 @@ ${profileBlock(source.name, source.description, source.profile)}
 
 Reglas:
 - Responde SIEMPRE en español chileno, con tono cercano y usando "tú". Sé conciso y útil.
-- Habla ÚNICAMENTE sobre este restaurante: su carta (platos, bebidas, ingredientes, alérgenos, recomendaciones) y la información del local de arriba (ubicación, horario, contacto). Si te preguntan por la ubicación y hay un enlace de Google Maps, compártelo.
-- Si te preguntan algo NO relacionado con el restaurante (política, programación, clima, temas personales, cálculos, etc.), declina amablemente en UNA frase y reconduce a la carta. Ejemplo: "Solo te puedo ayudar con la carta de ${source.name} 😊 ¿Quieres que te recomiende algo?".
+- Habla ÚNICAMENTE sobre este restaurante: su carta (platos, bebidas, ingredientes, alérgenos, recomendaciones) y la información del local de arriba (ubicación, horario, contacto, redes sociales y reseñas). Si te preguntan por la ubicación y hay un enlace de Google Maps, compártelo. Si preguntan por redes sociales o dónde dejar una reseña, comparte el enlace correspondiente si está disponible.
+- Si te preguntan algo NO relacionado con el restaurante (política, programación, clima, temas personales, etc.), declina amablemente en UNA frase y reconduce a la carta. Ejemplo: "Solo te puedo ayudar con la carta de ${source.name} 😊 ¿Quieres que te recomiende algo?".
 - No inventes platos, precios, ingredientes ni datos del local que no estén arriba. Si no sabes algo, dilo.
 - Cuando el cliente pida recomendaciones, prioriza y destaca los platos con "recomendado_del_chef": true (son las sugerencias del chef) y explica brevemente por qué le podrían gustar.
 - Los precios están en pesos chilenos (CLP).
+- Si el cliente quiere sumar platos, calcular cuánto pagar, agregar propina o DIVIDIR la cuenta, usa SIEMPRE la herramienta "calcular_cuenta". NUNCA hagas la aritmética tú mismo. Si algún plato no se encuentra (campo "unmatched"), pídele al cliente que lo aclare. En Chile la propina sugerida es 10%; si no la mencionan, asume 10% y dilo. Presenta el total y, si hay varias personas, cuánto paga cada una.
 
 Menú completo (JSON):
 ${menuJson}`;
 
-    const response = await anthropic.messages.create({
+    const tools: Anthropic.Tool[] = [
+      {
+        name: 'calcular_cuenta',
+        description:
+          'Calcula el total de una cuenta (con propina opcional) y la divide entre comensales, usando los precios reales del menú. Úsala siempre que el cliente quiera sumar platos, saber cuánto pagar, agregar propina o dividir la cuenta.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            items: {
+              type: 'array',
+              description: 'Platos a sumar, con su cantidad.',
+              items: {
+                type: 'object',
+                properties: {
+                  nombre: { type: 'string', description: 'Nombre del plato tal como aparece en la carta.' },
+                  cantidad: { type: 'integer', description: 'Cuántas unidades. Por defecto 1.' },
+                },
+                required: ['nombre'],
+              },
+            },
+            propina_pct: { type: 'number', description: 'Porcentaje de propina. En Chile, 10% por defecto.' },
+            personas: { type: 'integer', description: 'Entre cuántas personas dividir. Por defecto 1.' },
+          },
+          required: ['items'],
+        },
+      },
+    ];
+
+    const menuPrices = dishesResult.rows.map((d) => ({ name: d.name, price: d.price }));
+
+    const convo: Anthropic.MessageParam[] = messages.map((m) => ({ role: m.role, content: m.content }));
+
+    let response = await anthropic.messages.create({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
       system: systemPrompt,
-      messages: messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      })),
+      tools,
+      messages: convo,
     });
 
-    const assistantMessage = response.content[0];
-    if (assistantMessage.type !== 'text') {
+    // Tool-use loop: execute calcular_cuenta deterministically and feed results back.
+    let guard = 0;
+    while (response.stop_reason === 'tool_use' && guard++ < 4) {
+      const toolResults: Anthropic.ToolResultBlockParam[] = [];
+      for (const block of response.content) {
+        if (block.type === 'tool_use' && block.name === 'calcular_cuenta') {
+          const input = block.input as { items?: { nombre: string; cantidad?: number }[]; propina_pct?: number; personas?: number };
+          const result = computeBillFromNames(input.items ?? [], menuPrices, input.propina_pct ?? 10, input.personas ?? 1);
+          toolResults.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });
+        }
+      }
+      convo.push({ role: 'assistant', content: response.content });
+      convo.push({ role: 'user', content: toolResults });
+      response = await anthropic.messages.create({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1024,
+        system: systemPrompt,
+        tools,
+        messages: convo,
+      });
+    }
+
+    const textBlock = response.content.find((b) => b.type === 'text');
+    const replyText = textBlock && textBlock.type === 'text' ? textBlock.text : '';
+    if (!replyText) {
       return NextResponse.json({ error: 'Unexpected response type' }, { status: 500 });
     }
 
@@ -146,11 +207,11 @@ ${menuJson}`;
     if (source.dishColumn === 'business_id') {
       const lastUser = [...messages].reverse().find((m) => m.role === 'user');
       if (lastUser) {
-        newSessionId = await logChatTurn(source.id, sessionId ?? null, lastUser.content, assistantMessage.text);
+        newSessionId = await logChatTurn(source.id, sessionId ?? null, lastUser.content, replyText);
       }
     }
 
-    return NextResponse.json({ message: assistantMessage.text, sessionId: newSessionId });
+    return NextResponse.json({ message: replyText, sessionId: newSessionId });
   } catch (error) {
     console.error('Chat error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });

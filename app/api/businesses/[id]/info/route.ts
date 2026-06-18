@@ -12,7 +12,8 @@ export async function GET(
   const { id } = await params;
   const result = await query(
     `SELECT id, name, slug, status, menu_completeness, business_type,
-            description, address, maps_url, phone, hours, notes
+            description, address, maps_url, phone, hours, notes,
+            instagram, facebook, tiktok, whatsapp, tripadvisor, website
      FROM businesses WHERE id = $1 AND user_id = $2`,
     [id, parseInt(session.user.id)]
   );
@@ -35,7 +36,8 @@ export async function PATCH(
   if (owner.rows.length === 0) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
   const body = await req.json() as Record<string, unknown>;
-  const editable = ['name', 'description', 'address', 'maps_url', 'phone', 'hours', 'notes'];
+  const editable = ['name', 'description', 'address', 'maps_url', 'phone', 'hours', 'notes',
+    'instagram', 'facebook', 'tiktok', 'whatsapp', 'tripadvisor', 'website'];
   const updates: string[] = [];
   const values: unknown[] = [];
   for (const f of editable) {
