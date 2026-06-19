@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { resolveMenuSource } from '@/lib/menuSource';
+import { getBusinessPlan } from '@/lib/subscription';
+import { getFeatures } from '@/lib/plan-features';
 
 export async function GET(
   _req: NextRequest,
@@ -13,12 +15,19 @@ export async function GET(
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
     }
 
+    // Reviews are only offered to diners when the business is on a plan that
+    // includes them (Pro+). Legacy demo restaurants (no plan) never show them.
+    const reviewsEnabled = source.dishColumn === 'business_id'
+      ? getFeatures(await getBusinessPlan(source.id)).hasReviews
+      : false;
+
     const p = source.profile;
     return NextResponse.json({
       id: source.id,
       name: source.name,
       slug,
       description: source.description,
+      reviewsEnabled,
       maps_url: p?.maps_url ?? null,
       socials: {
         instagram: p?.instagram ?? null,

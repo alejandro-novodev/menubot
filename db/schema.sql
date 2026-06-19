@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   business_id INTEGER REFERENCES businesses(id),
-  plan VARCHAR(50) NOT NULL,             -- starter | pro | multi
+  plan VARCHAR(50) NOT NULL,             -- starter | pro | multi | enterprise
   status VARCHAR(30) NOT NULL DEFAULT 'pending',
   -- pending | active | cancelled | past_due
   payment_provider_id VARCHAR(255),      -- Flow.cl subscription ID
@@ -69,7 +69,24 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   started_at TIMESTAMPTZ,
   ends_at TIMESTAMPTZ,
   price_clp INTEGER,
+  branch_count INTEGER NOT NULL DEFAULT 1,
+  extra_branches INTEGER NOT NULL DEFAULT 0,
+  billing_cycle VARCHAR(20) NOT NULL DEFAULT 'monthly',  -- monthly | annual
+  annual_discount_active BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ── Reviews (post-visit opinions; stored in MenuBot only) ──────────────────
+CREATE TABLE IF NOT EXISTS reviews (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  business_id     INTEGER NOT NULL REFERENCES businesses(id) ON DELETE CASCADE,
+  conversation_id INTEGER REFERENCES chat_sessions(id) ON DELETE SET NULL,
+  diner_rating    INTEGER NOT NULL CHECK (diner_rating BETWEEN 1 AND 5),
+  diner_comment   TEXT,
+  share_consent   BOOLEAN NOT NULL DEFAULT false,  -- diner agreed to share publicly
+  owner_response  TEXT,
+  responded_at    TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 -- ── Menu uploads ───────────────────────────────────────────────────────────

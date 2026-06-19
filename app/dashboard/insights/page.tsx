@@ -4,11 +4,14 @@ import { Suspense, useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { FeatureGate } from '@/components/dashboard/FeatureGate';
+import { getFeatures } from '@/lib/plan-features';
 
 interface TopQuestion { topic: string; count: number; }
 interface RecentSession { id: number; summary: string | null; messageCount: number; createdAt: string; pending: boolean; }
 interface Insights {
   businessName: string;
+  plan: string;
   totalSessions: number;
   totalMessages: number;
   topQuestions: TopQuestion[];
@@ -60,7 +63,8 @@ function InsightsView() {
     return () => { cancelled = true; };
   }, [bizId]);
 
-  const maxCount = data?.topQuestions[0]?.count ?? 1;
+  // Max occurrences across all categories = the 100% reference for the bars.
+  const maxCount = Math.max(1, ...(data?.topQuestions.map((q) => q.count) ?? [1]));
 
   return (
     <div className="min-h-screen app-bg app-ink flex flex-col">
@@ -107,7 +111,7 @@ function InsightsView() {
                     {data.topQuestions.map((q) => (
                       <div key={q.topic} className="flex items-center gap-3">
                         <div className="flex-1 app-soft border app-line rounded-lg overflow-hidden relative h-8">
-                          <div className="absolute inset-y-0 left-0 bg-accent/15" style={{ width: `${Math.max(8, (q.count / maxCount) * 100)}%` }} />
+                          <div className="absolute inset-y-0 left-0 bg-accent/15" style={{ width: `${(q.count / maxCount) * 100}%` }} />
                           <span className="absolute inset-0 flex items-center px-3 text-xs app-ink capitalize">{q.topic}</span>
                         </div>
                         <span className="text-xs app-mut w-10 text-right tabular-nums">{q.count}×</span>
@@ -117,22 +121,29 @@ function InsightsView() {
                 )}
               </section>
 
-              {/* Resúmenes recientes */}
+              {/* Resúmenes recientes — analytics avanzado (Pro+) */}
               <section>
                 <h2 className="text-sm font-semibold app-ink mb-3">Conversaciones recientes</h2>
-                <div className="space-y-2">
-                  {data.recent.map((s) => (
-                    <div key={s.id} className="app-surface border app-line rounded-xl p-3">
-                      <div className="flex items-center justify-between gap-3 mb-1">
-                        <span className="text-xs app-mut2">{fmtDate(s.createdAt)}</span>
-                        <span className="text-xs app-mut2">{s.messageCount} mensajes</span>
+                <FeatureGate
+                  enabled={getFeatures(data.plan).hasAdvancedAnalytics}
+                  requiredPlan="pro"
+                  title="Resúmenes de conversaciones — disponible en el plan Pro"
+                  description="Lee un resumen de cada conversación para entender qué buscan tus clientes."
+                >
+                  <div className="space-y-2">
+                    {data.recent.map((s) => (
+                      <div key={s.id} className="app-surface border app-line rounded-xl p-3">
+                        <div className="flex items-center justify-between gap-3 mb-1">
+                          <span className="text-xs app-mut2">{fmtDate(s.createdAt)}</span>
+                          <span className="text-xs app-mut2">{s.messageCount} mensajes</span>
+                        </div>
+                        <p className="text-sm app-ink">
+                          {s.pending ? <span className="app-mut2 italic">Resumiendo…</span> : s.summary}
+                        </p>
                       </div>
-                      <p className="text-sm app-ink">
-                        {s.pending ? <span className="app-mut2 italic">Resumiendo…</span> : s.summary}
-                      </p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </FeatureGate>
               </section>
             </div>
           )}

@@ -6,56 +6,8 @@ import { useSession } from 'next-auth/react';
 import { DishWordCloud } from '@/components/landing/DishWordCloud';
 import { AppShowcase } from '@/components/landing/AppShowcase';
 import { ContactModal } from '@/components/landing/ContactModal';
+import { PlanGrid } from '@/components/landing/PlanGrid';
 import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
-
-const PRICING = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: '$9.990',
-    description: 'Para restaurantes que están comenzando.',
-    features: [
-      { text: '1 restaurante', ok: true },
-      { text: '500 chats / mes', ok: true },
-      { text: 'Asistente en español', ok: true },
-      { text: 'Extracción PDF e imágenes', ok: true },
-      { text: 'QR y link compartible', ok: true },
-      { text: 'Analytics', ok: false },
-      { text: 'Marca blanca', ok: false },
-    ],
-  },
-  {
-    id: 'pro',
-    name: 'Pro',
-    price: '$24.990',
-    description: 'Para restaurantes que quieren crecer.',
-    featured: true,
-    features: [
-      { text: '1 restaurante', ok: true },
-      { text: 'Chats ilimitados', ok: true },
-      { text: 'Asistente en español', ok: true },
-      { text: 'Extracción PDF e imágenes', ok: true },
-      { text: 'QR y link compartible', ok: true },
-      { text: 'Analytics básico', ok: true },
-      { text: 'Marca blanca', ok: false },
-    ],
-  },
-  {
-    id: 'multi',
-    name: 'Multi',
-    price: '$59.990',
-    description: 'Para cadenas y grupos gastronómicos.',
-    features: [
-      { text: 'Hasta 5 locales', ok: true },
-      { text: 'Chats ilimitados', ok: true },
-      { text: 'Asistente en español', ok: true },
-      { text: 'Extracción PDF e imágenes', ok: true },
-      { text: 'QR y link compartible', ok: true },
-      { text: 'Analytics avanzado', ok: true },
-      { text: 'Marca blanca', ok: true },
-    ],
-  },
-];
 
 const HOW_IT_WORKS = [
   { step: '01', icon: '🚀', title: 'Crea tu cuenta', desc: '14 días gratis, sin tarjeta. Regístrate en menos de un minuto y configura el perfil de tu negocio.' },
@@ -191,52 +143,17 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section className="py-20 px-5">
-        <div className="max-w-5xl mx-auto">
+      <section id="planes" className="py-20 px-5">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-4">
             <h2 className="text-3xl font-bold mb-3">Planes</h2>
             <p className="text-gray-400">Precios en pesos chilenos. Los primeros 14 días son gratis en cualquier plan.</p>
           </div>
           <p className="text-center text-xs text-emerald-400 mb-10">✓ 14 días de prueba gratuita · Sin tarjeta · Cancela cuando quieras</p>
-          <div className="grid sm:grid-cols-3 gap-6 items-start">
-            {PRICING.map(plan => (
-              <div key={plan.id} className={`relative flex flex-col rounded-2xl p-6 ${plan.featured ? 'border border-accent/40 bg-accent/5 shadow-lg' : 'bg-[#241F1B] border border-white/5'}`}
-                style={plan.featured ? { boxShadow: '0 0 40px rgba(199,107,67,0.1)' } : {}}>
-                {plan.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-accent text-white text-xs font-semibold px-3 py-1 rounded-full">Más popular</span>
-                  </div>
-                )}
-                <div className="mb-5">
-                  <h3 className={`text-lg font-semibold mb-1 ${plan.featured ? 'text-accent' : 'text-white'}`}>{plan.name}</h3>
-                  <p className="text-gray-500 text-sm">{plan.description}</p>
-                </div>
-                <div className="mb-6">
-                  <span className="text-3xl font-bold text-white">{plan.price}</span>
-                  <span className="text-gray-500 text-sm ml-1">/mes</span>
-                </div>
-                <ul className="flex-1 space-y-2.5 mb-6">
-                  {plan.features.map(f => (
-                    <li key={f.text} className="flex items-start gap-2 text-sm">
-                      <span className={`mt-0.5 shrink-0 ${f.ok ? 'text-accent' : 'text-gray-700'}`}>{f.ok ? '✓' : '—'}</span>
-                      <span className={f.ok ? 'text-gray-300' : 'text-gray-600'}>{f.text}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Link href={`/auth/register?plan=${plan.id}`}
-                  className={`block text-center rounded-xl py-2.5 text-sm font-semibold transition-all ${
-                    plan.featured ? 'bg-accent hover:bg-accent-lite text-white' : 'bg-[#2E2823] hover:bg-gray-700 text-gray-200 border border-white/10'
-                  }`}>
-                  Empezar gratis →
-                </Link>
-              </div>
-            ))}
-          </div>
+          <PlanGrid />
           <p className="text-center text-xs text-gray-600 mt-6">
-            ¿Necesitas un plan personalizado?{' '}
-            <button onClick={() => openModal()} className="text-accent hover:text-accent-lite transition underline underline-offset-2">
-              Solicitar contacto
-            </button>
+            Ver el detalle completo en la{' '}
+            <Link href="/pricing" className="text-accent hover:text-accent-lite transition underline underline-offset-2">página de planes</Link>.
           </p>
         </div>
       </section>
