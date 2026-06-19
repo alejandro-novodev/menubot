@@ -77,8 +77,13 @@ const FEATURES_BY_PLAN: Record<Plan, PlanFeatures> = {
   enterprise: ENTERPRISE,
 };
 
-/** Feature flags for a plan. Unknown/missing plans fall back to Starter. */
+/**
+ * Feature flags for a plan. During the 14-day trial (plan = 'trial') users get
+ * Pro-level features so they can preview the full product. Unknown/missing
+ * plans fall back to Starter.
+ */
 export function getFeatures(plan: string | null | undefined): PlanFeatures {
+  if (plan === 'trial') return PRO;
   return FEATURES_BY_PLAN[(plan ?? 'starter') as Plan] ?? STARTER;
 }
 
