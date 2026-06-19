@@ -4,6 +4,7 @@ import { use, useCallback, useEffect, useRef, useState } from 'react';
 import { ChatBubble } from '@/components/ChatBubble';
 import { MenuScreen, type MenuDish } from '@/components/customer/MenuScreen';
 import { BillSplitter } from '@/components/customer/BillSplitter';
+import { ReviewModal } from '@/components/customer/ReviewModal';
 import type { Socials } from '@/components/customer/SocialLinks';
 import { LogoIcon } from '@/components/brand/Wordmark';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -11,7 +12,7 @@ import { formatPrice } from '@/lib/menu';
 import Link from 'next/link';
 
 interface Message { role: 'user' | 'assistant'; content: string; }
-interface Restaurant { name: string; description: string; socials?: Socials | null; }
+interface Restaurant { name: string; description: string; socials?: Socials | null; reviewsEnabled?: boolean; }
 interface MenuData { categories: Record<string, MenuDish[]> }
 
 const SUGGESTIONS = [
@@ -207,6 +208,7 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
   const [showBill, setShowBill] = useState(false);
+  const [showReview, setShowReview] = useState(false);
   const sessionIdRef = useRef<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -286,6 +288,7 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
     onAsk: handleDishSelect,
     socials: restaurant?.socials ?? null,
     onSplitBill: () => setShowBill(true),
+    onReview: restaurant?.reviewsEnabled ? () => setShowReview(true) : undefined,
   };
 
   const allDishes = Object.values(menuData?.categories ?? {}).flat();
@@ -305,6 +308,7 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
   return (
     <div style={{ height: '100svh', background: 'var(--mb-bg)', display: 'flex', flexDirection: 'column' }}>
       {showBill && <BillSplitter dishes={allDishes} onClose={() => setShowBill(false)} />}
+      {showReview && <ReviewModal slug={slug} sessionId={sessionIdRef.current} onClose={() => setShowReview(false)} />}
 
       {/* ── DESKTOP / TABLET: side by side ── */}
       <div

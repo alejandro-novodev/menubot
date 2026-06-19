@@ -32,6 +32,8 @@ interface Props {
   socials?: Socials | null;
   /** Opens the bill-split calculator. When set, a calculator button appears. */
   onSplitBill?: () => void;
+  /** Opens the review form. When set, an "Opinión" button appears. */
+  onReview?: () => void;
 }
 
 const CATEGORY_ORDER = [
@@ -135,7 +137,7 @@ function DishRow({ dish, onTap }: { dish: MenuDish; onTap: () => void }) {
   );
 }
 
-export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true, sidebar = false, socials = null, onSplitBill }: Props) {
+export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true, sidebar = false, socials = null, onSplitBill, onReview }: Props) {
   const sorted = Object.keys(categories).sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a), bi = CATEGORY_ORDER.indexOf(b);
     if (ai === -1 && bi === -1) return a.localeCompare(b);
@@ -187,6 +189,23 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {onReview && (
+            <button
+              onClick={onReview}
+              className="mb-social"
+              aria-label="Dejar una opinión"
+              title="Dejar una opinión"
+              style={{
+                height: 34, padding: '0 12px', borderRadius: 999,
+                border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
+                color: 'var(--mb-ink)', cursor: 'pointer',
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12.5, fontWeight: 600,
+              }}
+            >
+              ⭐ <span className="hidden sm:inline">Opinión</span>
+            </button>
+          )}
           {onSplitBill && (
             <button
               onClick={onSplitBill}

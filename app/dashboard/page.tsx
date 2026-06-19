@@ -151,6 +151,9 @@ export default async function DashboardPage() {
                     <Link href={`/dashboard/insights?biz=${biz.id}`} className="text-xs app-mut app-ink-hover app-soft app-soft-hover border app-line px-3 py-1.5 rounded-lg transition">
                       Conversaciones
                     </Link>
+                    <Link href={`/dashboard/reviews?biz=${biz.id}`} className="text-xs app-mut app-ink-hover app-soft app-soft-hover border app-line px-3 py-1.5 rounded-lg transition">
+                      Reseñas
+                    </Link>
                     <Link href={`/dashboard/menu?biz=${biz.id}`} className="text-xs app-mut app-ink-hover app-soft app-soft-hover border app-line px-3 py-1.5 rounded-lg transition">
                       Gestionar carta
                     </Link>
