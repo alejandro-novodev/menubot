@@ -34,6 +34,13 @@ export async function GET(
   );
   if (biz.rows.length === 0) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
+  // Plan drives feature gating on the client (advanced analytics, etc.).
+  const sub = await query<{ plan: string }>(
+    `SELECT plan FROM subscriptions WHERE business_id = $1 AND status = 'active' ORDER BY created_at DESC LIMIT 1`,
+    [businessId]
+  );
+  const plan = sub.rows[0]?.plan ?? 'starter';
+
   // ── Lazily summarize sessions that have new content ──────────────────────
   const pending = await query<{ id: number }>(
     `SELECT id FROM chat_sessions
@@ -98,6 +105,7 @@ export async function GET(
 
   return NextResponse.json({
     businessName: biz.rows[0].name,
+    plan,
     totalSessions,
     totalMessages,
     topQuestions,
