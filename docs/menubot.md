@@ -249,3 +249,62 @@ Each module is implemented and verified one at a time.
 - Auth: `auth.ts`, `auth.config.ts`, `proxy.ts`
 - Billing: `app/api/flow/**`, `app/dashboard/billing/**`
 - Admin: `app/admin/**`, `app/api/admin/**`
+
+---
+
+## 12. Multi-language — flagship feature for the Santiago tourist block `→ STRATEGY`
+
+> Promoted from roadmap P2.3 to a **headline feature**. Target: pubs & restaurants in
+> Santiago's tourist zones (Bellavista, Lastarria, Barrio Italia, Bellas Artes,
+> Centro/Santa Lucía, Providencia, hotel-adjacent). Pitch: *"Tu carta habla el idioma
+> de tus clientes."* / EN: *"Your menu, in every guest's language."*
+
+### 12.1 Why it's a strong bet
+- The **hardest part is already free**: Claude is fluent in every major language, so the
+  diner chat can answer in the guest's language at ~zero added cost. Today the system
+  prompt forces "español chileno" (`app/api/chat/route.ts`); we just parameterize it.
+- Real pain for tourist venues: language barriers at ordering, allergen/dietary fear in a
+  foreign language, the cost/clutter of printed multilingual menus. menubot removes all three.
+- Differentiator vs static PDF/QR menus and QR-ordering apps, none of which converse in the
+  guest's language.
+
+### 12.2 Scope — the layers (diner side only; owner dashboard stays Spanish)
+1. **Chat in the diner's language** — trivial; model already does it. Detect from browser
+   locale + a flag/language picker; tell the assistant which language to answer in. The menu
+   stays Spanish in the prompt (source of truth); the model translates in its reply.
+2. **Translated menu display** — descriptions, ingredients, **allergens**, categories shown
+   in the diner's language. Keep dish **names** original (order "Pisco Sour" by its real name)
+   with a translated gloss. Translate once with **Haiku**, **cache** per language, invalidate
+   on dish edit → cheap + fast.
+3. **Customer UI i18n** — diner-facing strings (buttons, "Preguntar", "Dividir la cuenta",
+   review modal) via a small dictionary.
+4. **Owner controls + analytics** — enable/disable languages, override any auto-translation,
+   and a **language breakdown in insights** ("38% of chats this week were in English/PT") —
+   a powerful tourist-venue metric.
+
+### 12.3 Phased plan
+| Phase | What | Effort | Ongoing cost |
+|---|---|---|---|
+| **L0** | Auto-detect locale + flag picker; chat replies in the chosen language | ~½ day | ~$0 |
+| **L1** | Menu translation pipeline (Haiku) cached in a `dish_translations` table/JSONB; language-aware menu API; invalidate on edit | ~2–3 days | one-time per language/menu version |
+| **L2** | Customer UI i18n dictionary | ~1–2 days | $0 |
+| **L3** | Owner language controls + language usage in insights | ~1–2 days | $0 |
+| **L4** | GTM: landing angle, pricing, pilot in a tourist zone | — | — |
+
+L0–L2 (~1 week) = a launchable hero feature.
+
+### 12.4 Recommended defaults (founder to confirm) `→ STRATEGY`
+- **Launch languages:** **ES (source) + EN + Brazilian PT** — by far the biggest tourist
+  groups; add FR/DE/中文/IT later. `TODO(input)` to confirm.
+- **Positioning/gating:** **chat-in-any-language free on every plan** (zero marginal cost →
+  use it to win the segment); **full translated menu + language picker + language analytics
+  gated to Pro+** (the upsell lever for tourist venues). Fits the 4-plan model in `lib/plans.ts`.
+- **Pilot:** make ≥1 of the 3 early-bird venues a tourist-zone pub/restaurant.
+
+### 12.5 Technical notes
+- Source of truth stays the owner's language (Spanish) in `dishes`. Translations are derived
+  + cached; never block the menu render (serve source text while a translation warms).
+- Add a `lang` param to `/api/chat` and the menu/restaurant APIs; persist the diner's choice
+  in `localStorage`.
+- Reuse the existing lazy-summarize/caching pattern (see insights) for menu translation.
+- Capture the detected/selected diner language on `chat_sessions` to power L3 analytics.
