@@ -9,24 +9,21 @@ import type { Socials } from '@/components/customer/SocialLinks';
 import { LogoIcon } from '@/components/brand/Wordmark';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { formatPrice } from '@/lib/menu';
+import { t } from '@/lib/i18n';
+import { resolveLang, DEFAULT_LANG, type LangCode } from '@/lib/languages';
 import Link from 'next/link';
 
 interface Message { role: 'user' | 'assistant'; content: string; }
 interface Restaurant { name: string; description: string; socials?: Socials | null; reviewsEnabled?: boolean; }
 interface MenuData { categories: Record<string, MenuDish[]> }
 
-const SUGGESTIONS = [
-  '¿Qué me recomiendas?',
-  'Opciones vegetarianas 🌱',
-  'Platos sin gluten',
-  '¿Qué es lo más pedido?',
-];
+const SUGGESTION_KEYS = ['sugg1', 'sugg2', 'sugg3', 'sugg4'];
 
-function buildDishMessage(dish: MenuDish): string {
+function buildDishMessage(dish: MenuDish, lang: LangCode): string {
   const parts = [`**${dish.name}**`];
   if (dish.price) parts.push(`— ${formatPrice(dish.price)}`);
   if (dish.description) parts.push(`\n${dish.description}`);
-  if (dish.allergens && dish.allergens !== 'ninguno') parts.push(`\n⚠️ Contiene: ${dish.allergens}`);
+  if (dish.allergens && dish.allergens !== 'ninguno') parts.push(`\n⚠️ ${t(lang, 'contains')}: ${dish.allergens}`);
   return parts.join(' ');
 }
 
@@ -46,7 +43,7 @@ function LoadingDots() {
 }
 
 /** Welcoming empty state with tappable suggested questions */
-function ChatWelcome({ restaurantName, onSuggest }: { restaurantName: string; onSuggest: (text: string) => void }) {
+function ChatWelcome({ restaurantName, onSuggest, lang }: { restaurantName: string; onSuggest: (text: string) => void; lang: LangCode }) {
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -57,19 +54,21 @@ function ChatWelcome({ restaurantName, onSuggest }: { restaurantName: string; on
         fontFamily: 'var(--font-space-grotesk, system-ui)', fontWeight: 700, fontSize: 19,
         letterSpacing: '-0.02em', color: 'var(--mb-ink)', margin: '16px 0 0',
       }}>
-        ¿En qué te ayudo con la carta?
+        {t(lang, 'welcomeTitle')}
       </h2>
       <p style={{
         fontFamily: 'var(--font-archivo, system-ui)', fontSize: 13.5, lineHeight: 1.5,
         color: 'var(--mb-mut)', margin: '8px 0 0', maxWidth: 320,
       }}>
-        Pregúntame por ingredientes, alérgenos o recomendaciones — o toca un plato de la carta de {restaurantName || 'la carta'}.
+        {t(lang, 'welcomeSubtitle', { name: restaurantName || 'menubot' })}
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 8, marginTop: 22, maxWidth: 380 }}>
-        {SUGGESTIONS.map(s => (
+        {SUGGESTION_KEYS.map(key => {
+          const label = t(lang, key);
+          return (
           <button
-            key={s}
-            onClick={() => onSuggest(s)}
+            key={key}
+            onClick={() => onSuggest(label)}
             className="mb-suggest"
             style={{
               fontFamily: 'var(--font-archivo, system-ui)', fontSize: 13, fontWeight: 600,
@@ -78,9 +77,10 @@ function ChatWelcome({ restaurantName, onSuggest }: { restaurantName: string; on
               padding: '9px 15px', cursor: 'pointer',
             }}
           >
-            {s}
+            {label}
           </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -99,6 +99,7 @@ function ChatPanel({
   bottomRef,
   onBack,
   showBack,
+  lang,
 }: {
   restaurantName: string;
   messages: Message[];
@@ -111,6 +112,7 @@ function ChatPanel({
   bottomRef: React.RefObject<HTMLDivElement | null>;
   onBack?: () => void;
   showBack?: boolean;
+  lang: LangCode;
 }) {
   const canSend = !!input.trim() && !loading;
   const isEmpty = messages.length === 0 && !loading;
@@ -126,7 +128,7 @@ function ChatPanel({
         display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0,
       }}>
         {showBack && onBack && (
-          <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--mb-mut)', display: 'flex' }} aria-label="Volver a la carta">
+          <button onClick={onBack} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--mb-mut)', display: 'flex' }} aria-label={t(lang, 'back')}>
             <svg width="13" height="18" viewBox="0 0 13 18" fill="none">
               <path d="M11 1.5L3.5 9 11 16.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -135,11 +137,11 @@ function ChatPanel({
         <LogoIcon size={32} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: 'var(--font-space-grotesk, system-ui)', fontWeight: 600, fontSize: 15, letterSpacing: '-0.02em', color: 'var(--mb-ink)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            Asistente · {restaurantName}
+            {t(lang, 'assistant')} · {restaurantName}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 2, fontFamily: 'var(--font-archivo, system-ui)', fontSize: 11.5, color: 'var(--mb-mut)' }}>
             <span style={{ width: 6, height: 6, borderRadius: 99, background: '#5BBF7B', flexShrink: 0 }} />
-            En línea · con menubot<span style={{ color: 'var(--accent)' }}>.</span>
+            {t(lang, 'online')} · {t(lang, 'withMenubot')}<span style={{ color: 'var(--accent)' }}>.</span>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
@@ -157,7 +159,7 @@ function ChatPanel({
       {/* Messages */}
       <div className="mb-scroll" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
         {isEmpty ? (
-          <ChatWelcome restaurantName={restaurantName} onSuggest={onSuggest} />
+          <ChatWelcome restaurantName={restaurantName} onSuggest={onSuggest} lang={lang} />
         ) : (
           <div style={{ width: '100%', maxWidth: 720, margin: '0 auto', padding: '18px 16px 10px' }}>
             {messages.map((msg, i) => <ChatBubble key={i} message={msg.content} role={msg.role} />)}
@@ -173,7 +175,7 @@ function ChatPanel({
           <div style={{ flex: 1, height: 46, borderRadius: 999, background: 'var(--mb-surface)', border: '1px solid var(--mb-line)', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
             <input
               type="text" value={input} onChange={e => onInput(e.target.value)} onKeyDown={onKeyDown} disabled={loading}
-              placeholder="Escribe tu pregunta…"
+              placeholder={t(lang, 'inputPlaceholder')}
               style={{ flex: 1, background: 'none', border: 'none', outline: 'none', padding: '0 18px', fontFamily: 'var(--font-archivo, system-ui)', fontSize: 14, color: 'var(--mb-ink)' }}
             />
           </div>
@@ -209,23 +211,38 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
   const [dataLoading, setDataLoading] = useState(true);
   const [showBill, setShowBill] = useState(false);
   const [showReview, setShowReview] = useState(false);
+  const [reviewSessionId, setReviewSessionId] = useState<number | null>(null);
+  // Detect the diner's language once (saved choice → browser locale → Spanish).
+  // The loading spinner renders first, so no hydration mismatch on language.
+  const [lang, setLang] = useState<LangCode>(() => {
+    if (typeof window === 'undefined') return DEFAULT_LANG;
+    try { return resolveLang(localStorage.getItem('menubot_lang') ?? navigator.language); } catch { return DEFAULT_LANG; }
+  });
+  const changeLang = useCallback((l: LangCode) => {
+    setLang(l);
+    try { localStorage.setItem('menubot_lang', l); } catch { /* ignore */ }
+  }, []);
   const sessionIdRef = useRef<number | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // Loads restaurant + menu, and refetches the menu (translated) when the
+  // diner changes language. Inlined so setState runs only after the await.
   useEffect(() => {
-    async function load() {
+    let cancelled = false;
+    (async () => {
       const [rRes, mRes] = await Promise.all([
         fetch(`/api/restaurant/${slug}`),
-        fetch(`/api/menu/${slug}`),
+        fetch(`/api/menu/${slug}?lang=${lang}`),
       ]);
+      if (cancelled) return;
       const r = rRes.ok ? await rRes.json() as Restaurant : { name: 'menubot.', description: '' };
       const m = mRes.ok ? await mRes.json() as MenuData : { categories: {} };
       setRestaurant(r);
       setMenuData(m);
       setDataLoading(false);
-    }
-    load();
-  }, [slug]);
+    })();
+    return () => { cancelled = true; };
+  }, [slug, lang]);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading]);
 
@@ -235,17 +252,17 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history, restaurantSlug: slug, sessionId: sessionIdRef.current }),
+        body: JSON.stringify({ messages: history, restaurantSlug: slug, sessionId: sessionIdRef.current, lang }),
       });
       const data = await res.json() as { message: string; sessionId?: number | null; error?: string };
       if (data.sessionId) sessionIdRef.current = data.sessionId;
-      setMessages(m => [...m, { role: 'assistant', content: data.message || data.error || 'Error al responder.' }]);
+      setMessages(m => [...m, { role: 'assistant', content: data.message || data.error || t(lang, 'errorReply') }]);
     } catch {
-      setMessages(m => [...m, { role: 'assistant', content: 'Hubo un error. Por favor intenta de nuevo.' }]);
+      setMessages(m => [...m, { role: 'assistant', content: t(lang, 'errorReply') }]);
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [slug, lang]);
 
   const sendMessage = useCallback((override?: string) => {
     const text = (override ?? input).trim();
@@ -260,10 +277,10 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
   const handleDishSelect = useCallback((dish?: MenuDish) => {
     setMobileView('chat');
     if (dish) {
-      setMessages(prev => [...prev, { role: 'assistant', content: buildDishMessage(dish) }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: buildDishMessage(dish, lang) }]);
     }
     // No dish → just open the chat (welcome state handles the rest)
-  }, []);
+  }, [lang]);
 
   function handleKey(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
@@ -288,7 +305,9 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
     onAsk: handleDishSelect,
     socials: restaurant?.socials ?? null,
     onSplitBill: () => setShowBill(true),
-    onReview: restaurant?.reviewsEnabled ? () => setShowReview(true) : undefined,
+    onReview: restaurant?.reviewsEnabled ? () => { setReviewSessionId(sessionIdRef.current); setShowReview(true); } : undefined,
+    lang,
+    onLang: changeLang,
   };
 
   const allDishes = Object.values(menuData?.categories ?? {}).flat();
@@ -300,15 +319,16 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
     input,
     onInput: setInput,
     onSend: () => sendMessage(),
-    onSuggest: (t: string) => sendMessage(t),
+    onSuggest: (text: string) => sendMessage(text),
     onKeyDown: handleKey,
     bottomRef,
+    lang,
   };
 
   return (
     <div style={{ height: '100svh', background: 'var(--mb-bg)', display: 'flex', flexDirection: 'column' }}>
-      {showBill && <BillSplitter dishes={allDishes} onClose={() => setShowBill(false)} />}
-      {showReview && <ReviewModal slug={slug} sessionId={sessionIdRef.current} onClose={() => setShowReview(false)} />}
+      {showBill && <BillSplitter dishes={allDishes} onClose={() => setShowBill(false)} lang={lang} />}
+      {showReview && <ReviewModal slug={slug} sessionId={reviewSessionId} onClose={() => setShowReview(false)} lang={lang} />}
 
       {/* ── DESKTOP / TABLET: side by side ── */}
       <div

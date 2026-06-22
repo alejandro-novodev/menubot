@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { LogoIcon } from '@/components/brand/Wordmark';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SocialLinks, type Socials } from '@/components/customer/SocialLinks';
+import { LanguagePicker } from '@/components/customer/LanguagePicker';
 import { getDishEmoji, formatPrice, capitalize } from '@/lib/menu';
+import { t } from '@/lib/i18n';
+import type { LangCode } from '@/lib/languages';
 
 export interface MenuDish {
   id: number;
@@ -34,6 +37,9 @@ interface Props {
   onSplitBill?: () => void;
   /** Opens the review form. When set, an "Opinión" button appears. */
   onReview?: () => void;
+  /** Diner language; when onLang is set, a language picker appears. */
+  lang?: LangCode;
+  onLang?: (l: LangCode) => void;
 }
 
 const CATEGORY_ORDER = [
@@ -58,7 +64,7 @@ function AllergenBadge({ label }: { label: string }) {
   );
 }
 
-function DishRow({ dish, onTap }: { dish: MenuDish; onTap: () => void }) {
+function DishRow({ dish, onTap, lang }: { dish: MenuDish; onTap: () => void; lang: LangCode }) {
   const allergens = dish.allergens && dish.allergens !== 'ninguno'
     ? dish.allergens.split(',').map(s => s.trim()).filter(Boolean)
     : [];
@@ -67,7 +73,7 @@ function DishRow({ dish, onTap }: { dish: MenuDish; onTap: () => void }) {
     <button
       onClick={onTap}
       className="mb-dish-row"
-      aria-label={`Preguntar sobre ${dish.name}`}
+      aria-label={`${t(lang, 'ask')} · ${dish.name}`}
       style={{
         width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
         display: 'flex', gap: 13, padding: '12px 11px', alignItems: 'flex-start',
@@ -95,7 +101,7 @@ function DishRow({ dish, onTap }: { dish: MenuDish; onTap: () => void }) {
           fontWeight: 600, fontSize: 15,
           letterSpacing: '-0.01em',
           color: 'var(--mb-ink)',
-        }}>{dish.is_recommended && <span title="Recomendación del chef">⭐ </span>}{dish.name}</span>
+        }}>{dish.is_recommended && <span title={t(lang, 'chefPick')}>⭐ </span>}{dish.name}</span>
         {dish.description && (
           <p style={{
             margin: 0, fontFamily: 'var(--font-archivo, system-ui)',
@@ -127,7 +133,7 @@ function DishRow({ dish, onTap }: { dish: MenuDish; onTap: () => void }) {
           fontFamily: 'var(--font-archivo, system-ui)', fontSize: 11, fontWeight: 600,
           color: 'var(--mb-mut)', whiteSpace: 'nowrap',
         }}>
-          Preguntar
+          {t(lang, 'ask')}
           <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 6l6 6-6 6" />
           </svg>
@@ -137,7 +143,7 @@ function DishRow({ dish, onTap }: { dish: MenuDish; onTap: () => void }) {
   );
 }
 
-export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true, sidebar = false, socials = null, onSplitBill, onReview }: Props) {
+export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true, sidebar = false, socials = null, onSplitBill, onReview, lang = 'es', onLang }: Props) {
   const sorted = Object.keys(categories).sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a), bi = CATEGORY_ORDER.indexOf(b);
     if (ai === -1 && bi === -1) return a.localeCompare(b);
@@ -185,16 +191,17 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
           }}>
             {cuisine && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cuisine}</span>}
             {cuisine && <span style={{ width: 3, height: 3, borderRadius: 99, background: 'var(--mb-mut2)', flexShrink: 0 }} />}
-            <span style={{ flexShrink: 0 }}>con menubot<span style={{ color: 'var(--accent)' }}>.</span></span>
+            <span style={{ flexShrink: 0 }}>{t(lang, 'withMenubot')}<span style={{ color: 'var(--accent)' }}>.</span></span>
           </div>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {onLang && <LanguagePicker value={lang} onChange={onLang} />}
           {onReview && (
             <button
               onClick={onReview}
               className="mb-social"
-              aria-label="Dejar una opinión"
-              title="Dejar una opinión"
+              aria-label={t(lang, 'review')}
+              title={t(lang, 'review')}
               style={{
                 height: 34, padding: '0 12px', borderRadius: 999,
                 border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
@@ -203,15 +210,15 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
                 fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12.5, fontWeight: 600,
               }}
             >
-              ⭐ <span className="hidden sm:inline">Opinión</span>
+              ⭐ <span className="hidden sm:inline">{t(lang, 'review')}</span>
             </button>
           )}
           {onSplitBill && (
             <button
               onClick={onSplitBill}
               className="mb-social"
-              aria-label="Dividir la cuenta"
-              title="Dividir la cuenta"
+              aria-label={t(lang, 'billTitle')}
+              title={t(lang, 'billTitle')}
               style={{
                 height: 34, padding: '0 12px', borderRadius: 999,
                 border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
@@ -220,7 +227,7 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
                 fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12.5, fontWeight: 600,
               }}
             >
-              🧮 <span className="hidden sm:inline">Dividir</span>
+              🧮 <span className="hidden sm:inline">{t(lang, 'split')}</span>
             </button>
           )}
           {!sidebar && <ThemeToggle />}
@@ -233,7 +240,7 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
         padding: '12px 20px 6px', flexShrink: 0,
         position: 'sticky', top: 0,
       }}>
-        {[{ key: '', label: 'Todo' }, ...sorted.map(c => ({ key: c, label: capitalize(c) }))].map(chip => {
+        {[{ key: '', label: t(lang, 'all') }, ...sorted.map(c => ({ key: c, label: capitalize(c) }))].map(chip => {
           const isActive = active === chip.key;
           return (
             <button
@@ -263,7 +270,7 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
         color: 'var(--mb-mut2)', display: 'flex', alignItems: 'center', gap: 6,
       }}>
         <span style={{ color: 'var(--accent)' }}>💬</span>
-        Toca cualquier plato para preguntarle al asistente.
+        {t(lang, 'tapHint')}
       </div>
 
       {/* Dish sections */}
@@ -277,7 +284,7 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
               margin: '16px 11px 4px',
             }}>{capitalize(cat)}</div>
             {(categories[cat] ?? []).map(dish => (
-              <DishRow key={dish.id} dish={dish} onTap={() => onAsk(dish)} />
+              <DishRow key={dish.id} dish={dish} onTap={() => onAsk(dish)} lang={lang} />
             ))}
           </div>
         ))}
@@ -286,12 +293,12 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
             textAlign: 'center', padding: '48px 20px', color: 'var(--mb-mut)',
             fontFamily: 'var(--font-archivo, system-ui)', fontSize: 13,
           }}>
-            La carta aún no está disponible.
+            {t(lang, 'menuUnavailable')}
           </div>
         )}
       </div>
 
-      <SocialLinks socials={socials} />
+      <SocialLinks socials={socials} lang={lang} />
 
       {/* Floating "Preguntar" button — only on mobile menu view */}
       {showFloatingButton && (
@@ -309,7 +316,7 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
             }}
           >
             <LogoIcon size={26} />
-            Preguntar a menubot.
+            {t(lang, 'askMenubot')}
           </button>
         </div>
       )}

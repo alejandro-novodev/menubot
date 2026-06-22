@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { t } from '@/lib/i18n';
+import type { LangCode } from '@/lib/languages';
 
 /** Post-visit review form for diners. Stored in MenuBot; optional share consent. */
-export function ReviewModal({ slug, sessionId, onClose }: { slug: string; sessionId: number | null; onClose: () => void }) {
+export function ReviewModal({ slug, sessionId, onClose, lang = 'es' }: { slug: string; sessionId: number | null; onClose: () => void; lang?: LangCode }) {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [comment, setComment] = useState('');
@@ -32,10 +34,10 @@ export function ReviewModal({ slug, sessionId, onClose }: { slug: string; sessio
         <div style={{ padding: '16px 18px 12px', borderBottom: '1px solid var(--mb-line)', display: 'flex', alignItems: 'center', gap: 12 }}>
           <span style={{ fontSize: 20 }}>⭐</span>
           <div style={{ flex: 1 }}>
-            <h2 style={{ margin: 0, fontFamily: 'var(--font-space-grotesk, system-ui)', fontWeight: 700, fontSize: 17, letterSpacing: '-0.02em', color: 'var(--mb-ink)' }}>¿Cómo estuvo tu experiencia?</h2>
-            <p style={{ margin: '2px 0 0', fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12, color: 'var(--mb-mut)' }}>Tu opinión ayuda al restaurante a mejorar.</p>
+            <h2 style={{ margin: 0, fontFamily: 'var(--font-space-grotesk, system-ui)', fontWeight: 700, fontSize: 17, letterSpacing: '-0.02em', color: 'var(--mb-ink)' }}>{t(lang, 'reviewTitle')}</h2>
+            <p style={{ margin: '2px 0 0', fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12, color: 'var(--mb-mut)' }}>{t(lang, 'reviewSubtitle')}</p>
           </div>
-          <button onClick={onClose} aria-label="Cerrar" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mb-mut)', padding: 4, display: 'flex' }}>
+          <button onClick={onClose} aria-label={t(lang, 'close')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--mb-mut)', padding: 4, display: 'flex' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
         </div>
@@ -44,8 +46,8 @@ export function ReviewModal({ slug, sessionId, onClose }: { slug: string; sessio
           {state === 'done' ? (
             <div style={{ textAlign: 'center', padding: '20px 8px' }}>
               <div style={{ fontSize: 34, marginBottom: 8 }}>🙏</div>
-              <p style={{ fontFamily: 'var(--font-space-grotesk, system-ui)', fontWeight: 700, fontSize: 16, color: 'var(--mb-ink)', margin: 0 }}>¡Gracias por tu opinión!</p>
-              <button onClick={onClose} style={{ marginTop: 16, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 12, padding: '10px 22px', fontFamily: 'var(--font-archivo, system-ui)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>Listo</button>
+              <p style={{ fontFamily: 'var(--font-space-grotesk, system-ui)', fontWeight: 700, fontSize: 16, color: 'var(--mb-ink)', margin: 0 }}>{t(lang, 'reviewThanks')}</p>
+              <button onClick={onClose} style={{ marginTop: 16, background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: 12, padding: '10px 22px', fontFamily: 'var(--font-archivo, system-ui)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>{t(lang, 'reviewDone')}</button>
             </div>
           ) : (
             <>
@@ -61,21 +63,21 @@ export function ReviewModal({ slug, sessionId, onClose }: { slug: string; sessio
               </div>
 
               <textarea value={comment} onChange={(e) => setComment(e.target.value)} rows={3} maxLength={500}
-                placeholder="Cuéntanos qué te pareció (opcional)…"
+                placeholder={t(lang, 'reviewPlaceholder')}
                 style={{ width: '100%', borderRadius: 12, border: '1px solid var(--mb-line)', background: 'var(--mb-surface)', padding: '10px 12px', fontFamily: 'var(--font-archivo, system-ui)', fontSize: 14, color: 'var(--mb-ink)', outline: 'none', resize: 'none' }} />
 
               <label style={{ display: 'flex', alignItems: 'flex-start', gap: 9, marginTop: 12, cursor: 'pointer' }}>
                 <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} style={{ marginTop: 2, accentColor: 'var(--accent)' }} />
                 <span style={{ fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12.5, color: 'var(--mb-mut)', lineHeight: 1.4 }}>
-                  Permito que el restaurante comparta mi opinión públicamente.
+                  {t(lang, 'reviewConsent')}
                 </span>
               </label>
 
-              {state === 'error' && <p style={{ color: '#d9534f', fontSize: 12.5, marginTop: 12, fontFamily: 'var(--font-archivo, system-ui)' }}>No se pudo enviar. Intenta de nuevo.</p>}
+              {state === 'error' && <p style={{ color: '#d9534f', fontSize: 12.5, marginTop: 12, fontFamily: 'var(--font-archivo, system-ui)' }}>{t(lang, 'reviewError')}</p>}
 
               <button onClick={submit} disabled={rating < 1 || state === 'sending'}
                 style={{ width: '100%', marginTop: 16, background: rating < 1 ? 'var(--mb-surface)' : 'var(--accent)', color: rating < 1 ? 'var(--mb-mut)' : '#fff', border: rating < 1 ? '1px solid var(--mb-line)' : 'none', borderRadius: 12, padding: '12px', fontFamily: 'var(--font-archivo, system-ui)', fontWeight: 700, fontSize: 14.5, cursor: rating < 1 ? 'default' : 'pointer' }}>
-                {state === 'sending' ? 'Enviando…' : 'Enviar opinión'}
+                {state === 'sending' ? t(lang, 'reviewSending') : t(lang, 'reviewSubmit')}
               </button>
             </>
           )}

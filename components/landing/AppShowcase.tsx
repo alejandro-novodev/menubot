@@ -176,8 +176,47 @@ function InsightsMock() {
   );
 }
 
+function MultiLangMock() {
+  const dish = (icon: string, name: string, desc: string, price: string, tags: string[]) => (
+    <div style={{ display: 'flex', gap: 10, padding: '9px 4px', alignItems: 'flex-start' }}>
+      <div style={{ width: 38, height: 38, borderRadius: 10, background: P.surface, border: `1px solid ${P.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 19, flexShrink: 0 }}>{icon}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: P.ink }}>{name}</div>
+        <div style={{ fontSize: 11, color: P.mut, lineHeight: 1.35 }}>{desc}</div>
+        <div style={{ display: 'flex', gap: 5, marginTop: 4 }}>
+          {tags.map((tag) => (
+            <span key={tag} style={{ fontSize: 9.5, fontWeight: 600, color: P.mut, border: `1px solid ${P.line}`, borderRadius: 99, padding: '2px 7px' }}>{tag}</span>
+          ))}
+        </div>
+      </div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: P.ink, flexShrink: 0 }}>{price}</div>
+    </div>
+  );
+  return (
+    <div style={{ height: '100%', background: P.bg, overflow: 'hidden' }}>
+      <div style={{ padding: '14px 14px 10px', borderBottom: `1px solid ${P.line}`, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+        <div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: P.ink, letterSpacing: '-0.02em' }}>Bocas del Mar</div>
+          <div style={{ fontSize: 11, color: P.mut }}>Peruvian cuisine · with menubot<span style={{ color: P.accent }}>.</span></div>
+        </div>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11.5, fontWeight: 600, color: P.ink, border: `1px solid ${P.line}`, background: P.surface, borderRadius: 99, padding: '5px 9px', flexShrink: 0 }}>
+          🇬🇧 EN <span style={{ color: P.mut2 }}>▾</span>
+        </span>
+      </div>
+      <div style={{ padding: '0 12px' }}>
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: P.accent, margin: '10px 4px 2px' }}>STARTERS</div>
+        {dish('🐟', 'Ceviche Mixto', 'Fish and seafood in tiger’s milk.', '$12.900', ['fish', 'shellfish'])}
+        {dish('🥟', 'Empanadas de Pino', 'Beef, onion, egg and olive.', '$3.500', ['gluten'])}
+        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', color: P.accent, margin: '10px 4px 2px' }}>MAINS</div>
+        {dish('🥩', 'Lomo a lo Pobre', 'Steak, fries, fried egg and onion.', '$14.900', ['egg'])}
+      </div>
+    </div>
+  );
+}
+
 const SLIDES = [
   { key: 'chat', icon: '💬', title: 'Un asistente que conoce tu carta', desc: 'Responde sobre ingredientes, alérgenos y maridajes, y recomienda según los gustos de cada cliente — 24/7, en español.', render: ChatMock },
+  { key: 'lang', icon: '🌍', title: 'Tu carta en el idioma de tus clientes', desc: 'Turistas de todo el mundo leen tu carta y conversan con el asistente en su idioma (inglés, portugués y más). Ideal para zonas turísticas.', render: MultiLangMock },
   { key: 'menu', icon: '📖', title: 'Tu carta digital, siempre al día', desc: 'Fotos, descripciones y las sugerencias del chef destacadas. Tus clientes escanean el QR y la ven al instante.', render: MenuMock },
   { key: 'bill', icon: '🧮', title: 'Dividir la cuenta, sin calculadora', desc: 'Tus clientes suman lo que pidieron, agregan la propina y la dividen entre todos — con los precios reales de tu carta.', render: BillMock },
   { key: 'insights', icon: '📊', title: 'Descubre qué quieren tus clientes', desc: 'Cada conversación se resume para ti: las preguntas más frecuentes y la demanda que aún no estás cubriendo.', render: InsightsMock },
@@ -217,12 +256,12 @@ export function AppShowcase() {
           const on = i === active;
           return (
             <button key={s.key} onClick={() => pick(i)}
-              className={`text-left rounded-2xl border p-4 transition ${on ? 'border-accent/40 bg-accent/10' : 'border-white/5 bg-white/[0.02] hover:bg-white/5'}`}>
+              className={`text-left rounded-2xl border p-4 transition ${on ? 'border-accent/40 bg-accent/10' : 'border-black/[0.07] bg-white shadow-sm hover:border-black/15'}`}>
               <div className="flex items-center gap-3">
                 <span className="text-xl">{s.icon}</span>
-                <h3 className={`font-semibold text-sm ${on ? 'text-accent' : 'text-white'}`}>{s.title}</h3>
+                <h3 className={`font-semibold text-sm ${on ? 'text-accent' : 'text-[#2B2421]'}`}>{s.title}</h3>
               </div>
-              <p className={`text-xs leading-relaxed mt-2 transition-all ${on ? 'text-gray-400 max-h-24 opacity-100' : 'text-gray-600 max-h-0 opacity-0 overflow-hidden'}`}>{s.desc}</p>
+              <p className={`text-xs leading-relaxed mt-2 transition-all ${on ? 'text-[#6B6259] max-h-24 opacity-100' : 'text-[#9A9087] max-h-0 opacity-0 overflow-hidden'}`}>{s.desc}</p>
             </button>
           );
         })}
@@ -235,14 +274,14 @@ export function AppShowcase() {
         {/* Mobile: active title + desc */}
         <div className="lg:hidden text-center mt-6 max-w-xs">
           <h3 className="text-accent font-semibold text-sm flex items-center justify-center gap-2">{SLIDES[active].icon} {SLIDES[active].title}</h3>
-          <p className="text-gray-400 text-xs leading-relaxed mt-2">{SLIDES[active].desc}</p>
+          <p className="text-[#6B6259] text-xs leading-relaxed mt-2">{SLIDES[active].desc}</p>
         </div>
 
         {/* Dots */}
         <div className="flex items-center gap-2 mt-6">
           {SLIDES.map((s, i) => (
             <button key={s.key} onClick={() => pick(i)} aria-label={s.title}
-              className={`h-2 rounded-full transition-all ${i === active ? 'w-6 bg-accent' : 'w-2 bg-white/20 hover:bg-white/40'}`} />
+              className={`h-2 rounded-full transition-all ${i === active ? 'w-6 bg-accent' : 'w-2 bg-black/15 hover:bg-black/30'}`} />
           ))}
         </div>
       </div>

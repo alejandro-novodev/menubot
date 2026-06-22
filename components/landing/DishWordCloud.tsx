@@ -27,7 +27,7 @@ export function DishWordCloud() {
       {WORDS.map((word) => (
         <span
           key={word.text}
-          className={`absolute ${word.size} ${word.weight} text-white italic tracking-tight`}
+          className={`absolute ${word.size} ${word.weight} text-accent italic tracking-tight`}
           style={{
             top: word.top,
             left: word.left,

@@ -19,6 +19,8 @@ export interface PlanFeatures {
   hasAPI: boolean;
   /** Interactive bill split (per-person dish selection). Starter is calculator-only. */
   hasInteractiveBillSplit: boolean;
+  /** Translated menu display for tourists (chat-in-any-language is free for all). */
+  hasMenuTranslation: boolean;
   /** Email alerts for new reviews / unusual activity. */
   hasEmailAlerts: boolean;
   /** Owner can respond to reviews from the dashboard. */
@@ -39,6 +41,7 @@ const STARTER: PlanFeatures = {
   hasCSVExport: false,
   hasAPI: false,
   hasInteractiveBillSplit: false,
+  hasMenuTranslation: false,
   hasEmailAlerts: false,
   hasOwnerResponse: false,
   hasWhiteLabel: false,
@@ -52,6 +55,7 @@ const PRO: PlanFeatures = {
   hasCustomBranding: true,
   hasAdvancedAnalytics: true,
   hasInteractiveBillSplit: true,
+  hasMenuTranslation: true,
   hasEmailAlerts: true,
   hasOwnerResponse: true,
 };

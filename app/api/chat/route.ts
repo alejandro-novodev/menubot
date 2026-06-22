@@ -3,6 +3,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { query } from '@/lib/db';
 import { resolveMenuSource, type MenuProfile } from '@/lib/menuSource';
 import { computeBillFromNames } from '@/lib/bill';
+import { resolveLang, aiNameFor } from '@/lib/languages';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -51,7 +52,8 @@ async function logChatTurn(
   businessId: number,
   sessionId: number | null,
   userText: string,
-  assistantText: string
+  assistantText: string,
+  lang: string
 ): Promise<number | null> {
   try {
     let sid = sessionId;
@@ -62,8 +64,8 @@ async function logChatTurn(
     }
     if (!sid) {
       const created = await query<{ id: number }>(
-        'INSERT INTO chat_sessions (business_id) VALUES ($1) RETURNING id',
-        [businessId]
+        'INSERT INTO chat_sessions (business_id, lang) VALUES ($1, $2) RETURNING id',
+        [businessId, lang]
       );
       sid = created.rows[0].id;
     }
@@ -85,11 +87,13 @@ async function logChatTurn(
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, restaurantSlug, sessionId } = await req.json() as {
+    const { messages, restaurantSlug, sessionId, lang: rawLang } = await req.json() as {
       messages: ChatMessage[];
       restaurantSlug: string;
       sessionId?: number | null;
+      lang?: string;
     };
+    const lang = resolveLang(rawLang);
 
     const source = await resolveMenuSource(restaurantSlug);
 
@@ -123,7 +127,9 @@ Información del restaurante:
 ${profileBlock(source.name, source.description, source.profile)}
 
 Reglas:
-- Responde SIEMPRE en español chileno, con tono cercano y usando "tú". Sé conciso y útil.
+${lang === 'es'
+  ? '- Responde SIEMPRE en español chileno, con tono cercano y usando "tú". Sé conciso y útil.'
+  : `- IMPORTANTE: el cliente es turista. Responde SIEMPRE en ${aiNameFor(lang)}, con tono cercano y útil. El menú está en español; traduce la información de los platos al responder, pero MANTÉN los nombres de los platos en su español original (puedes añadir una breve traducción entre paréntesis la primera vez). Sé conciso.`}
 - Habla ÚNICAMENTE sobre este restaurante: su carta (platos, bebidas, ingredientes, alérgenos, recomendaciones) y la información del local de arriba (ubicación, horario, contacto, redes sociales y reseñas). Si te preguntan por la ubicación y hay un enlace de Google Maps, compártelo. Si preguntan por redes sociales o dónde dejar una reseña, comparte el enlace correspondiente si está disponible.
 - Si te preguntan algo NO relacionado con el restaurante (política, programación, clima, temas personales, etc.), declina amablemente en UNA frase y reconduce a la carta. Ejemplo: "Solo te puedo ayudar con la carta de ${source.name} 😊 ¿Quieres que te recomiende algo?".
 - No inventes platos, precios, ingredientes ni datos del local que no estén arriba. Si no sabes algo, dilo.
@@ -207,7 +213,7 @@ ${menuJson}`;
     if (source.dishColumn === 'business_id') {
       const lastUser = [...messages].reverse().find((m) => m.role === 'user');
       if (lastUser) {
-        newSessionId = await logChatTurn(source.id, sessionId ?? null, lastUser.content, replyText);
+        newSessionId = await logChatTurn(source.id, sessionId ?? null, lastUser.content, replyText, lang);
       }
     }
 
