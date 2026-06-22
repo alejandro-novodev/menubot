@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { resolveMenuSource } from '@/lib/menuSource';
+import { resolveLang } from '@/lib/languages';
+import { getBusinessPlan } from '@/lib/subscription';
+import { getFeatures } from '@/lib/plan-features';
+import { translateMenu } from '@/lib/translate';
+
+export const runtime = 'nodejs';
 
 interface DishRow {
   id: number;
   name: string;
-  description: string;
+  description: string | null;
+  ingredients: string | null;
+  allergens: string | null;
   price: number;
   category: string;
   image: string | null;
@@ -14,11 +22,12 @@ interface DishRow {
 }
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const { slug } = await params;
+    const lang = resolveLang(req.nextUrl.searchParams.get('lang'));
 
     const source = await resolveMenuSource(slug);
     if (!source) {
@@ -26,15 +35,31 @@ export async function GET(
     }
 
     const dishResult = await query<DishRow>(
-      `SELECT id, name, description, price, category, image, icon, is_recommended
+      `SELECT id, name, description, ingredients, allergens, price, category, image, icon, is_recommended
        FROM dishes
        WHERE ${source.dishColumn} = $1
        ORDER BY category, name`,
       [source.id]
     );
+    let dishes = dishResult.rows;
+
+    // Translated menu is a Pro+ feature; the source stays Spanish otherwise.
+    if (lang !== 'es' && source.dishColumn === 'business_id') {
+      const features = getFeatures(await getBusinessPlan(source.id));
+      if (features.hasMenuTranslation) {
+        const tr = await translateMenu(
+          dishes.map((d) => ({ id: d.id, name: d.name, description: d.description, ingredients: d.ingredients, allergens: d.allergens, category: d.category })),
+          lang
+        );
+        dishes = dishes.map((d) => {
+          const t = tr.get(d.id);
+          return t ? { ...d, description: t.description, ingredients: t.ingredients, allergens: t.allergens, category: t.category ?? d.category } : d;
+        });
+      }
+    }
 
     const grouped: Record<string, DishRow[]> = {};
-    for (const dish of dishResult.rows) {
+    for (const dish of dishes) {
       const cat = dish.category || 'Otros';
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(dish);

@@ -1,5 +1,8 @@
 'use client';
 
+import { t } from '@/lib/i18n';
+import type { LangCode } from '@/lib/languages';
+
 export interface Socials {
   instagram?: string | null;
   facebook?: string | null;
@@ -38,7 +41,7 @@ const ICONS: Record<keyof Socials, { label: string; path: React.ReactNode }> = {
 
 const ORDER: (keyof Socials)[] = ['instagram', 'facebook', 'tiktok', 'whatsapp', 'website', 'tripadvisor'];
 
-export function SocialLinks({ socials }: { socials?: Socials | null }) {
+export function SocialLinks({ socials, lang = 'es' }: { socials?: Socials | null; lang?: LangCode }) {
   if (!socials) return null;
   const present = ORDER.filter((k) => socials[k]);
   if (present.length === 0) return null;
@@ -51,7 +54,7 @@ export function SocialLinks({ socials }: { socials?: Socials | null }) {
       padding: '22px 20px 26px', borderTop: '1px solid var(--mb-line)', marginTop: 8,
     }}>
       <span style={{ fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12, color: 'var(--mb-mut)' }}>
-        {hasReview ? 'Síguenos o deja tu reseña' : 'Síguenos'}
+        {hasReview ? t(lang, 'followReview') : t(lang, 'follow')}
       </span>
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
         {present.map((k) => (
