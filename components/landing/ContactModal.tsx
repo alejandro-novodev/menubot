@@ -70,23 +70,23 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-[#241F1B] border border-white/10 rounded-2xl shadow-2xl p-6">
+      <div className="relative w-full max-w-md bg-white border border-black/10 rounded-2xl shadow-2xl p-6">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-500 hover:text-gray-300 transition text-xl leading-none"
+          className="absolute top-4 right-4 text-[#8C8178] hover:text-[#2B2421] transition text-xl leading-none"
           aria-label="Cerrar"
         >
           ×
         </button>
 
-        <h2 className="text-xl font-semibold text-white mb-1">Solicitar acceso</h2>
-        <p className="text-sm text-gray-400 mb-5">Te contactamos para configurar tu restaurante.</p>
+        <h2 className="text-xl font-semibold text-[#2B2421] mb-1">Solicitar acceso</h2>
+        <p className="text-sm text-[#6B6259] mb-5">Te contactamos para configurar tu restaurante.</p>
 
         {success ? (
           <div className="text-center py-8">
             <div className="text-4xl mb-3">🎉</div>
-            <p className="text-white font-medium">¡Gracias! Te contactaremos pronto.</p>
-            <p className="text-gray-400 text-sm mt-1">Revisa tu correo en los próximos días.</p>
+            <p className="text-[#2B2421] font-medium">¡Gracias! Te contactaremos pronto.</p>
+            <p className="text-[#6B6259] text-sm mt-1">Revisa tu correo en los próximos días.</p>
             <button onClick={onClose} className="mt-5 text-sm text-accent hover:text-accent-lite transition">
               Cerrar
             </button>
@@ -94,48 +94,48 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Nombre *</label>
+              <label className="block text-xs text-[#6B6259] mb-1">Nombre *</label>
               <input
                 ref={firstInputRef}
                 type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
+                className="w-full bg-[#F5EFE6] border border-black/10 rounded-xl px-3 py-2.5 text-sm text-[#2B2421] placeholder-[#B3A99E] outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
                 placeholder="Tu nombre"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Nombre del restaurante *</label>
+              <label className="block text-xs text-[#6B6259] mb-1">Nombre del restaurante *</label>
               <input
                 type="text"
                 required
                 value={restaurantName}
                 onChange={(e) => setRestaurantName(e.target.value)}
-                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
+                className="w-full bg-[#F5EFE6] border border-black/10 rounded-xl px-3 py-2.5 text-sm text-[#2B2421] placeholder-[#B3A99E] outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
                 placeholder="Nombre de tu local"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Email *</label>
+              <label className="block text-xs text-[#6B6259] mb-1">Email *</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
+                className="w-full bg-[#F5EFE6] border border-black/10 rounded-xl px-3 py-2.5 text-sm text-[#2B2421] placeholder-[#B3A99E] outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
                 placeholder="tu@correo.com"
               />
             </div>
 
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Plan de interés</label>
+              <label className="block text-xs text-[#6B6259] mb-1">Plan de interés</label>
               <select
                 value={plan}
                 onChange={(e) => setPlan(e.target.value)}
-                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
+                className="w-full bg-[#F5EFE6] border border-black/10 rounded-xl px-3 py-2.5 text-sm text-[#2B2421] outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition"
               >
                 <option value="">Sin preferencia</option>
                 {PLANS.map((p) => (
@@ -145,12 +145,12 @@ export function ContactModal({ isOpen, onClose, initialPlan = '' }: ContactModal
             </div>
 
             <div>
-              <label className="block text-xs text-gray-400 mb-1">Mensaje (opcional)</label>
+              <label className="block text-xs text-[#6B6259] mb-1">Mensaje (opcional)</label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={2}
-                className="w-full bg-[#2E2823] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-600 outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition resize-none"
+                className="w-full bg-[#F5EFE6] border border-black/10 rounded-xl px-3 py-2.5 text-sm text-[#2B2421] placeholder-[#B3A99E] outline-none focus:border-accent/60 focus:ring-1 focus:ring-accent/30 transition resize-none"
                 placeholder="¿Algo más que quieras comentar?"
               />
             </div>
