@@ -17,6 +17,10 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
 
+  const PLAN_LIMITS: Record<string, number> = {
+    trial: 1, starter: 1, pro: 1, multi: 5, enterprise: 999,
+  };
+
   try {
     const { name, description, businessType, slug: rawSlug } = await req.json() as {
       name: string;
@@ -27,6 +31,24 @@ export async function POST(req: NextRequest) {
 
     if (!name?.trim()) {
       return NextResponse.json({ error: 'El nombre es requerido.' }, { status: 400 });
+    }
+
+    const userId = parseInt(session.user.id);
+
+    // Check plan-based business limit
+    const [existingBiz, activeSub] = await Promise.all([
+      query<{ count: string }>('SELECT COUNT(*) as count FROM businesses WHERE user_id = $1', [userId]),
+      query<{ plan: string }>(`SELECT plan FROM subscriptions WHERE user_id = $1 AND status = 'active' ORDER BY created_at DESC LIMIT 1`, [userId]),
+    ]);
+    const currentCount = parseInt(existingBiz.rows[0]?.count ?? '0');
+    const plan = activeSub.rows[0]?.plan ?? 'trial';
+    const limit = PLAN_LIMITS[plan] ?? 1;
+    if (currentCount >= limit) {
+      const limitLabel = limit === 1 ? '1 negocio' : `${limit} negocios`;
+      return NextResponse.json(
+        { error: `Tu plan ${plan} permite un máximo de ${limitLabel}. Actualiza tu plan en Facturación para agregar más.` },
+        { status: 403 }
+      );
     }
 
     const baseSlug = slugify(rawSlug?.trim() || name.trim());
@@ -45,7 +67,7 @@ export async function POST(req: NextRequest) {
     const bizResult = await query<{ id: number }>(
       `INSERT INTO businesses (user_id, name, slug, description, business_type, status)
        VALUES ($1, $2, $3, $4, $5, 'active') RETURNING id`,
-      [parseInt(session.user.id), name.trim(), slug, description?.trim() || null, businessType]
+      [userId, name.trim(), slug, description?.trim() || null, businessType]
     );
     const businessId = bizResult.rows[0].id;
 
@@ -53,7 +75,7 @@ export async function POST(req: NextRequest) {
     await query(
       `INSERT INTO subscriptions (user_id, business_id, plan, status, started_at, ends_at, price_clp)
        VALUES ($1, $2, 'trial', 'active', NOW(), NOW() + INTERVAL '14 days', 0)`,
-      [parseInt(session.user.id), businessId]
+      [userId, businessId]
     );
 
     return NextResponse.json({ success: true, businessId, slug });

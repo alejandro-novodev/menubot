@@ -2,9 +2,11 @@ import { auth, signOut } from '@/auth';
 import { redirect } from 'next/navigation';
 import { query } from '@/lib/db';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { QRCard } from '@/components/dashboard/QRCard';
 import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { PaymentSuccessBanner } from './PaymentSuccessBanner';
 
 interface Business {
   id: number;
@@ -83,22 +85,36 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen app-bg app-ink flex flex-col">
+      {/* Payment success banner (client — reads ?payment=success param) */}
+      <Suspense fallback={null}>
+        <PaymentSuccessBanner />
+      </Suspense>
       {/* Trial banner */}
       {trialDaysLeft >= 0 && <TrialBanner daysLeft={trialDaysLeft} />}
 
       {/* Header */}
-      <header className="border-b app-line px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="font-bold text-lg">
-          <span className="flex items-center gap-2"><LogoIcon size={26} /><Wordmark size="md" /></span>
+      <header className="border-b app-line px-6 py-3.5 flex items-center justify-between gap-4">
+        <Link href="/" className="shrink-0">
+          <span className="flex items-center gap-2"><LogoIcon size={24} /><Wordmark size="md" /></span>
         </Link>
-        <div className="flex items-center gap-4 text-sm app-mut">
+        <div className="flex items-center gap-2 text-sm">
           {session.user.role === 'admin' && (
-            <Link href="/admin" className="text-accent hover:text-accent-lite transition text-xs">Admin →</Link>
+            <Link href="/admin" className="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-accent-lite bg-accent/10 hover:bg-accent/15 px-2.5 py-1.5 rounded-lg transition">
+              Admin
+            </Link>
           )}
-          <Link href="/dashboard/billing" className="app-mut app-ink-hover transition text-xs">Plan</Link>
-          <span className="hidden sm:inline app-mut2">{session.user.email}</span>
+          <Link href="/dashboard/billing" className="hidden sm:inline-flex items-center gap-1 text-xs font-medium app-mut app-ink-hover app-soft app-soft-hover border app-line px-2.5 py-1.5 rounded-lg transition">
+            {subscription ? (
+              <span className="capitalize">{subscription.plan === 'trial' ? '⏳ Trial' : `✓ ${subscription.plan}`}</span>
+            ) : 'Plan'}
+          </Link>
+          <span className="hidden md:inline text-xs app-mut2 truncate max-w-[160px]" title={session.user.email ?? ''}>
+            {session.user.name ?? session.user.email}
+          </span>
           <form action={async () => { 'use server'; await signOut({ redirectTo: '/auth/login' }); }}>
-            <button type="submit" className="app-mut2 app-ink-hover transition text-xs cursor-pointer">Salir</button>
+            <button type="submit" className="text-xs app-mut2 hover:text-red-500 dark:hover:text-red-400 transition cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-red-500/10">
+              Salir
+            </button>
           </form>
           <ThemeToggle />
         </div>

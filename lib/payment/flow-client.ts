@@ -16,8 +16,12 @@ export class FlowPaymentClient implements PaymentClient {
   async createSubscription(params: SubscriptionParams): Promise<CreateSubscriptionResult> {
     const body: Record<string, string> = {
       apiKey: this.apiKey,
-      planId: params.plan,
+      planId: params.plan,              // must match the plan ID created in Flow dashboard
       email: params.userEmail,
+      commerceOrder: String(params.subscriptionDbId), // our DB id — returned in webhook
+      subject: `MenuBot ${params.plan} — ${params.billingCycle === 'annual' ? 'Anual' : 'Mensual'}`,
+      urlConfirmation: params.confirmationUrl,
+      urlReturn: params.returnUrl,
       toDate: '',
       trial: '0',
     };
@@ -45,8 +49,21 @@ export class FlowPaymentClient implements PaymentClient {
     });
   }
 
-  verifyWebhook(payload: string, signature: string): boolean {
-    const expected = crypto.createHmac('sha256', this.secretKey).update(payload).digest('hex');
-    return expected === signature;
+  /** Verify an incoming webhook from Flow.
+   *  Flow signs by sorting all params (excluding 's'), concatenating key+value, then HMAC-SHA256. */
+  verifyWebhook(params: Record<string, string>): boolean {
+    const { s, ...rest } = params;
+    if (!s) return false;
+    const expected = sign(rest, this.secretKey);
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(s));
+  }
+
+  /** Fetch payment status from Flow by token (used inside the webhook handler). */
+  async getPaymentStatus(token: string): Promise<Record<string, unknown>> {
+    const p: Record<string, string> = { apiKey: this.apiKey, token };
+    p.s = sign(p, this.secretKey);
+    const qs = new URLSearchParams(p);
+    const res = await fetch(`${FLOW_API_URL}/payment/getStatus?${qs}`);
+    return res.json() as Promise<Record<string, unknown>>;
   }
 }

@@ -1,11 +1,13 @@
 export interface SubscriptionParams {
   plan: string;
-  priceClp: number;
+  priceClp: number;        // net (pre-IVA) monthly equivalent
+  billingCycle: 'monthly' | 'annual';
   userEmail: string;
   userName: string;
   businessId: number;
   subscriptionDbId: number;
   returnUrl: string;
+  confirmationUrl: string; // server-to-server webhook from Flow
 }
 
 export interface CreateSubscriptionResult {
@@ -16,5 +18,5 @@ export interface CreateSubscriptionResult {
 export interface PaymentClient {
   createSubscription(params: SubscriptionParams): Promise<CreateSubscriptionResult>;
   cancelSubscription(providerSubscriptionId: string): Promise<void>;
-  verifyWebhook(payload: string, signature: string): boolean;
+  verifyWebhook(params: Record<string, string>): boolean;
 }

@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS businesses (
   description TEXT,
   business_type VARCHAR(50) NOT NULL DEFAULT 'restaurant',
   -- restaurant | bar | hotel | service | retail
+  is_demo BOOLEAN NOT NULL DEFAULT false,
   status VARCHAR(20) NOT NULL DEFAULT 'pending',
   -- pending | active | suspended
   menu_completeness INTEGER NOT NULL DEFAULT 0,
@@ -113,3 +114,6 @@ CREATE TABLE IF NOT EXISTS waitlist (
   message TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ── Schema upgrades (safe to run on existing databases) ───────────────────
+ALTER TABLE businesses ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT false;

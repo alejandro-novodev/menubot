@@ -4,12 +4,30 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
 
+interface SubscriptionRow {
+  id: number;
+  plan: string;
+  status: string;
+  billing_cycle: string;
+  price_clp: number | null;
+  ends_at: string | null;
+  started_at: string | null;
+  created_at: string;
+  payment_provider_id: string | null;
+  user_name: string | null;
+  user_email: string;
+  business_name: string;
+  business_slug: string;
+}
+
 interface Stats {
   businesses: { active: number; pending: number; suspended: number; total: number };
   mrr: number;
+  arr: number;
   recentBusinesses: BusinessRow[];
   waitlist: WaitlistRow[];
   users: UserRow[];
+  subscriptions: SubscriptionRow[];
   pendingUsers: number;
   inviteOnly: boolean;
 }
@@ -33,6 +51,7 @@ interface BusinessRow {
   email: string;
   plan: string | null;
   trial_ends: string | null;
+  is_demo: boolean;
 }
 
 interface WaitlistRow {
@@ -51,7 +70,14 @@ const STATUS_STYLE: Record<string, string> = {
   active: 'bg-emerald-900/40 text-emerald-400',
   pending: 'bg-yellow-900/40 text-yellow-400',
   suspended: 'bg-red-900/40 text-red-400',
+  cancelled: 'bg-red-900/40 text-red-400',
+  past_due: 'bg-orange-900/40 text-orange-400',
 };
+
+function fmt(n: number | null | undefined) {
+  if (!n) return '—';
+  return '$' + Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
 
 function KpiCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
@@ -68,6 +94,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState<number | null>(null);
   const [actioningUser, setActioningUser] = useState<number | null>(null);
+  const [actioningSub, setActioningSub] = useState<number | null>(null);
+  const [subFilter, setSubFilter] = useState<string>('all');
 
   async function load() {
     const res = await fetch('/api/admin/stats');
@@ -97,6 +125,17 @@ export default function AdminPage() {
     });
     await load();
     setActioning(null);
+  }
+
+  async function doSubAction(subId: number, action: 'activate' | 'cancel') {
+    setActioningSub(subId);
+    await fetch(`/api/admin/subscriptions/${subId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    });
+    await load();
+    setActioningSub(null);
   }
 
   async function doUserAction(userId: number, action: 'approve' | 'revoke') {
@@ -149,11 +188,15 @@ export default function AdminPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <KpiCard label="Negocios activos" value={stats?.businesses.active ?? 0} />
             <KpiCard label="Pendientes" value={stats?.businesses.pending ?? 0} />
-            <KpiCard label="Suspendidos" value={stats?.businesses.suspended ?? 0} />
             <KpiCard
               label="MRR estimado"
-              value={`$${(stats?.mrr ?? 0).toLocaleString('es-CL')}`}
-              sub="suscripciones activas (no trial)"
+              value={fmt(stats?.mrr)}
+              sub="neto · no trial"
+            />
+            <KpiCard
+              label="ARR estimado"
+              value={fmt(stats?.arr)}
+              sub="neto anualizado"
             />
           </div>
         </section>
@@ -216,6 +259,9 @@ export default function AdminPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium text-white text-sm">{biz.name}</span>
+                    {biz.is_demo && (
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-blue-900/40 text-blue-400 font-semibold">Demo</span>
+                    )}
                     <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLE[biz.status] ?? 'bg-[#2E2823] text-gray-500'}`}>
                       {biz.status}
                     </span>
@@ -268,6 +314,81 @@ export default function AdminPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Subscriptions */}
+        <section>
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-widest">
+              Suscripciones ({stats?.subscriptions.length ?? 0})
+            </h2>
+            <div className="flex gap-1 flex-wrap">
+              {['all', 'active', 'pending', 'past_due', 'cancelled'].map(f => (
+                <button
+                  key={f}
+                  onClick={() => setSubFilter(f)}
+                  className={`text-xs px-2.5 py-1 rounded-full transition ${subFilter === f ? 'bg-accent text-white' : 'bg-[#2E2823] text-gray-400 hover:text-gray-300'}`}
+                >
+                  {f === 'all' ? 'Todos' : f}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            {(stats?.subscriptions ?? [])
+              .filter(s => subFilter === 'all' || s.status === subFilter)
+              .map(sub => (
+              <div key={sub.id} className="bg-[#241F1B] border border-white/5 rounded-xl px-4 py-3 flex flex-wrap items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium text-white text-sm">{sub.business_name}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${STATUS_STYLE[sub.status] ?? 'bg-[#2E2823] text-gray-500'}`}>
+                      {sub.status}
+                    </span>
+                    <span className="text-xs text-gray-500">{PLAN_LABELS[sub.plan] ?? sub.plan}</span>
+                    <span className="text-xs text-gray-600 capitalize">{sub.billing_cycle}</span>
+                    {sub.price_clp && (
+                      <span className="text-xs text-gray-500">{fmt(sub.price_clp)}/mes neto</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {sub.user_email}
+                    {sub.ends_at && ` · vence ${new Date(sub.ends_at).toLocaleDateString('es-CL')}`}
+                    {sub.payment_provider_id && ` · ${sub.payment_provider_id.slice(0, 16)}…`}
+                  </p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  {sub.status !== 'active' && (
+                    <button
+                      onClick={() => doSubAction(sub.id, 'activate')}
+                      disabled={actioningSub === sub.id}
+                      className="text-xs bg-emerald-900/40 hover:bg-emerald-900/60 text-emerald-400 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+                    >
+                      Activar
+                    </button>
+                  )}
+                  {sub.status === 'active' && (
+                    <button
+                      onClick={() => doSubAction(sub.id, 'cancel')}
+                      disabled={actioningSub === sub.id}
+                      className="text-xs bg-red-900/30 hover:bg-red-900/50 text-red-400 px-3 py-1.5 rounded-lg transition disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                  <Link
+                    href={`/chat/${sub.business_slug}`} target="_blank"
+                    className="text-xs text-gray-500 hover:text-gray-300 px-2 py-1.5 transition"
+                  >
+                    Ver →
+                  </Link>
+                </div>
+              </div>
+            ))}
+            {(stats?.subscriptions ?? []).filter(s => subFilter === 'all' || s.status === subFilter).length === 0 && (
+              <p className="text-sm text-gray-600 text-center py-6">Sin suscripciones{subFilter !== 'all' ? ` con estado "${subFilter}"` : ''}.</p>
+            )}
           </div>
         </section>
 

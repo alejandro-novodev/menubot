@@ -1,3 +1,20 @@
+import { Resend } from 'resend';
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+  if (!process.env.RESEND_API_KEY) {
+    console.log(`[Email skipped — no RESEND_API_KEY] to=${to} subject=${subject}`);
+    return;
+  }
+  await resend.emails.send({
+    from: 'MenuBot <noreply@menubot.cl>',
+    to,
+    subject,
+    html,
+  });
+}
+
 export function buildContactEmail(data: {
   name: string;
   restaurantName: string;

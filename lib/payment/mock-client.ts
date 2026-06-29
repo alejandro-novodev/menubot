@@ -10,7 +10,7 @@ export class MockPaymentClient implements PaymentClient {
     const mockId = `mock_sub_${params.subscriptionDbId}_${Date.now()}`;
     const base = process.env.NEXTAUTH_URL ?? 'http://localhost:3000';
     const paymentUrl = `${base}/api/flow/mock-payment?subId=${mockId}&dbId=${params.subscriptionDbId}&plan=${params.plan}&amount=${params.priceClp}`;
-    console.log(`[MOCK PAYMENT] Creando suscripción ${mockId} para ${params.userEmail} — Plan ${params.plan} $${params.priceClp}`);
+    console.log(`[MOCK PAYMENT] Suscripción ${mockId} para ${params.userEmail} — Plan ${params.plan} $${params.priceClp} (${params.billingCycle})`);
     return { paymentUrl, providerSubscriptionId: mockId };
   }
 
@@ -19,7 +19,7 @@ export class MockPaymentClient implements PaymentClient {
     console.log(`[MOCK PAYMENT] Cancelando suscripción ${providerSubscriptionId}`);
   }
 
-  verifyWebhook(_payload: string, _signature: string): boolean {
+  verifyWebhook(_params: Record<string, string>): boolean {
     return true;
   }
 }

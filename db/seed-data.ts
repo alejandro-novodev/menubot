@@ -7,6 +7,162 @@ export interface DishData {
   allergens: string;
 }
 
+export interface BusinessSeedData {
+  name: string;
+  slug: string;
+  description: string;
+  businessType: 'restaurant' | 'bar' | 'hotel' | 'service' | 'retail';
+  dishes: DishData[];
+}
+
+// ── Demo businesses (fictional) ───────────────────────────────────────────
+// These are inserted into the `businesses` table with is_demo = true.
+// They serve as working examples in the public demo.
+
+export const SEED_DEMO_BUSINESSES: BusinessSeedData[] = [
+  // ── 1. El Mesón Austral — Chilean traditional restaurant ──────────────
+  {
+    name: 'El Mesón Austral',
+    slug: 'el-meson-austral',
+    description: 'Cocina chilena de raíz con ingredientes del sur. Parrilla a leña, mariscos frescos y recetas de temporada.',
+    businessType: 'restaurant',
+    dishes: [
+      // Entradas
+      { name: 'Empanada de pino', description: 'Empanada horneada rellena de carne picada, cebolla, huevo duro, aceituna y pasas', ingredients: 'harina, carne picada de vacuno, cebolla, huevo, aceituna, pasas, merkén', price: 2900, category: 'entradas', allergens: 'gluten, huevo' },
+      { name: 'Pastel de jaiba', description: 'Gratín de jaiba con salsa bechamel y queso mantecoso', ingredients: 'jaiba, crema, leche, queso mantecoso, cebolla, ají de color', price: 8900, category: 'entradas', allergens: 'mariscos, lácteos, gluten' },
+      { name: 'Sopaipillas pasadas', description: 'Sopaipillas de zapallo en chancaca con canela y naranja', ingredients: 'zapallo, harina, manteca, chancaca, canela, naranja', price: 3500, category: 'entradas', allergens: 'gluten' },
+      { name: 'Longanizas chillaneras', description: 'Longanizas a la parrilla con pan amasado y pebre de cilantro', ingredients: 'longaniza de cerdo, ají color, comino, pan amasado, tomate, cilantro, cebolla', price: 7500, category: 'entradas', allergens: 'gluten, cerdo' },
+      // Sopas y cazuelas
+      { name: 'Cazuela de vacuno', description: 'Caldo sustancioso con osobuco de vacuno, papas, choclo, zapallo y arroz', ingredients: 'osobuco de vacuno, papa, choclo, zapallo, arroz, zanahoria, cilantro', price: 9900, category: 'sopas y cazuelas', allergens: 'ninguno' },
+      { name: 'Cazuela de ave', description: 'Muslo de pollo cocido lentamente con verduras de estación y fideos cabello de ángel', ingredients: 'muslo de pollo, papa, choclo, zapallo, fideos cabello de ángel, zanahoria', price: 8900, category: 'sopas y cazuelas', allergens: 'gluten' },
+      { name: 'Charquicán', description: 'Guiso chileno de charqui, zapallo, papas y porotos', ingredients: 'charqui de vacuno, zapallo, papa, porotos verdes, choclo, cebolla, merkén', price: 9500, category: 'sopas y cazuelas', allergens: 'ninguno' },
+      // Carnes a la parrilla
+      { name: 'Asado de tira', description: 'Corte clásico al carbón servido con ensalada chilena y papas doradas', ingredients: 'asado de tira de vacuno, sal parrillera, papa, tomate, cebolla, cilantro', price: 14900, category: 'carnes a la parrilla', allergens: 'ninguno' },
+      { name: 'Entraña a la parrilla', description: 'Entraña de vacuno con chimichurri austral y puré rústico de papas', ingredients: 'entraña de vacuno, perejil, ajo, ají cacho de cabra, vinagre de vino, papa', price: 16900, category: 'carnes a la parrilla', allergens: 'ninguno' },
+      { name: 'Lomo vetado', description: 'Lomo vetado al punto con salsa de hongos de pino y arroz cremoso', ingredients: 'lomo vetado de vacuno, hongos de pino, crema, cebolla, vino tinto, arroz', price: 18900, category: 'carnes a la parrilla', allergens: 'lácteos' },
+      { name: 'Costillar de cerdo BBQ', description: 'Costillar lentamente ahumado con salsa criolla y choclo asado', ingredients: 'costillar de cerdo, salsa BBQ, ají de color, comino, choclo, cebolla, tomate', price: 15900, category: 'carnes a la parrilla', allergens: 'gluten' },
+      // Pescados y mariscos
+      { name: 'Reineta frita', description: 'Reineta entera frita en tempura liviana con ensalada de pepino y limón', ingredients: 'reineta, harina, huevo, agua con gas, pepino, limón, sal', price: 13500, category: 'pescados y mariscos', allergens: 'pescado, gluten, huevo' },
+      { name: 'Congrio al vapor', description: 'Congrio colorado cocido al vapor con mantequilla de algas y papas crecidas', ingredients: 'congrio colorado, mantequilla, cochayuyo, papa, limón, perejil', price: 15900, category: 'pescados y mariscos', allergens: 'pescado, lácteos' },
+      { name: 'Mariscal caliente', description: 'Caldo de mariscos con almejas, choritos, machas y erizo de la zona', ingredients: 'almejas, choritos, machas, erizo, cebolla, ajo, vino blanco, cilantro', price: 16900, category: 'pescados y mariscos', allergens: 'mariscos' },
+      { name: 'Chupe de mariscos', description: 'Gratín de mariscos mixtos con bechamel de queso mantecoso y pan de campo', ingredients: 'mariscos mixtos, leche, crema, queso mantecoso, pan de campo, cebolla, ají de color', price: 14500, category: 'pescados y mariscos', allergens: 'mariscos, lácteos, gluten' },
+      // Postres
+      { name: 'Leche asada', description: 'Postre clásico chileno de leche horneada con caramelo de naranja', ingredients: 'leche, huevo, azúcar, vainilla, caramelo de naranja', price: 4500, category: 'postres', allergens: 'lácteos, huevo' },
+      { name: 'Torta de milhojas', description: 'Milhojas de hojarasca con manjar y crema chantilly', ingredients: 'hojarasca, manjar, crema chantilly, azúcar flor', price: 5500, category: 'postres', allergens: 'gluten, lácteos, huevo' },
+      { name: 'Mote con huesillo', description: 'Bebida y postre chileno con durazno deshidratado y mote de trigo', ingredients: 'huesillos de durazno, mote de trigo, azúcar, canela, clavo de olor', price: 3500, category: 'postres', allergens: 'gluten' },
+      // Bebidas
+      { name: 'Pisco sour artesanal', description: 'Pisco des Andes con jugo de limón de pica, jarabe de miel y clara de huevo', ingredients: 'pisco, limón de pica, jarabe de miel, clara de huevo, hielo', price: 5900, category: 'bebidas', allergens: 'huevo' },
+      { name: 'Terremoto', description: 'Vino pipeño con helado de piña y granadina', ingredients: 'vino pipeño, helado de piña, granadina, fernet', price: 4900, category: 'bebidas', allergens: 'lácteos' },
+      { name: 'Vino de la casa (copa)', description: 'Carménère o Chardonnay de viñas del Maule', ingredients: 'vino tinto carménère o vino blanco chardonnay', price: 3900, category: 'bebidas', allergens: 'ninguno' },
+      { name: 'Agua de hierbas', description: 'Infusión fría de menta, boldo y cedrón de cosecha propia', ingredients: 'menta, boldo, cedrón, agua, miel', price: 2500, category: 'bebidas', allergens: 'ninguno' },
+    ],
+  },
+
+  // ── 2. Hotel Los Quillayes — boutique mountain hotel ──────────────────
+  {
+    name: 'Hotel Los Quillayes',
+    slug: 'hotel-los-quillayes',
+    description: 'Hotel boutique de montaña con cocina de autor. Desayunos gourmet, room service y bar con vista a la cordillera.',
+    businessType: 'hotel',
+    dishes: [
+      // Desayunos
+      { name: 'Desayuno continental', description: 'Café o té, jugo natural, pan de masa madre, mantequilla, mermelada artesanal y una fruta de estación', ingredients: 'pan de masa madre, mantequilla, mermelada de frambuesa, fruta de estación, café o té', price: 8900, category: 'desayunos', allergens: 'gluten, lácteos' },
+      { name: 'Desayuno americano', description: 'Huevos revueltos, tostadas, tocino ahumado, jugo, fruta y café o té', ingredients: 'huevos, tostadas de pan centeno, tocino, jugo de naranja, fruta, café', price: 12900, category: 'desayunos', allergens: 'gluten, huevo, lácteos' },
+      { name: 'Huevos benedictinos', description: 'Muffin inglés con jamón serrano, huevo pochado y salsa holandesa', ingredients: 'muffin inglés, jamón serrano, huevo pochado, mantequilla, yema, limón', price: 14900, category: 'desayunos', allergens: 'gluten, huevo, lácteos' },
+      { name: 'Bowl de quínoa', description: 'Quínoa cocida con leche de coco, frutas de temporada, granola y miel de ulmo', ingredients: 'quínoa, leche de coco, mango, arándanos, granola, miel de ulmo', price: 9900, category: 'desayunos', allergens: 'frutos secos, gluten' },
+      { name: 'Tostadas de palta y salmón ahumado', description: 'Pan de centeno con palta, salmón ahumado, alcaparras, cebolla morada y eneldo', ingredients: 'pan de centeno, palta, salmón ahumado, alcaparras, cebolla morada, eneldo, limón', price: 13500, category: 'desayunos', allergens: 'gluten, pescado' },
+      // Room service
+      { name: 'Sopa de cebolla gratinada', description: 'Sopa clásica francesa con caldo de vacuno, crutones y queso gruyère fundido', ingredients: 'cebolla, caldo de vacuno, vino blanco, crutones, queso gruyère, mantequilla', price: 8900, category: 'room service', allergens: 'gluten, lácteos' },
+      { name: 'Club sándwich', description: 'Triple de pan de mie tostado con pollo a la plancha, tocino, tomate, lechuga y mayonesa', ingredients: 'pan de mie, pollo, tocino, tomate, lechuga, mayonesa, huevo duro', price: 10900, category: 'room service', allergens: 'gluten, huevo' },
+      { name: 'Pasta con pesto de albahaca', description: 'Pasta fresca con pesto genovés, tomates cherry y queso parmesano rallado', ingredients: 'pasta fresca, albahaca, piñones, ajo, aceite de oliva, parmesano, tomates cherry', price: 12900, category: 'room service', allergens: 'gluten, lácteos, frutos secos' },
+      { name: 'Filete de vacuno con salsa de pimienta', description: 'Filete al punto con salsa de pimienta verde, puré de papas y espárragos salteados', ingredients: 'filete de vacuno, pimienta verde, crema, cognac, papa, espárragos, mantequilla', price: 22900, category: 'room service', allergens: 'lácteos' },
+      { name: 'Tabla de quesos chilenos', description: 'Selección de quesos artesanales del sur: mantecoso, chanco y cabra curado con miel y nueces', ingredients: 'queso mantecoso, queso chanco, queso de cabra curado, miel, nueces, mermelada, galletas', price: 14900, category: 'room service', allergens: 'lácteos, frutos secos, gluten' },
+      // Bar del lobby
+      { name: 'Negroni', description: 'Gin, vermut rosso y Campari con cáscara de naranja', ingredients: 'gin, vermut rosso, campari, naranja', price: 8500, category: 'bar del lobby', allergens: 'ninguno' },
+      { name: 'Whisky sour', description: 'Bourbon, limón, jarabe de azúcar y clara de huevo con bitter de angostura', ingredients: 'bourbon, limón, jarabe, clara de huevo, bitter angostura', price: 8900, category: 'bar del lobby', allergens: 'huevo' },
+      { name: 'Kir royale', description: 'Cava brut con licor de cassis', ingredients: 'cava brut, licor de cassis', price: 7500, category: 'bar del lobby', allergens: 'ninguno' },
+      { name: 'Agua mineral o con gas', description: 'Agua mineral del sur, formato 500 ml', ingredients: 'agua mineral', price: 2500, category: 'bar del lobby', allergens: 'ninguno' },
+      { name: 'Jugos naturales prensados en frío', description: 'Combinación de frutas de estación prensadas en frío: naranja-zanahoria-jengibre o manzana-apio-pepino', ingredients: 'naranja, zanahoria, jengibre o manzana, apio, pepino', price: 5500, category: 'bar del lobby', allergens: 'ninguno' },
+      // Minibar
+      { name: 'Snack de frutos secos premium', description: 'Mix de nueces, almendras, maní tostado y cranberries deshidratados', ingredients: 'nueces, almendras, maní, cranberries', price: 4500, category: 'minibar', allergens: 'frutos secos' },
+      { name: 'Chocolate de origen único', description: 'Tableta de chocolate negro 72% de cacao de origen peruano', ingredients: 'cacao, manteca de cacao, azúcar', price: 4900, category: 'minibar', allergens: 'lácteos' },
+      { name: 'Cerveza artesanal local', description: 'Cerveza porter oscura de la cervecería Nuble, formato 330 ml', ingredients: 'agua, malta de cebada, lúpulo, levadura', price: 5500, category: 'minibar', allergens: 'gluten' },
+    ],
+  },
+
+  // ── 3. Bar El Cóndor — cocktail bar ──────────────────────────────────
+  {
+    name: 'Bar El Cóndor',
+    slug: 'bar-el-condor',
+    description: 'Bar de autor en el corazón de la ciudad. Cócteles creativos con destilados chilenos, cartas de temporada y tapas para compartir.',
+    businessType: 'bar',
+    dishes: [
+      // Cócteles de autor
+      { name: 'Cóndor Sour', description: 'Pisco artesanal de Elqui, maracuyá, limón de pica, jarabe de hierba buena y clara de huevo', ingredients: 'pisco 40°, maracuyá, limón de pica, jarabe de hierba buena, clara de huevo, hielo', price: 7500, category: 'cócteles de autor', allergens: 'huevo' },
+      { name: 'Atacama Mule', description: 'Vodka de uva chilena, jengibre fresco, limón y ginger beer artesanal', ingredients: 'vodka, jengibre fresco, limón, ginger beer artesanal, pepino, menta', price: 7900, category: 'cócteles de autor', allergens: 'ninguno' },
+      { name: 'Niebla del Sur', description: 'Gin botánico con té de boldo, pepino, albahaca y tónica de pomelo', ingredients: 'gin botánico, té de boldo, pepino, albahaca fresca, tónica de pomelo, sal de mar', price: 8500, category: 'cócteles de autor', allergens: 'ninguno' },
+      { name: 'Desierto Rojo', description: 'Mezcal, Aperol, jugo de pomelo rosado, sal de gusano y pimienta rosa', ingredients: 'mezcal, Aperol, pomelo rosado, sal de gusano, pimienta rosa, hielo', price: 9500, category: 'cócteles de autor', allergens: 'ninguno' },
+      { name: 'Lago Azul', description: 'Ginebra premium, licor de butterfly pea flower, jugo de limón y agua tónica', ingredients: 'ginebra, butterfly pea flower, limón, agua tónica, hielo', price: 8900, category: 'cócteles de autor', allergens: 'ninguno' },
+      // Cócteles clásicos
+      { name: 'Old Fashioned', description: 'Bourbon americano con bitter de angostura, terrón de azúcar y ralladura de naranja', ingredients: 'bourbon, bitter angostura, azúcar, naranja', price: 8900, category: 'cócteles clásicos', allergens: 'ninguno' },
+      { name: 'Espresso Martini', description: 'Vodka, licor de café, espresso doble y espuma de vainilla', ingredients: 'vodka, licor de café, espresso, jarabe de vainilla, hielo', price: 8500, category: 'cócteles clásicos', allergens: 'ninguno' },
+      { name: 'Aperol Spritz', description: 'Aperol, prosecco y agua con gas, con rodaja de naranja', ingredients: 'aperol, prosecco, agua con gas, naranja', price: 7500, category: 'cócteles clásicos', allergens: 'ninguno' },
+      { name: 'Daiquiri de temporada', description: 'Ron blanco, jugo de limón y jarabe de fruta de temporada (consultar al barman)', ingredients: 'ron blanco, limón, jarabe de fruta de temporada, hielo', price: 7900, category: 'cócteles clásicos', allergens: 'ninguno' },
+      // Piscos
+      { name: 'Pisco Sour clásico', description: 'Pisco 35° con limón de pica, jarabe de goma, clara de huevo y bitter angostura', ingredients: 'pisco 35°, limón de pica, jarabe de goma, clara de huevo, bitter angostura', price: 6500, category: 'piscos', allergens: 'huevo' },
+      { name: 'Chilcano Maracuyá', description: 'Pisco con ginger ale, jugo de maracuyá y limón', ingredients: 'pisco, ginger ale, maracuyá, limón, menta', price: 6900, category: 'piscos', allergens: 'ninguno' },
+      { name: 'Sour de chicha morada', description: 'Pisco premium con reducción de chicha morada artesanal y espuma de cítricos', ingredients: 'pisco 40°, chicha morada, limón, clara de huevo, canela', price: 7900, category: 'piscos', allergens: 'huevo' },
+      // Cervezas artesanales
+      { name: 'IPA del Valle', description: 'Cerveza India Pale Ale lupulada, amargor pronunciado con notas cítricas', ingredients: 'agua, malta de cebada, lúpulo cítrico, levadura', price: 5900, category: 'cervezas artesanales', allergens: 'gluten' },
+      { name: 'Stout Austral', description: 'Cerveza oscura de cuerpo pesado con notas de café, chocolate y caramelo', ingredients: 'agua, malta tostada, cebada, lúpulo, levadura', price: 5900, category: 'cervezas artesanales', allergens: 'gluten' },
+      { name: 'Wheat Ale de frutos', description: 'Cerveza de trigo refrescante con frambuesas y ralladura de limón', ingredients: 'agua, trigo, cebada, lúpulo, levadura, frambuesas, limón', price: 6500, category: 'cervezas artesanales', allergens: 'gluten' },
+      // Tapas y snacks
+      { name: 'Tabla de fiambres chilenos', description: 'Longaniza de Chillán, jamón de pierna, queso de cabra curado y pepinillos', ingredients: 'longaniza, jamón, queso de cabra, pepinillos, pan amasado', price: 12900, category: 'tapas y snacks', allergens: 'gluten, lácteos, cerdo' },
+      { name: 'Tostadas de queso brie con mermelada', description: 'Pan baguette tostado con brie tibio, mermelada de higo y nueces', ingredients: 'baguette, queso brie, mermelada de higo, nueces, miel', price: 9500, category: 'tapas y snacks', allergens: 'gluten, lácteos, frutos secos' },
+      { name: 'Papas rústicas con alioli', description: 'Papas en gajos horneadas con piel, sal de mar, romero y alioli de ajo asado', ingredients: 'papas, romero, sal de mar, ajo, aceite de oliva, yema de huevo, limón', price: 7500, category: 'tapas y snacks', allergens: 'huevo' },
+      { name: 'Aceitunas marinadas', description: 'Mix de aceitunas negras y verdes con hierbas mediterráneas, ajo y ají cacho de cabra', ingredients: 'aceitunas mixtas, ajo, romero, tomillo, ají cacho de cabra, aceite de oliva', price: 5500, category: 'tapas y snacks', allergens: 'ninguno' },
+    ],
+  },
+
+  // ── 4. Café Temporada — specialty coffee shop ─────────────────────────
+  {
+    name: 'Café Temporada',
+    slug: 'cafe-temporada',
+    description: 'Cafetería de especialidad con granos de origen único, pastelería artesanal y desayunos de autor. Abierto todos los días.',
+    businessType: 'service',
+    dishes: [
+      // Cafés de especialidad
+      { name: 'Espresso', description: 'Shot doble de espresso con granos de origen único tostado oscuro', ingredients: 'café de especialidad 100% arábica', price: 2200, category: 'cafés de especialidad', allergens: 'ninguno' },
+      { name: 'Flat White', description: 'Dos shots de espresso con leche texturizada de micro espuma', ingredients: 'café de especialidad, leche entera', price: 3500, category: 'cafés de especialidad', allergens: 'lácteos' },
+      { name: 'Cortado', description: 'Espresso cortado con igual medida de leche tibia', ingredients: 'café de especialidad, leche entera', price: 2900, category: 'cafés de especialidad', allergens: 'lácteos' },
+      { name: 'Latte de vainilla', description: 'Espresso doble, jarabe de vainilla natural y leche al vapor con decoración latte art', ingredients: 'café, leche entera, jarabe de vainilla natural', price: 4200, category: 'cafés de especialidad', allergens: 'lácteos' },
+      { name: 'Cold Brew', description: 'Infusión fría de 18 horas, servida con hielo y un toque de jarabe de panela', ingredients: 'café de especialidad, agua filtrada, panela, hielo', price: 4500, category: 'cafés de especialidad', allergens: 'ninguno' },
+      { name: 'Matcha Latte', description: 'Matcha ceremonial japonés con leche de avena o entera al vapor', ingredients: 'matcha ceremonial, leche de avena o leche entera', price: 4900, category: 'cafés de especialidad', allergens: 'lácteos' },
+      // Tés e infusiones
+      { name: 'Té verde sencha', description: 'Té verde japonés de primer flush, infusión a 70°C', ingredients: 'té verde sencha', price: 2900, category: 'tés e infusiones', allergens: 'ninguno' },
+      { name: 'Chai especiado', description: 'Mezcla de especias con té negro, leche vegetal al vapor y miel de ulmo', ingredients: 'té negro, canela, cardamomo, jengibre, clavo, pimienta negra, leche de avena, miel', price: 3900, category: 'tés e infusiones', allergens: 'lácteos' },
+      { name: 'Kombucha de jengibre y limón', description: 'Kombucha artesanal fermentada 14 días con jengibre fresco y limón de pica', ingredients: 'té negro, azúcar de caña, cultivo scoby, jengibre, limón', price: 4200, category: 'tés e infusiones', allergens: 'ninguno' },
+      // Desayunos
+      { name: 'Tostadas de masa madre con palta', description: 'Pan de masa madre tostado con palta aplastada, tomate cherry, semillas de sésamo y aceite de oliva', ingredients: 'pan de masa madre, palta, tomate cherry, sésamo, aceite de oliva, sal de mar, limón', price: 6900, category: 'desayunos', allergens: 'gluten, sésamo' },
+      { name: 'Granola de la casa con yogur', description: 'Granola artesanal horneada con miel, nueces y avena, sobre yogur griego y frutos del bosque', ingredients: 'avena, nueces, miel de ulmo, coco rallado, yogur griego, arándanos, frambuesas', price: 7500, category: 'desayunos', allergens: 'gluten, lácteos, frutos secos' },
+      { name: 'Huevo pochado con tostada', description: 'Huevo pochado sobre tostada de centeno con rúcula, tomates asados y vinagreta de mostaza', ingredients: 'huevo, pan de centeno, rúcula, tomates cherry, mostaza de Dijon, vinagre de manzana, aceite de oliva', price: 8500, category: 'desayunos', allergens: 'gluten, huevo' },
+      { name: 'Porridge de avena', description: 'Avena cocida en leche de almendras con plátano caramelizado, miel y canela', ingredients: 'avena, leche de almendras, plátano, miel, canela, nueces', price: 6500, category: 'desayunos', allergens: 'gluten, frutos secos' },
+      // Pasteles y tortas
+      { name: 'Croissant de mantequilla', description: 'Croissant hojaldrado de 72 horas de fermentación en frío, con mantequilla artesanal', ingredients: 'harina de fuerza, mantequilla, leche, levadura, huevo, sal', price: 3900, category: 'pasteles y tortas', allergens: 'gluten, lácteos, huevo' },
+      { name: 'Brownie de chocolate negro', description: 'Brownie denso de chocolate 72% con nueces tostadas y sal de mar', ingredients: 'chocolate negro, mantequilla, huevos, azúcar, harina, nueces, sal de mar', price: 4200, category: 'pasteles y tortas', allergens: 'gluten, lácteos, huevo, frutos secos' },
+      { name: 'Cheesecake de maracuyá', description: 'Base de galleta de mantequilla con relleno cremoso de queso crema y coulis de maracuyá', ingredients: 'galletas, mantequilla, queso crema, azúcar, huevo, maracuyá', price: 5500, category: 'pasteles y tortas', allergens: 'gluten, lácteos, huevo' },
+      { name: 'Muffin de arándanos', description: 'Muffin esponjoso con arándanos frescos de la Araucanía y ralladura de limón', ingredients: 'harina, huevo, mantequilla, azúcar, arándanos, limón, leche', price: 3500, category: 'pasteles y tortas', allergens: 'gluten, lácteos, huevo' },
+      // Sándwiches y ensaladas
+      { name: 'Sándwich de pollo asado', description: 'Pechuga de pollo asada al horno con rúcula, tomate, queso mantecoso y mayonesa de hierbas en ciabatta', ingredients: 'ciabatta, pollo, rúcula, tomate, queso mantecoso, mayonesa, albahaca, perejil', price: 9900, category: 'sándwiches y ensaladas', allergens: 'gluten, huevo, lácteos' },
+      { name: 'Bowl mediterráneo', description: 'Quínoa, garbanzos especiados, pepino, tomate, cebolla morada, feta y vinagreta de limón', ingredients: 'quínoa, garbanzos, pepino, tomate, cebolla morada, queso feta, limón, aceite de oliva, menta', price: 10900, category: 'sándwiches y ensaladas', allergens: 'lácteos' },
+      { name: 'Ensalada verde con vinagreta de miso', description: 'Mix de hojas verdes, pepino, edamame, semillas de girasol y vinagreta de miso blanco y sésamo', ingredients: 'mezcla de hojas, pepino, edamame, semillas de girasol, miso blanco, sésamo, vinagre de arroz, aceite de sésamo', price: 9500, category: 'sándwiches y ensaladas', allergens: 'soya, sésamo' },
+    ],
+  },
+];
+
+// ── Legacy seed data (for the `restaurants` table) ───────────────────────
+// Kept for backwards compatibility with scripts/seed.ts.
+// These are not the demo businesses shown in the app.
 export interface RestaurantSeedData {
   name: string;
   slug: string;
@@ -14,134 +170,4 @@ export interface RestaurantSeedData {
   dishes: DishData[];
 }
 
-export const SEED_RESTAURANTS: RestaurantSeedData[] = [
-  {
-    name: 'Izakaya Nami',
-    slug: 'izakaya-nami',
-    description: 'Gastropub japonés con platos tradicionales de izakaya',
-    dishes: [
-      { name: 'Karaage', description: 'Pollo frito crocante marinado en soya, jengibre y sake', ingredients: 'pollo, soya, jengibre, sake, almidón de papa', price: 8500, category: 'entradas', allergens: 'gluten, soya' },
-      { name: 'Takoyaki', description: 'Bolitas de pulpo con escamas de bonito y salsa okonomiyaki', ingredients: 'pulpo, harina, huevo, escamas de bonito, salsa okonomiyaki, mayonesa japonesa', price: 7000, category: 'entradas', allergens: 'gluten, mariscos, huevo' },
-      { name: 'Gyoza', description: 'Dumplings de cerdo y repollo a la plancha', ingredients: 'cerdo, repollo, cebollín, jengibre, ajo, masa de gyoza', price: 6500, category: 'entradas', allergens: 'gluten, cerdo' },
-      { name: 'Edamame', description: 'Porotos de soya al vapor con sal', ingredients: 'edamame, sal', price: 4000, category: 'entradas', allergens: 'soya' },
-      { name: 'Tonkotsu Ramen', description: 'Ramen de caldo de hueso de cerdo con chashu, huevo cocido y nori', ingredients: 'fideos ramen, caldo de hueso de cerdo, chashu, huevo cocido, nori, cebollín, bambú', price: 12000, category: 'principales', allergens: 'gluten, cerdo, huevo' },
-      { name: 'Matcha Nama Choco', description: 'Cuadritos de chocolate crudo de matcha', ingredients: 'chocolate blanco, crema, matcha en polvo', price: 5000, category: 'postres', allergens: 'lácteos' },
-    ],
-  },
-  {
-    name: 'Bocas del Mar',
-    slug: 'bocas-del-mar',
-    description: 'Restaurant peruano de autor. Mariscos, ceviches y cocina de fusión con sabores auténticos de la cultura Inca.',
-    dishes: [
-      // Recomendaciones del Chef
-      { name: 'Causa de Cangrejo', description: 'Acompañado con chicharrón de pescado y mariscos, salsa acevichada y criolla', ingredients: 'cangrejo, papa amarilla, chicharrón de pescado, mariscos, salsa acevichada, criolla', price: 16990, category: 'chef', allergens: 'mariscos, pescado, gluten' },
-      { name: 'Ceviche Bocas', description: 'Pesca del día y mixtura de mariscos, leche de tigre de rocoto y ají amarillo, brocheta de pescado', ingredients: 'pesca del día, mariscos mixtos, rocoto, ají amarillo, limón, cebolla, cilantro', price: 18990, category: 'chef', allergens: 'mariscos, pescado' },
-      { name: 'Tacu Tacu de Lomo Saltado', description: 'Mezcla de arroz y frijoles dorados, coronado con lomo saltado', ingredients: 'arroz, frijoles, lomo de res, cebolla morada, tomate, sillao, ají amarillo', price: 18990, category: 'chef', allergens: 'gluten, soya' },
-      { name: 'Arroz Meloso', description: 'Arroz meloso, mixtura de mariscos, huancaína, chalaquita y palta', ingredients: 'arroz, mariscos mixtos, ají amarillo, queso, leche, palta, cebolla, tomate', price: 17990, category: 'chef', allergens: 'mariscos, lácteos' },
-      { name: 'Panceta Crocante', description: 'Panceta crocante acompañada de papas crocantes, camote y criolla', ingredients: 'panceta de cerdo, papas, camote, cebolla morada, tomate, culantro', price: 16990, category: 'chef', allergens: 'cerdo' },
-      { name: 'Picante de Mariscos', description: 'Pesca del día al grill, bañado en salsa de mariscos y arroz blanco', ingredients: 'pesca del día, mariscos mixtos, ají amarillo, ají panca, arroz blanco', price: 18990, category: 'chef', allergens: 'mariscos, pescado' },
-      { name: 'Linguini a lo Macho', description: 'Acompañado con mixtura de mariscos, ostiones gratinados en salsa macho', ingredients: 'linguini, mariscos mixtos, ostiones, ají amarillo, crema, queso parmesano', price: 18990, category: 'chef', allergens: 'gluten, mariscos, lácteos' },
-      { name: 'Gyozas de Pato', description: 'De pato confit con espejo de salsa huancaína', ingredients: 'pato confit, masa de gyoza, ají amarillo, queso, leche', price: 15990, category: 'chef', allergens: 'gluten, lácteos' },
-      { name: 'Garrón de Cordero', description: 'Acompañado con risotto a la huancaína', ingredients: 'garrón de cordero, arroz arbóreo, ají amarillo, queso, caldo de cordero', price: 24990, category: 'chef', allergens: 'lácteos' },
-      { name: 'Fetuccini Huancaína con Saltado de Camarón', description: 'Fetuccini con salsa huancaína y saltado de camarones, con aromas peruanos', ingredients: 'fetuccini, camarones, ají amarillo, queso fresco, leche, galleta de soda, cebolla, tomate', price: 17990, category: 'chef', allergens: 'gluten, mariscos, lácteos' },
-
-      // Ceviches (Frías)
-      { name: 'Ceviche Clásico', description: 'Pesca del día, mixtura de mariscos, leche de tigre, choclo, canchita y camote glaseado', ingredients: 'pesca del día, mariscos, limón, ají limo, cebolla morada, cilantro, choclo, camote', price: 16990, category: 'ceviches', allergens: 'mariscos, pescado' },
-      { name: 'Ceviche Mixto de Salmón', description: 'Salmón fresco, mixtura de mariscos, leche de tigre, choclo, canchita y camote glaseado', ingredients: 'salmón, mariscos, limón, ají limo, cebolla morada, cilantro, choclo, camote', price: 19990, category: 'ceviches', allergens: 'mariscos, pescado' },
-      { name: 'Ceviche Carretillero', description: 'Pesca del día, chicharrón de mariscos, leche de tigre, canchita y camote glaseado', ingredients: 'pesca del día, chicharrón de mariscos, limón, ají limo, cebolla morada, canchita, camote', price: 19990, category: 'ceviches', allergens: 'mariscos, pescado, gluten' },
-      { name: 'Ceviche de Atún Rojo', description: 'Atún rojo con mixtura de mariscos, leche de tigre de rocoto, canchita y camote glaseado', ingredients: 'atún rojo, mariscos, rocoto, limón, cebolla morada, cilantro, canchita, camote', price: 15990, category: 'ceviches', allergens: 'mariscos, pescado' },
-      { name: 'Ceviche Trilogía', description: 'De atún al rocoto, salmón al ají amarillo y pesca del día clásico', ingredients: 'atún, salmón, pesca del día, rocoto, ají amarillo, limón, cebolla morada, cilantro', price: 19990, category: 'ceviches', allergens: 'mariscos, pescado' },
-
-      // Tiraditos (Frías)
-      { name: 'Tiradito Pulpo al Olivo', description: 'Pulpo con mixtura de mariscos en salsa de olivo, leche de tigre, choclo, canchita y camote glaseado', ingredients: 'pulpo, mariscos, aceitunas negras, limón, ají amarillo, choclo, camote', price: 21990, category: 'tiraditos', allergens: 'mariscos' },
-      { name: 'Tiradito de Atún Pasionario', description: 'Salmón fresco, mixtura de mariscos, leche de tigre, choclo, canchita y camote glaseado', ingredients: 'atún, salmón, mariscos, maracuyá, limón, ají amarillo, choclo, camote', price: 15990, category: 'tiraditos', allergens: 'mariscos, pescado' },
-      { name: 'Tiradito de Locos', description: 'Pesca del día, chicharrón de mariscos, leche de tigre, canchita y camote glaseado', ingredients: 'locos, pesca del día, chicharrón de mariscos, limón, ají limo, canchita, camote', price: 24990, category: 'tiraditos', allergens: 'mariscos, pescado, gluten' },
-      { name: 'Tiradito de Salmón', description: 'Salmón con mixtura de mariscos, leche de tigre de rocoto, canchita y camote glaseado', ingredients: 'salmón, mariscos, rocoto, limón, cebolla morada, cilantro, canchita, camote', price: 18990, category: 'tiraditos', allergens: 'mariscos, pescado' },
-
-      // Entradas Calientes
-      { name: 'Brocheta de Res', description: 'De lomo liso, criolla, papas doradas, choclo al grill y papas fritas', ingredients: 'lomo liso de res, cebolla morada, tomate, papas, choclo', price: 14990, category: 'entradas', allergens: 'ninguno' },
-      { name: 'Brocheta de Pulpo', description: 'Con chimichurri, criolla, papas doradas, choclo al grill y papas fritas', ingredients: 'pulpo, chimichurri, cebolla morada, tomate, papas, choclo', price: 22990, category: 'entradas', allergens: 'mariscos' },
-      { name: 'Afrodisíaco de Camarón', description: 'Camarones empanizados y bañados en salsa afrodisíaca', ingredients: 'camarones, panko, huevo, salsa afrodisíaca (ají amarillo, limón, mayonesa)', price: 14990, category: 'entradas', allergens: 'mariscos, gluten, huevo' },
-      { name: 'Machas Parmesanas', description: 'Machas gratinadas con abundante queso', ingredients: 'machas, queso parmesano, mantequilla, ajo', price: 15990, category: 'entradas', allergens: 'mariscos, lácteos' },
-      { name: 'Empanadas de Lomo Saltado', description: 'Acompañado con salsa huancaína y chalaquita', ingredients: 'masa de empanada, lomo de res, cebolla morada, tomate, ají amarillo, salsa huancaína', price: 12990, category: 'entradas', allergens: 'gluten, lácteos' },
-      { name: 'Wantán de Corvina', description: 'Estilo oriental, con salsa de tamarindo', ingredients: 'corvina, masa de wantán, tamarindo, jengibre, sillao', price: 12990, category: 'entradas', allergens: 'gluten, mariscos, soya' },
-      { name: 'Empanada de Ají de Gallina', description: 'Con abundante relleno de ají de gallina, con salsa huancaína', ingredients: 'masa de empanada, pollo, ají amarillo, pan de molde, leche, queso, nueces', price: 12990, category: 'entradas', allergens: 'gluten, lácteos, frutos secos' },
-      { name: 'Empanada de Pulpo', description: 'Estilo peruano, con chalaquita y mayo de olivo', ingredients: 'masa de empanada, pulpo, aceitunas negras, cebolla, tomate, mayonesa de olivo', price: 12990, category: 'entradas', allergens: 'gluten, mariscos, huevo' },
-
-      // Principales - Carnes/Tierra
-      { name: 'Lomo Saltado', description: 'Filete de res, cebolla morada y tomate, salsa de lomo saltado, papas rústicas y arroz criollo', ingredients: 'filete de res, cebolla morada, tomate, ají amarillo, sillao, papas, arroz', price: 15990, category: 'carnes', allergens: 'gluten, soya' },
-      { name: 'Tacu Tacu con Entraña', description: 'Tacu tacu al grill con chimichurri de pimientos y reducción de vino tinto', ingredients: 'arroz, frijoles, entraña de res, pimientos, vino tinto, chimichurri', price: 24000, category: 'carnes', allergens: 'gluten' },
-      { name: 'Fetuccini Huancaína', description: 'Fetuccini a la huancaína acompañado con lomo saltado', ingredients: 'fetuccini, ají amarillo, queso fresco, leche, galleta de soda, lomo de res, cebolla, tomate', price: 17990, category: 'carnes', allergens: 'gluten, lácteos' },
-      { name: 'Asado de Tira', description: 'Braseado por 8 horas a baja temperatura, con puré de papas y salsa de seco norteño', ingredients: 'asado de tira, papas, culantro, ají amarillo, chicha de jora, arveja', price: 24990, category: 'carnes', allergens: 'lácteos' },
-      { name: 'Pesto Criollo', description: 'Con spaguetti al pesto criollo y filete apanado', ingredients: 'spaguetti, albahaca, aceite de oliva, ajo, queso parmesano, filete de res apanado, huevo, pan rallado', price: 18990, category: 'carnes', allergens: 'gluten, lácteos, huevo' },
-      { name: 'Lomo Liso a la Pimienta', description: 'Con papas rústicas bañadas en salsa de quesos', ingredients: 'lomo liso de res, pimienta negra, papas, crema, queso gouda, queso parmesano', price: 16990, category: 'carnes', allergens: 'lácteos' },
-      { name: 'Lomo Vetado Strogonoff', description: 'Bañado en salsa de hongos y arroz blanco', ingredients: 'lomo vetado de res, hongos mixtos, crema, mostaza, cebolla, arroz blanco', price: 18990, category: 'carnes', allergens: 'lácteos, gluten' },
-      { name: 'Plateada', description: 'Braseada por 12 horas a baja temperatura, bañada en salsa de champiñones y arroz', ingredients: 'plateada de res, champiñones, cebolla, ajo, vino tinto, arroz blanco', price: 17990, category: 'carnes', allergens: 'gluten' },
-      { name: 'Camarones Envueltos', description: 'Con fetuccini a la huancaína, bañados en salsa de lomo', ingredients: 'camarones, fetuccini, ají amarillo, queso, leche, filete de res, sillao', price: 18990, category: 'carnes', allergens: 'gluten, mariscos, lácteos, soya' },
-      { name: 'Lomo a Nuestro Estilo', description: 'Lomo vetado y camarones al grill, bañados en salsa de lomo con fetuccini a la huancaína', ingredients: 'lomo vetado, camarones, fetuccini, ají amarillo, queso, leche, sillao', price: 19990, category: 'carnes', allergens: 'gluten, mariscos, lácteos, soya' },
-      { name: 'Ají de Gallina', description: 'Crema de ají amarillo con pollo desmenuzado, acompañado con papas y arroz blanco', ingredients: 'pollo, ají amarillo, pan de molde, leche, queso parmesano, nueces, papas, arroz', price: 14990, category: 'carnes', allergens: 'gluten, lácteos, frutos secos' },
-      { name: 'Costillas BBQ', description: 'Costillas acompañadas con papas fritas', ingredients: 'costillas de cerdo, salsa BBQ, papas fritas', price: 18990, category: 'carnes', allergens: 'gluten' },
-
-      // Principales - Pescados/Mar
-      { name: 'Arroz Cremoso al Pesto', description: 'Arroz cremoso con filete de salmón al grill, bañado en salsa de maracuyá', ingredients: 'arroz arbóreo, salmón, albahaca, aceite de oliva, maracuyá, queso', price: 17990, category: 'pescados', allergens: 'pescado, lácteos' },
-      { name: 'Salmón Gratinado', description: 'Con salsa de quesos, con papas salteadas en mantequilla de romero', ingredients: 'salmón, queso gouda, queso parmesano, crema, papas, romero, mantequilla', price: 17990, category: 'pescados', allergens: 'pescado, lácteos' },
-      { name: 'Tacu Tacu con Mariscos', description: 'Relleno de plátano maduro y bañado en salsa de mariscos con ajíes peruanos', ingredients: 'arroz, frijoles, plátano maduro, mariscos mixtos, ají amarillo, ají panca', price: 19990, category: 'pescados', allergens: 'mariscos' },
-      { name: 'Salmón en Mantequilla de Limón', description: 'Al grill, con papas salteadas con cebolla y chimichurri', ingredients: 'salmón, mantequilla, limón, papas, cebolla, chimichurri (perejil, ajo, aceite, vinagre)', price: 17990, category: 'pescados', allergens: 'pescado, lácteos' },
-      { name: 'Atún a lo Macho', description: 'Atún al grill, bañado con mixtura de mariscos en salsa macho y arroz con choclo', ingredients: 'atún, mariscos mixtos, ají amarillo, ají panca, crema, arroz, choclo', price: 16990, category: 'pescados', allergens: 'pescado, mariscos, lácteos' },
-      { name: 'Atún al Ajillo', description: 'Con mixtura de mariscos y papas salteadas', ingredients: 'atún, mariscos mixtos, ajo, aceite de oliva, ají limo, papas', price: 16990, category: 'pescados', allergens: 'pescado, mariscos' },
-      { name: 'Pulpo a la Parrilla', description: 'Acompañado con fetuccini en salsa huancaína y chimichurri peruano', ingredients: 'pulpo, fetuccini, ají amarillo, queso fresco, leche, chimichurri, papas', price: 24000, category: 'pescados', allergens: 'mariscos, gluten, lácteos' },
-      { name: 'Fruto di Mare', description: 'Fetuccini bañados en crema blanca de mariscos y parmesano', ingredients: 'fetuccini, mariscos mixtos, crema, queso parmesano, ajo, vino blanco', price: 16990, category: 'pescados', allergens: 'gluten, mariscos, lácteos' },
-
-      // Menú Kids
-      { name: 'Chicharrón de Pescado (Kids)', description: 'Chicharrón de pescado con papas fritas', ingredients: 'filete de pescado, panko, huevo, papas fritas', price: 16990, category: 'kids', allergens: 'gluten, pescado, huevo' },
-      { name: 'Pechuga de Pollo (Kids)', description: 'Pechuga de pollo con papas fritas', ingredients: 'pechuga de pollo, papas fritas', price: 12990, category: 'kids', allergens: 'ninguno' },
-      { name: 'Pechuga de Pollo Gratinada (Kids)', description: 'Pechuga de pollo gratinada con queso, con papas fritas', ingredients: 'pechuga de pollo, queso, papas fritas', price: 14990, category: 'kids', allergens: 'lácteos' },
-
-      // Postres
-      { name: 'Cheesecake New York Brownie', description: 'Tarta de queso crema con trozos de brownie, base de oreo, chantilly, brownie bites y salsa de nutella', ingredients: 'queso crema, brownie, oreo, crema chantilly, nutella', price: 6990, category: 'postres', allergens: 'lácteos, gluten, huevo, frutos secos' },
-      { name: 'Pastel de Nuez', description: 'Bizcocho de nuez relleno de frosting de vainilla francesa con nueces y manjar, decorado con nueces caramelizadas', ingredients: 'nueces, harina, huevo, mantequilla, frosting de vainilla, manjar', price: 5500, category: 'postres', allergens: 'frutos secos, gluten, lácteos, huevo' },
-      { name: 'Suspiro Limeña', description: 'Clásico postre peruano de manjar blanco y merengue de Oporto', ingredients: 'manjar blanco, leche evaporada, oporto, canela', price: 5500, category: 'postres', allergens: 'lácteos, huevo' },
-      { name: 'Crema Volteada', description: 'Clásico flan peruano de leche condensada y leche evaporada', ingredients: 'leche condensada, leche evaporada, huevo, vainilla, caramelo', price: 5500, category: 'postres', allergens: 'lácteos, huevo' },
-      { name: 'Volcán de Chocolate', description: 'Bizcocho caliente relleno de salsa de chocolate, con helado de estación y reducción de frutos del bosque (15 a 20 min de preparación)', ingredients: 'chocolate, mantequilla, harina, huevo, azúcar, helado, frutos del bosque', price: 6990, category: 'postres', allergens: 'gluten, lácteos, huevo' },
-
-      // Cócteles
-      { name: 'Mojito', description: 'Cóctel clásico con ron, menta, limón y soda', ingredients: 'ron blanco, menta fresca, limón, azúcar, soda', price: 5800, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Old Fashioned', description: 'Whisky con bitter, azúcar y naranja', ingredients: 'whisky bourbon, bitter angostura, azúcar, naranja', price: 6500, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Moscow Mule', description: 'Vodka, ginger beer y limón', ingredients: 'vodka, ginger beer, jugo de limón, menta', price: 6800, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Mojito Maracuyá', description: 'Mojito con pulpa de maracuyá', ingredients: 'ron blanco, maracuyá, menta fresca, limón, azúcar, soda', price: 6800, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Aperol Spritz', description: 'Aperol, prosecco y soda', ingredients: 'aperol, prosecco, soda, naranja', price: 5800, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Negroni', description: 'Gin, vermut rojo y campari', ingredients: 'gin, vermut rojo, campari, naranja', price: 6500, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Caipiriña', description: 'Cachaça, limón y azúcar', ingredients: 'cachaça, limón, azúcar', price: 5500, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Tequila Margarita', description: 'Tequila, triple sec y jugo de limón', ingredients: 'tequila, triple sec, jugo de limón, sal', price: 5900, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Gilligans Mule', description: 'Combinación tropical de espíritus con ginger beer', ingredients: 'ron, ginger beer, frutas tropicales, limón', price: 7990, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Sevilla Spritz', description: 'Tanqueray Flor de Sevilla, tónica y agua de azahar', ingredients: 'Tanqueray Flor de Sevilla, agua tónica, agua de azahar, naranja', price: 7500, category: 'cócteles', allergens: 'ninguno' },
-      { name: 'Tanqueray Ten Collins', description: 'Tanqueray Ten, té manzanilla, jugo limón, jarabe de goma, agua con gas', ingredients: 'Tanqueray Ten, té manzanilla, limón, jarabe de goma, agua con gas', price: 8990, category: 'cócteles', allergens: 'ninguno' },
-
-      // Piscos
-      { name: 'Pisco Sour Catedral', description: 'Pisco sour clásico estilo peruano con clara de huevo', ingredients: 'pisco, jugo de limón, jarabe de goma, clara de huevo, bitter angostura', price: 5800, category: 'piscos', allergens: 'huevo' },
-      { name: 'Pisco Sour de Mango/Maracuyá', description: 'Pisco sour con pulpa de mango o maracuyá', ingredients: 'pisco, mango o maracuyá, jugo de limón, jarabe de goma, clara de huevo', price: 6500, category: 'piscos', allergens: 'huevo' },
-      { name: 'Pisco Sour Chicha Morada', description: 'Pisco sour con chicha morada peruana', ingredients: 'pisco, chicha morada, jugo de limón, jarabe de goma, clara de huevo', price: 6600, category: 'piscos', allergens: 'huevo' },
-      { name: 'Pisco Sour Vaticano', description: 'Pisco sour premium de gran tamaño', ingredients: 'pisco premium, jugo de limón, jarabe de goma, clara de huevo, bitter angostura', price: 9990, category: 'piscos', allergens: 'huevo' },
-      { name: 'Chilcano', description: 'Pisco con ginger ale y jugo de limón', ingredients: 'pisco, ginger ale, jugo de limón, bitter angostura', price: 5800, category: 'piscos', allergens: 'ninguno' },
-      { name: 'Chilcano Maracuyá', description: 'Pisco con ginger ale, limón y maracuyá', ingredients: 'pisco, maracuyá, ginger ale, jugo de limón', price: 6800, category: 'piscos', allergens: 'ninguno' },
-      { name: 'Degustación de Sour (4 Sabores)', description: 'Cuatro pisco sour de diferentes sabores para degustar', ingredients: 'pisco, limón, jarabe de goma, clara de huevo, sabores variados', price: 24990, category: 'piscos', allergens: 'huevo' },
-
-      // Cervezas
-      { name: 'Cusqueña', description: 'Cerveza peruana premium tipo lager', ingredients: 'agua, malta de cebada, lúpulo, levadura', price: 4500, category: 'cervezas', allergens: 'gluten' },
-      { name: 'Corona', description: 'Cerveza mexicana tipo lager', ingredients: 'agua, malta de cebada, lúpulo, levadura', price: 4500, category: 'cervezas', allergens: 'gluten' },
-      { name: 'Hoegaarden', description: 'Cerveza belga de trigo con notas de naranja y cilantro', ingredients: 'agua, trigo, cebada, lúpulo, semillas de cilantro, cáscara de naranja', price: 4500, category: 'cervezas', allergens: 'gluten' },
-      { name: 'Leffe', description: 'Cerveza belga de abadía de carácter intenso', ingredients: 'agua, malta de cebada, lúpulo, levadura de abadía', price: 4500, category: 'cervezas', allergens: 'gluten' },
-      { name: 'Kunstmann Torobayo', description: 'Cerveza artesanal chilena tipo lager premium', ingredients: 'agua, malta, lúpulo, levadura', price: 4900, category: 'cervezas', allergens: 'gluten' },
-      { name: 'Shop Stella Artois 500cc', description: 'Stella Artois en formato de un litro', ingredients: 'agua, malta de cebada, lúpulo, levadura', price: 5400, category: 'cervezas', allergens: 'gluten' },
-      { name: 'Michelada', description: 'Cerveza con limón, sal y salsa', ingredients: 'cerveza, jugo de limón, sal, salsa inglesa', price: 800, category: 'cervezas', allergens: 'gluten' },
-
-      // Sin alcohol
-      { name: 'Tómalo sin Culpa', description: 'Bebida sin alcohol en sabores piña, frambuesa o maracuyá', ingredients: 'frutas naturales, soda, menta, jarabe de goma', price: 4990, category: 'sin alcohol', allergens: 'ninguno' },
-      { name: 'Mojito Amazónico sin Alcohol', description: 'Menta, maracuyá y berries sin alcohol', ingredients: 'menta, maracuyá, berries, soda, limón, azúcar', price: 5500, category: 'sin alcohol', allergens: 'ninguno' },
-      { name: 'Limonada Tropical', description: 'Limonada con menta, jengibre y mango', ingredients: 'limón, menta, jengibre, mango, agua, azúcar', price: 4500, category: 'sin alcohol', allergens: 'ninguno' },
-      { name: 'Costeño', description: 'Pulpa de chirimoya, durazno y maracuyá', ingredients: 'chirimoya, durazno, maracuyá, agua, azúcar', price: 5990, category: 'sin alcohol', allergens: 'ninguno' },
-      { name: 'Jugos Naturales', description: 'Jugos de frutas naturales del día', ingredients: 'frutas frescas de temporada', price: 3700, category: 'sin alcohol', allergens: 'ninguno' },
-      { name: 'Limonada Menta Jengibre', description: 'Limonada fresca con menta y jengibre', ingredients: 'limón, menta, jengibre, agua, azúcar', price: 3400, category: 'sin alcohol', allergens: 'ninguno' },
-    ],
-  },
-];
+export const SEED_RESTAURANTS: RestaurantSeedData[] = [];
