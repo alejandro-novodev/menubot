@@ -42,19 +42,31 @@ async function seedDemo() {
 
     let totalDishes = 0;
 
+    // Demo contact/location info (fictional — for showcase only)
+    const DEMO_INFO: Record<string, { address: string; phone: string; hours: string }> = {
+      'el-meson-austral':   { address: 'Los Alerces 1847, Barrio Italia, Santiago',        phone: '+56 2 2345 6789', hours: 'Lun–Dom 12:00–23:00' },
+      'hotel-los-quillayes':{ address: 'Av. Las Quillayes 9900, Lo Barnechea, Santiago',   phone: '+56 2 2456 7890', hours: 'Recepción 24 horas' },
+      'bar-el-condor':      { address: 'Pasaje El Cóndor 242, Barrio Lastarria, Santiago', phone: '+56 9 8765 4321', hours: 'Mar–Sáb 19:00–02:00' },
+      'cafe-temporada':     { address: 'Av. del Parque 3301, Barrio Italia, Santiago',     phone: '+56 9 5678 9012', hours: 'Lun–Vie 07:30–19:00 · Sáb–Dom 09:00–17:00' },
+    };
+
     for (const biz of SEED_DEMO_BUSINESSES) {
+      const demo = DEMO_INFO[biz.slug] ?? {};
       // Insert business
       const bizResult = await client.query<{ id: number }>(
-        `INSERT INTO businesses (user_id, name, slug, description, business_type, is_demo, status, menu_completeness)
-         VALUES ($1, $2, $3, $4, $5, true, 'active', 85)
+        `INSERT INTO businesses (user_id, name, slug, description, business_type, is_demo, status, menu_completeness, address, phone, hours)
+         VALUES ($1, $2, $3, $4, $5, true, 'active', 85, $6, $7, $8)
          ON CONFLICT (slug) DO UPDATE
            SET name = EXCLUDED.name,
                description = EXCLUDED.description,
                business_type = EXCLUDED.business_type,
                is_demo = true,
-               status = 'active'
+               status = 'active',
+               address = EXCLUDED.address,
+               phone = EXCLUDED.phone,
+               hours = EXCLUDED.hours
          RETURNING id`,
-        [adminId, biz.name, biz.slug, biz.description, biz.businessType]
+        [adminId, biz.name, biz.slug, biz.description, biz.businessType, demo.address ?? null, demo.phone ?? null, demo.hours ?? null]
       );
       const businessId = bizResult.rows[0].id;
 

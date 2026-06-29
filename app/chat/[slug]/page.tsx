@@ -14,7 +14,7 @@ import { resolveLang, DEFAULT_LANG, type LangCode } from '@/lib/languages';
 import Link from 'next/link';
 
 interface Message { role: 'user' | 'assistant'; content: string; }
-interface Restaurant { name: string; description: string; socials?: Socials | null; reviewsEnabled?: boolean; }
+interface Restaurant { name: string; description: string; socials?: Socials | null; reviewsEnabled?: boolean; address?: string | null; phone?: string | null; hours?: string | null; maps_url?: string | null; }
 interface MenuData { categories: Record<string, MenuDish[]> }
 
 const SUGGESTION_KEYS = ['sugg1', 'sugg2', 'sugg3', 'sugg4'];
@@ -304,6 +304,7 @@ export default function ChatPage({ params }: { params: Promise<{ slug: string }>
     categories: menuData?.categories ?? {},
     onAsk: handleDishSelect,
     socials: restaurant?.socials ?? null,
+    info: { address: restaurant?.address, phone: restaurant?.phone, hours: restaurant?.hours, maps_url: restaurant?.maps_url },
     onSplitBill: () => setShowBill(true),
     onReview: restaurant?.reviewsEnabled ? () => { setReviewSessionId(sessionIdRef.current); setShowReview(true); } : undefined,
     lang,

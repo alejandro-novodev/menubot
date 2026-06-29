@@ -22,6 +22,13 @@ export interface MenuDish {
   is_recommended?: boolean;
 }
 
+interface BusinessInfo {
+  address?: string | null;
+  phone?: string | null;
+  hours?: string | null;
+  maps_url?: string | null;
+}
+
 interface Props {
   restaurantName: string;
   cuisine: string;
@@ -33,6 +40,8 @@ interface Props {
   sidebar?: boolean;
   /** Social/review links for the menu footer */
   socials?: Socials | null;
+  /** Address, phone, hours, maps link */
+  info?: BusinessInfo | null;
   /** Opens the bill-split calculator. When set, a calculator button appears. */
   onSplitBill?: () => void;
   /** Opens the review form. When set, an "Opinión" button appears. */
@@ -40,6 +49,55 @@ interface Props {
   /** Diner language; when onLang is set, a language picker appears. */
   lang?: LangCode;
   onLang?: (l: LangCode) => void;
+}
+
+function InfoStrip({ info, lang }: { info: BusinessInfo; lang: LangCode }) {
+  const { address, phone, hours, maps_url } = info;
+  const hasInfo = address || phone || hours;
+  if (!hasInfo) return null;
+
+  const itemStyle: React.CSSProperties = {
+    display: 'inline-flex', alignItems: 'center', gap: 5,
+    fontFamily: 'var(--font-archivo, system-ui)', fontSize: 11.5,
+    color: 'var(--mb-mut)', textDecoration: 'none', whiteSpace: 'nowrap',
+    flexShrink: 0,
+  };
+
+  return (
+    <div style={{
+      padding: '7px 20px 8px',
+      borderTop: '1px solid var(--mb-line)',
+      display: 'flex', flexWrap: 'wrap', gap: '4px 16px',
+      background: 'var(--mb-surface)',
+    }}>
+      {address && (
+        maps_url ? (
+          <a href={maps_url} target="_blank" rel="noopener noreferrer" style={itemStyle}>
+            <span>📍</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{address}</span>
+            <span style={{ fontSize: 10, opacity: 0.7 }}>{lang === 'en' ? 'Get directions ↗' : lang === 'pt' ? 'Como chegar ↗' : 'Cómo llegar ↗'}</span>
+          </a>
+        ) : (
+          <span style={itemStyle}>
+            <span>📍</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200 }}>{address}</span>
+          </span>
+        )
+      )}
+      {phone && (
+        <a href={`tel:${phone.replace(/\s/g, '')}`} style={itemStyle}>
+          <span>📞</span>
+          <span>{phone}</span>
+        </a>
+      )}
+      {hours && (
+        <span style={itemStyle}>
+          <span>🕐</span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{hours}</span>
+        </span>
+      )}
+    </div>
+  );
 }
 
 const CATEGORY_ORDER = [
@@ -143,7 +201,7 @@ function DishRow({ dish, onTap, lang }: { dish: MenuDish; onTap: () => void; lan
   );
 }
 
-export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true, sidebar = false, socials = null, onSplitBill, onReview, lang = 'es', onLang }: Props) {
+export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFloatingButton = true, sidebar = false, socials = null, info = null, onSplitBill, onReview, lang = 'es', onLang }: Props) {
   const sorted = Object.keys(categories).sort((a, b) => {
     const ai = CATEGORY_ORDER.indexOf(a), bi = CATEGORY_ORDER.indexOf(b);
     if (ai === -1 && bi === -1) return a.localeCompare(b);
@@ -169,69 +227,76 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
         paddingBottom: showFloatingButton ? 96 : 12,
       }}
     >
-      {/* Header */}
+      {/* Header — two rows to avoid collision on narrow screens */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 5,
-        padding: '18px 20px 12px',
         background: 'var(--mb-head-bg)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
         borderBottom: '1px solid var(--mb-line)',
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12,
       }}>
-        <div style={{ minWidth: 0 }}>
+        {/* Row 1: name + theme toggle */}
+        <div style={{ padding: '16px 20px 4px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
           <h1 style={{
+            flex: 1, minWidth: 0,
             fontFamily: 'var(--font-space-grotesk, system-ui)',
-            fontWeight: 700, fontSize: 23, letterSpacing: '-0.03em',
-            lineHeight: 1.05, margin: 0, color: 'var(--mb-ink)',
+            fontWeight: 700, fontSize: 22, letterSpacing: '-0.03em',
+            lineHeight: 1.1, margin: 0, color: 'var(--mb-ink)',
           }}>{restaurantName}</h1>
+          {!sidebar && <div style={{ flexShrink: 0, paddingTop: 2 }}><ThemeToggle /></div>}
+        </div>
+
+        {/* Row 2: cuisine description + action controls */}
+        <div style={{ padding: '2px 20px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 7, marginTop: 6,
+            flex: 1, minWidth: 0,
             fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12, color: 'var(--mb-mut)',
+            overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
-            {cuisine && <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cuisine}</span>}
-            {cuisine && <span style={{ width: 3, height: 3, borderRadius: 99, background: 'var(--mb-mut2)', flexShrink: 0 }} />}
-            <span style={{ flexShrink: 0 }}>{t(lang, 'withMenubot')}<span style={{ color: 'var(--accent)' }}>.</span></span>
+            {cuisine && <>{cuisine} · </>}
+            {t(lang, 'withMenubot')}<span style={{ color: 'var(--accent)' }}>.</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+            {onLang && <LanguagePicker value={lang} onChange={onLang} />}
+            {onReview && (
+              <button
+                onClick={onReview}
+                className="mb-social"
+                aria-label={t(lang, 'review')}
+                title={t(lang, 'review')}
+                style={{
+                  height: 32, padding: '0 10px', borderRadius: 999,
+                  border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
+                  color: 'var(--mb-ink)', cursor: 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12, fontWeight: 600,
+                }}
+              >
+                ⭐
+              </button>
+            )}
+            {onSplitBill && (
+              <button
+                onClick={onSplitBill}
+                className="mb-social"
+                aria-label={t(lang, 'billTitle')}
+                title={t(lang, 'billTitle')}
+                style={{
+                  height: 32, padding: '0 10px', borderRadius: 999,
+                  border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
+                  color: 'var(--mb-ink)', cursor: 'pointer',
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12, fontWeight: 600,
+                }}
+              >
+                🧮
+              </button>
+            )}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-          {onLang && <LanguagePicker value={lang} onChange={onLang} />}
-          {onReview && (
-            <button
-              onClick={onReview}
-              className="mb-social"
-              aria-label={t(lang, 'review')}
-              title={t(lang, 'review')}
-              style={{
-                height: 34, padding: '0 12px', borderRadius: 999,
-                border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
-                color: 'var(--mb-ink)', cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12.5, fontWeight: 600,
-              }}
-            >
-              ⭐ <span className="hidden sm:inline">{t(lang, 'review')}</span>
-            </button>
-          )}
-          {onSplitBill && (
-            <button
-              onClick={onSplitBill}
-              className="mb-social"
-              aria-label={t(lang, 'billTitle')}
-              title={t(lang, 'billTitle')}
-              style={{
-                height: 34, padding: '0 12px', borderRadius: 999,
-                border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
-                color: 'var(--mb-ink)', cursor: 'pointer',
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12.5, fontWeight: 600,
-              }}
-            >
-              🧮 <span className="hidden sm:inline">{t(lang, 'split')}</span>
-            </button>
-          )}
-          {!sidebar && <ThemeToggle />}
-        </div>
+
+        {/* Row 3: address / phone / hours strip (when available) */}
+        {info && <InfoStrip info={info} lang={lang} />}
       </div>
 
       {/* Category chips */}

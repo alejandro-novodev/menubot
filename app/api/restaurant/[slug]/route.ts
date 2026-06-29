@@ -28,6 +28,9 @@ export async function GET(
       slug,
       description: source.description,
       reviewsEnabled,
+      address: p?.address ?? null,
+      phone: p?.phone ?? null,
+      hours: p?.hours ?? null,
       maps_url: p?.maps_url ?? null,
       socials: {
         instagram: p?.instagram ?? null,
