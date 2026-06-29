@@ -57,17 +57,31 @@ export async function resolveMenuSource(slug: string): Promise<MenuSource | null
   );
   if (biz.rows.length > 0) {
     const b = biz.rows[0];
-    return {
-      id: b.id,
-      name: b.name,
-      description: b.description ?? '',
-      dishColumn: 'business_id',
-      profile: {
-        address: b.address, maps_url: b.maps_url, phone: b.phone, hours: b.hours, notes: b.notes,
-        instagram: b.instagram, facebook: b.facebook, tiktok: b.tiktok,
-        whatsapp: b.whatsapp, tripadvisor: b.tripadvisor, website: b.website,
-      },
+    const profile = {
+      address: b.address, maps_url: b.maps_url, phone: b.phone, hours: b.hours, notes: b.notes,
+      instagram: b.instagram, facebook: b.facebook, tiktok: b.tiktok,
+      whatsapp: b.whatsapp, tripadvisor: b.tripadvisor, website: b.website,
     };
+
+    // Use business_id dishes if they exist; otherwise fall back to the legacy
+    // restaurants table for the same slug (migration in-progress state).
+    const dishCheck = await query<{ count: string }>(
+      'SELECT COUNT(*) FROM dishes WHERE business_id = $1',
+      [b.id]
+    );
+    if (parseInt(dishCheck.rows[0].count, 10) > 0) {
+      return { id: b.id, name: b.name, description: b.description ?? '', dishColumn: 'business_id', profile };
+    }
+
+    const legacyRest = await query<{ id: number }>(
+      'SELECT id FROM restaurants WHERE slug = $1 LIMIT 1',
+      [slug]
+    );
+    if (legacyRest.rows.length > 0) {
+      return { id: legacyRest.rows[0].id, name: b.name, description: b.description ?? '', dishColumn: 'restaurant_id', profile };
+    }
+
+    return { id: b.id, name: b.name, description: b.description ?? '', dishColumn: 'business_id', profile };
   }
 
   const rest = await query<{ id: number; name: string; description: string | null }>(

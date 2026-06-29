@@ -1,4 +1,4 @@
-import { auth } from '@/auth';
+import { auth, signOut } from '@/auth';
 import { redirect } from 'next/navigation';
 import { query } from '@/lib/db';
 import Link from 'next/link';
@@ -97,7 +97,9 @@ export default async function DashboardPage() {
           )}
           <Link href="/dashboard/billing" className="app-mut app-ink-hover transition text-xs">Plan</Link>
           <span className="hidden sm:inline app-mut2">{session.user.email}</span>
-          <Link href="/api/auth/signout" className="app-mut2 app-ink-hover transition text-xs">Salir</Link>
+          <form action={async () => { 'use server'; await signOut({ redirectTo: '/auth/login' }); }}>
+            <button type="submit" className="app-mut2 app-ink-hover transition text-xs cursor-pointer">Salir</button>
+          </form>
           <ThemeToggle />
         </div>
       </header>
