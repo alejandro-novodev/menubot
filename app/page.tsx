@@ -14,19 +14,20 @@ const HOW_IT_WORKS = [
   { step: '03', icon: '💬', title: 'Comparte con tus clientes', desc: 'Un QR o link único. Tus clientes chatean con el asistente directamente, sin apps ni descargas.' },
 ];
 
-const FEATURES = [
-  { icon: '🤖', title: 'IA que entiende tu carta', desc: 'Lee platos étnicos, nombres difíciles y preparaciones complejas. Responde en español chileno.' },
-  { icon: '📄', title: 'Importa desde PDF o foto', desc: 'Sube el menú impreso, una foto del pizarrón o un PDF digital. La IA lo procesa en segundos.' },
-  { icon: '📊', title: 'Score de completeness', desc: 'Sabe exactamente qué información falta en tu carta y te guía para completarla paso a paso.' },
-  { icon: '📲', title: 'QR listo para imprimir', desc: 'Descarga el QR de tu carta en alta resolución. Ponlo en las mesas, en Instagram o en Google Maps.' },
-  { icon: '🔗', title: 'Link corto compartible', desc: 'Una URL corta para compartir en WhatsApp, Instagram bio o Google Business Profile.' },
-  { icon: '🍺', title: 'Más que restaurantes', desc: 'Bares, hoteles, spas, retail — cualquier negocio con una carta o catálogo puede usar menubot.' },
+const FAQ = [
+  { q: '¿Los precios incluyen IVA?', a: 'Los precios que ves en el plan incluyen IVA (19%). El valor neto también se muestra en cada plan. Emitimos factura electrónica o boleta — si eres empresa puedes usar la factura para recuperar el IVA como crédito fiscal en tu F29.' },
+  { q: '¿Cómo funciona el período de prueba?', a: 'Tienes 14 días gratis con acceso completo al plan que elijas. No se cobra nada hasta que termine el período de prueba. Puedes cancelar cuando quieras desde tu panel — sin llamadas, sin trámites.' },
+  { q: '¿Necesito saber de tecnología para instalarlo?', a: 'No. Subes tu carta en formato PDF o texto, nosotros la procesamos y te entregamos un QR listo para imprimir y poner en las mesas. El proceso completo toma menos de 30 minutos.' },
+  { q: '¿Qué pasa si actualizo mi carta?', a: 'Puedes actualizar la carta cuando quieras desde tu panel — el bot refleja los cambios en minutos. Las actualizaciones son ilimitadas en todos los planes.' },
+  { q: '¿El bot habla otros idiomas además del español?', a: 'Sí. El bot detecta automáticamente el idioma del comensal y responde en consecuencia — inglés, portugués y más. Ideal para restaurantes con turismo internacional.' },
+  { q: '¿Puedo cambiar de plan en cualquier momento?', a: 'Sí. Puedes subir o bajar de plan cuando quieras. Al subir el cambio es inmediato; al bajar se aplica al siguiente ciclo de facturación.' },
 ];
 
 export default function Home() {
   const { data: session } = useSession();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('');
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   function openModal(plan = '') { setSelectedPlan(plan); setModalOpen(true); }
 
@@ -235,30 +236,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Showcase */}
-      <section className="py-20 px-5">
+      {/* Showcase — main feature demo */}
+      <section className="py-20 px-5 bg-[#F2EAE0]">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-3">Conoce menubot por dentro</h2>
-            <p className="text-[#6B6259] max-w-xl mx-auto">Una carta que conversa, recomienda, divide la cuenta y te cuenta qué quieren tus clientes.</p>
+            <span className="inline-block text-xs font-semibold text-accent tracking-widest uppercase mb-3">El producto</span>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-3">Todo lo que tu carta puede hacer</h2>
+            <p className="text-[#6B6259] max-w-lg mx-auto text-base">Selecciona una funcionalidad o deja que avance solo — cada una está activa en tu restaurante desde el primer día.</p>
           </div>
           <AppShowcase />
         </div>
       </section>
 
-      {/* Features */}
-      <section className="bg-[#F2EAE0] py-20 px-5">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-3">Todo lo que incluye</h2>
-            <p className="text-[#6B6259]">Desde la importación del menú hasta el QR listo para imprimir.</p>
+      {/* FAQ */}
+      <section className="py-20 px-5">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold mb-3">Preguntas frecuentes</h2>
+            <p className="text-[#6B6259] text-sm">¿Algo que no quedó claro? Escríbenos a <a href="mailto:hola@menubot.cl" className="text-accent hover:underline">hola@menubot.cl</a></p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {FEATURES.map(f => (
-              <div key={f.title} className="bg-white shadow-sm border border-black/[0.07] rounded-2xl p-5">
-                <div className="text-2xl mb-3">{f.icon}</div>
-                <h3 className="text-[#2B2421] font-semibold text-sm mb-1.5">{f.title}</h3>
-                <p className="text-[#8C8178] text-xs leading-relaxed">{f.desc}</p>
+          <div className="divide-y divide-black/[0.07]">
+            {FAQ.map((item, i) => (
+              <div key={i}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full text-left flex justify-between items-center gap-4 py-4 text-sm font-semibold text-[#2B2421] hover:text-accent transition">
+                  <span>{item.q}</span>
+                  <span className={`text-[#9A9087] text-lg transition-transform shrink-0 ${openFaq === i ? 'rotate-45' : ''}`}>+</span>
+                </button>
+                {openFaq === i && (
+                  <p className="pb-4 text-sm text-[#6B6259] leading-relaxed">{item.a}</p>
+                )}
               </div>
             ))}
           </div>
