@@ -51,6 +51,64 @@ interface Props {
   onLang?: (l: LangCode) => void;
 }
 
+function ShareLocationButton({ address, maps_url, lang }: { address?: string | null; maps_url?: string | null; lang: LangCode }) {
+  const [copied, setCopied] = useState(false);
+
+  const shareTarget = maps_url || (address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}` : null);
+  if (!shareTarget) return null;
+
+  const label = lang === 'en' ? 'Share location' : lang === 'pt' ? 'Compartilhar localização' : 'Compartir ubicación';
+
+  async function share() {
+    const text = address ?? label;
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share({ title: text, url: shareTarget! });
+        return;
+      } catch {
+        // user cancelled or API unavailable — fall through to clipboard
+      }
+    }
+    await navigator.clipboard.writeText(shareTarget!);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <button
+      onClick={share}
+      title={label}
+      aria-label={label}
+      style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        fontFamily: 'var(--font-archivo, system-ui)', fontSize: 11, fontWeight: 600,
+        color: copied ? 'var(--accent)' : 'var(--mb-mut)',
+        background: 'var(--mb-surface)',
+        border: '1px solid var(--mb-line)',
+        borderRadius: 999,
+        padding: '3px 9px',
+        cursor: 'pointer',
+        flexShrink: 0,
+        transition: 'color 0.15s',
+      }}
+    >
+      {copied ? (
+        <>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          {lang === 'en' ? 'Copied!' : lang === 'pt' ? 'Copiado!' : '¡Copiado!'}
+        </>
+      ) : (
+        <>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+          {lang === 'en' ? 'Share' : lang === 'pt' ? 'Compartilhar' : 'Compartir'}
+        </>
+      )}
+    </button>
+  );
+}
+
 function InfoStrip({ info, lang }: { info: BusinessInfo; lang: LangCode }) {
   const { address, phone, hours, maps_url } = info;
   const hasInfo = address || phone || hours;
@@ -67,20 +125,19 @@ function InfoStrip({ info, lang }: { info: BusinessInfo; lang: LangCode }) {
     <div style={{
       padding: '7px 20px 8px',
       borderTop: '1px solid var(--mb-line)',
-      display: 'flex', flexWrap: 'wrap', gap: '4px 16px',
+      display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '5px 12px',
       background: 'var(--mb-surface)',
     }}>
       {address && (
         maps_url ? (
           <a href={maps_url} target="_blank" rel="noopener noreferrer" style={itemStyle}>
             <span>📍</span>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{address}</span>
-            <span style={{ fontSize: 10, opacity: 0.7 }}>{lang === 'en' ? 'Get directions ↗' : lang === 'pt' ? 'Como chegar ↗' : 'Cómo llegar ↗'}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>{address}</span>
           </a>
         ) : (
           <span style={itemStyle}>
             <span>📍</span>
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 200 }}>{address}</span>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{address}</span>
           </span>
         )
       )}
@@ -93,9 +150,10 @@ function InfoStrip({ info, lang }: { info: BusinessInfo; lang: LangCode }) {
       {hours && (
         <span style={itemStyle}>
           <span>🕐</span>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 180 }}>{hours}</span>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>{hours}</span>
         </span>
       )}
+      <ShareLocationButton address={address} maps_url={maps_url} lang={lang} />
     </div>
   );
 }
@@ -246,18 +304,29 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
           {!sidebar && <div style={{ flexShrink: 0, paddingTop: 2 }}><ThemeToggle /></div>}
         </div>
 
-        {/* Row 2: cuisine description + action controls */}
-        <div style={{ padding: '2px 20px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        {/* Row 2: cuisine description — full width, no controls crowding it */}
+        <div style={{ padding: '2px 20px 10px' }}>
           <div style={{
-            flex: 1, minWidth: 0,
             fontFamily: 'var(--font-archivo, system-ui)', fontSize: 12, color: 'var(--mb-mut)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
             {cuisine && <>{cuisine} · </>}
             {t(lang, 'withMenubot')}<span style={{ color: 'var(--accent)' }}>.</span>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+        </div>
+
+        {/* Row 3: address / phone / hours + share button */}
+        {info && <InfoStrip info={info} lang={lang} />}
+
+        {/* Row 4: action controls — own line so they never collide with details */}
+        {(onLang || onReview || onSplitBill) && (
+          <div style={{
+            padding: '6px 20px 10px',
+            display: 'flex', alignItems: 'center', gap: 6,
+            borderTop: info && (info.address || info.phone || info.hours) ? '1px solid var(--mb-line)' : undefined,
+          }}>
             {onLang && <LanguagePicker value={lang} onChange={onLang} />}
+            <div style={{ flex: 1 }} />
             {onReview && (
               <button
                 onClick={onReview}
@@ -265,7 +334,7 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
                 aria-label={t(lang, 'review')}
                 title={t(lang, 'review')}
                 style={{
-                  height: 32, padding: '0 10px', borderRadius: 999,
+                  height: 30, padding: '0 10px', borderRadius: 999,
                   border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
                   color: 'var(--mb-ink)', cursor: 'pointer',
                   display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -282,7 +351,7 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
                 aria-label={t(lang, 'billTitle')}
                 title={t(lang, 'billTitle')}
                 style={{
-                  height: 32, padding: '0 10px', borderRadius: 999,
+                  height: 30, padding: '0 10px', borderRadius: 999,
                   border: '1px solid var(--mb-line)', background: 'var(--mb-surface)',
                   color: 'var(--mb-ink)', cursor: 'pointer',
                   display: 'inline-flex', alignItems: 'center', gap: 5,
@@ -293,10 +362,7 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
               </button>
             )}
           </div>
-        </div>
-
-        {/* Row 3: address / phone / hours strip (when available) */}
-        {info && <InfoStrip info={info} lang={lang} />}
+        )}
       </div>
 
       {/* Category chips */}
