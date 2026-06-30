@@ -1,77 +1,126 @@
 // Feature gating. Single source of truth for which features each plan unlocks.
-// Use getFeatures(plan) everywhere a feature is conditionally shown or blocked,
-// instead of hardcoding plan name checks.
+// Use getFeatures(plan) everywhere — never hardcode plan name checks in routes or UI.
 
 import type { Plan } from './plans';
 
 export interface PlanFeatures {
-  /** Post-visit reviews/opinions collection (stored in MenuBot). */
-  hasReviews: boolean;
-  /** Custom branding: logo + colors. */
-  hasCustomBranding: boolean;
-  /** Advanced analytics: per-category breakdown + recent conversation summaries. */
-  hasAdvancedAnalytics: boolean;
-  /** Central multi-branch dashboard + per-branch data. */
-  hasMultiBranch: boolean;
-  /** CSV/PDF export of reviews and analytics. */
-  hasCSVExport: boolean;
-  /** REST API + webhooks. */
-  hasAPI: boolean;
-  /** Interactive bill split (per-person dish selection). Starter is calculator-only. */
-  hasInteractiveBillSplit: boolean;
-  /** Translated menu display for tourists (chat-in-any-language is free for all). */
-  hasMenuTranslation: boolean;
-  /** Email alerts for new reviews / unusual activity. */
-  hasEmailAlerts: boolean;
-  /** Owner can respond to reviews from the dashboard. */
-  hasOwnerResponse: boolean;
-  /** White-label option. */
-  hasWhiteLabel: boolean;
-  /** SSO + unlimited dashboard users. */
-  hasSSOUsers: boolean;
-  /** Guaranteed / dedicated SLA. */
-  hasDedicatedSLA: boolean;
+  // Core
+  menuChat: boolean;
+  qrWidget: boolean;
+  menuUpdates: boolean;
+  tableRouting: boolean;
+  conversationsLimit: number | null;
+
+  // Analytics
+  basicAnalytics: boolean;
+  advancedAnalytics: boolean;
+  csvPdfExport: boolean;
+
+  // Compliance
+  allergenPdf: boolean;
+
+  // Guest-facing features
+  billSplitBasic: boolean;
+  billSplitInteractive: boolean;
+  menuTranslation: boolean;
+  upsellEngine: boolean;
+  reservationsChat: boolean;
+
+  // Owner features
+  aiMenuDescriptionGenerator: boolean;
+  reviewsCollection: boolean;
+  ownerResponseToReviews: boolean;
+  customBranding: boolean;
+  emailAlerts: boolean;
+  weeklyInsightDigest: boolean;
+
+  // Scale
+  multiBranch: boolean;
+  centralDashboard: boolean;
+  whatsappChannel: boolean;
+
+  // Support
+  supportEmail48h: boolean;
+  supportChat24h: boolean;
+  supportDedicated: boolean;
+
+  // API
+  apiWebhooks: boolean;
+  sso: boolean;
+  whiteLabel: boolean;
 }
 
+const BASE: Partial<PlanFeatures> = {
+  menuChat: true,
+  qrWidget: true,
+  menuUpdates: true,
+  tableRouting: true,
+  allergenPdf: true,
+  billSplitBasic: true,
+  basicAnalytics: true,
+  supportEmail48h: true,
+};
+
 const STARTER: PlanFeatures = {
-  hasReviews: false,
-  hasCustomBranding: false,
-  hasAdvancedAnalytics: false,
-  hasMultiBranch: false,
-  hasCSVExport: false,
-  hasAPI: false,
-  hasInteractiveBillSplit: false,
-  hasMenuTranslation: false,
-  hasEmailAlerts: false,
-  hasOwnerResponse: false,
-  hasWhiteLabel: false,
-  hasSSOUsers: false,
-  hasDedicatedSLA: false,
+  ...BASE as PlanFeatures,
+  conversationsLimit: 1500,
+  advancedAnalytics: false,
+  csvPdfExport: false,
+  billSplitInteractive: false,
+  menuTranslation: false,
+  upsellEngine: false,
+  reservationsChat: false,
+  aiMenuDescriptionGenerator: false,
+  reviewsCollection: false,
+  ownerResponseToReviews: false,
+  customBranding: false,
+  emailAlerts: false,
+  weeklyInsightDigest: false,
+  multiBranch: false,
+  centralDashboard: false,
+  whatsappChannel: false,
+  supportChat24h: false,
+  supportDedicated: false,
+  apiWebhooks: false,
+  sso: false,
+  whiteLabel: false,
 };
 
 const PRO: PlanFeatures = {
   ...STARTER,
-  hasReviews: true,
-  hasCustomBranding: true,
-  hasAdvancedAnalytics: true,
-  hasInteractiveBillSplit: true,
-  hasMenuTranslation: true,
-  hasEmailAlerts: true,
-  hasOwnerResponse: true,
+  conversationsLimit: 5000,
+  advancedAnalytics: true,
+  billSplitInteractive: true,
+  menuTranslation: true,
+  upsellEngine: true,
+  reservationsChat: true,
+  aiMenuDescriptionGenerator: true,
+  reviewsCollection: true,
+  ownerResponseToReviews: true,
+  customBranding: true,
+  emailAlerts: true,
+  weeklyInsightDigest: true,
+  supportEmail48h: false,
+  supportChat24h: true,
 };
 
 const MULTI: PlanFeatures = {
   ...PRO,
-  hasMultiBranch: true,
-  hasCSVExport: true,
+  conversationsLimit: 15000,
+  csvPdfExport: true,
+  multiBranch: true,
+  centralDashboard: true,
+  whatsappChannel: true,
+  supportChat24h: false,
+  supportDedicated: true,
 };
 
 const ENTERPRISE: PlanFeatures = {
   ...MULTI,
-  hasAPI: true,
-  hasWhiteLabel: true,
-  hasSSOUsers: true,
-  hasDedicatedSLA: true,
+  conversationsLimit: null,
+  apiWebhooks: true,
+  sso: true,
+  whiteLabel: true,
 };
 
 const FEATURES_BY_PLAN: Record<Plan, PlanFeatures> = {
@@ -82,17 +131,20 @@ const FEATURES_BY_PLAN: Record<Plan, PlanFeatures> = {
 };
 
 /**
- * Feature flags for a plan. During the 14-day trial (plan = 'trial') users get
- * Pro-level features so they can preview the full product. Unknown/missing
- * plans fall back to Starter.
+ * Returns feature flags for a given plan. Trial gets Pro-level features so
+ * users can experience the full product during the 14-day free period.
+ * Unknown or missing plans fall back to Starter.
  */
 export function getFeatures(plan: string | null | undefined): PlanFeatures {
   if (plan === 'trial') return PRO;
   return FEATURES_BY_PLAN[(plan ?? 'starter') as Plan] ?? STARTER;
 }
 
-/** The lowest plan that unlocks a given feature — used by upgrade prompts. */
+/** The lowest plan that first unlocks a given feature — used in upgrade prompts. */
 export function minPlanFor(feature: keyof PlanFeatures): Plan {
   const order: Plan[] = ['starter', 'pro', 'multi', 'enterprise'];
-  return order.find((p) => FEATURES_BY_PLAN[p][feature]) ?? 'enterprise';
+  return order.find((p) => {
+    const val = FEATURES_BY_PLAN[p][feature];
+    return val === true || (typeof val === 'number' && val > 0);
+  }) ?? 'enterprise';
 }

@@ -70,6 +70,7 @@ function DishModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [imgBusy, setImgBusy] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   const categoryOptions = Array.from(new Set([...existingCategories, ...CATEGORIES].map(c => c.trim()).filter(Boolean)));
 
@@ -88,6 +89,31 @@ function DishModal({
 
   function set(key: keyof Dish, val: unknown) {
     setForm(f => ({ ...f, [key]: val }));
+  }
+
+  async function generateWithAI() {
+    if (!form.name?.trim()) { setError('Escribe el nombre del plato antes de generar.'); return; }
+    setGenerating(true);
+    setError('');
+    try {
+      const res = await fetch('/api/dishes/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ businessId, dishName: form.name }),
+      });
+      const data = await res.json() as { description?: string; ingredients?: string; allergens?: string; error?: string; upgradeRequired?: boolean };
+      if (!res.ok) {
+        setError(data.error ?? 'Error al generar.');
+        return;
+      }
+      if (data.description) set('description', data.description);
+      if (data.ingredients) set('ingredients', data.ingredients);
+      if (data.allergens) set('allergens', data.allergens);
+    } catch {
+      setError('Error de conexión al generar.');
+    } finally {
+      setGenerating(false);
+    }
   }
 
   async function save() {
@@ -190,10 +216,20 @@ function DishModal({
               placeholder="8990" />
           </div>
           <div>
-            <label className="block text-xs app-mut mb-1">Descripción</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs app-mut">Descripción</label>
+              <button
+                type="button"
+                onClick={generateWithAI}
+                disabled={generating || !form.name?.trim()}
+                className="flex items-center gap-1 text-xs font-semibold text-accent hover:text-accent-lite disabled:opacity-40 transition"
+              >
+                {generating ? '✨ Generando…' : '✨ Generar con IA'}
+              </button>
+            </div>
             <textarea rows={2} value={form.description ?? ''} onChange={e => set('description', e.target.value || null)}
               className="w-full app-surface2 border app-line rounded-xl px-3 py-2 text-sm app-ink outline-none focus:border-accent/60 transition resize-none"
-              placeholder="Descripción breve..." />
+              placeholder="Descripción breve... o usa ✨ Generar con IA" />
           </div>
           <div>
             <label className="block text-xs app-mut mb-1">Ingredientes</label>
@@ -248,6 +284,7 @@ function MenuEditor() {
   const [deleting, setDeleting] = useState<number | null>(null);
   const [filter, setFilter] = useState('');
   const [showImport, setShowImport] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const load = useCallback(async () => {
     if (!bizId) return;
@@ -298,6 +335,29 @@ function MenuEditor() {
     return () => { cancelled = true; };
   }, [bizId]);
 
+  async function exportAllergenPdf() {
+    setExporting(true);
+    try {
+      const res = await fetch(`/api/export/allergens?businessId=${bizId}`);
+      if (!res.ok) {
+        const d = await res.json() as { error?: string };
+        alert(d.error ?? 'Error al exportar el PDF.');
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `alergenos-${bizSlug}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert('Error de conexión al exportar.');
+    } finally {
+      setExporting(false);
+    }
+  }
+
   async function deleteDish(id: number) {
     if (!confirm('¿Eliminar este plato?')) return;
     setDeleting(id);
@@ -332,6 +392,14 @@ function MenuEditor() {
           {bizSlug && <p className="text-xs app-mut truncate">/chat/{bizSlug}</p>}
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto sm:shrink-0">
+          <button
+            onClick={exportAllergenPdf}
+            disabled={exporting || dishes.length === 0}
+            title="Exportar PDF de alérgenos (Res. 20 Minsal)"
+            className="flex-none border app-line app-mut hover:app-ink disabled:opacity-40 text-xs font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1"
+          >
+            {exporting ? '⏳' : '📄'} PDF
+          </button>
           <button onClick={() => setShowImport(v => !v)}
             className="flex-1 sm:flex-none border border-accent/40 text-accent hover:bg-accent/10 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
             Importar carta

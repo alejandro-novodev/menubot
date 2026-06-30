@@ -125,7 +125,7 @@ function InsightsView() {
               <section>
                 <h2 className="text-sm font-semibold app-ink mb-3">Conversaciones recientes</h2>
                 <FeatureGate
-                  enabled={getFeatures(data.plan).hasAdvancedAnalytics}
+                  enabled={getFeatures(data.plan).advancedAnalytics}
                   requiredPlan="pro"
                   title="Resúmenes de conversaciones — disponible en el plan Pro"
                   description="Lee un resumen de cada conversación para entender qué buscan tus clientes."

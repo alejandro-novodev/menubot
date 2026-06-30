@@ -40,8 +40,8 @@ export async function GET(
 
   return NextResponse.json({
     plan,
-    reviewsEnabled: getFeatures(plan).hasReviews,
-    canRespond: getFeatures(plan).hasOwnerResponse,
+    reviewsEnabled: getFeatures(plan).reviewsCollection,
+    canRespond: getFeatures(plan).ownerResponseToReviews,
     count,
     average: Math.round(average * 10) / 10,
     reviews: rows.map((r) => ({

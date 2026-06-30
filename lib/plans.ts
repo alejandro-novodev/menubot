@@ -1,16 +1,12 @@
-// Central source of truth for the subscription plans. All prices are in CLP,
-// NET (before 19% IVA). Used by the pricing page, billing, and as the reference
-// for feature gating (see lib/plan-features.ts).
+// Central source of truth for subscription plans. All prices are in CLP.
+// priceClp is NET (before 19% IVA). Use withIva() for the amount to charge.
 
 export type Plan = 'starter' | 'pro' | 'multi' | 'enterprise';
 export type BillingCycle = 'monthly' | 'annual';
 
 export const PLAN_ORDER: Plan[] = ['starter', 'pro', 'multi', 'enterprise'];
 
-/** 19% IVA, applied on top of the net prices below. */
 export const IVA_RATE = 0.19;
-
-/** Annual billing charges 10 months (2 months free). */
 export const ANNUAL_MONTHS_BILLED = 10;
 
 export interface PlanFeatureLine {
@@ -21,19 +17,15 @@ export interface PlanFeatureLine {
 export interface PlanConfig {
   id: Plan;
   name: string;
-  /** Target customer, shown as a subtitle on the pricing card. */
   subtitle: string;
-  /** Net monthly price in CLP, or null for custom (Enterprise). */
+  /** Net monthly price in CLP, or null for Enterprise (custom). */
   priceClp: number | null;
-  /** Branches included in the base price. */
-  includedBranches: number;
-  /** Price per extra branch beyond the included limit, or null if N/A. */
+  includedBranches: number | null;
   extraBranchClp: number | null;
-  /** Whether to highlight this plan ("Más popular"). */
+  /** Monthly AI conversation cap. null = unlimited (Enterprise). */
+  conversationsLimit: number | null;
   featured?: boolean;
-  /** 'self-serve' → Flow checkout; 'contact' → contact sales (Enterprise). */
   ctaType: 'self-serve' | 'contact';
-  /** Feature lines for the pricing display (included ✓ / not included ✗). */
   features: PlanFeatureLine[];
 }
 
@@ -42,42 +34,45 @@ export const PLANS: Record<Plan, PlanConfig> = {
     id: 'starter',
     name: 'Starter',
     subtitle: 'Para restaurantes que quieren modernizar su carta sin complicaciones.',
-    priceClp: 9990,
+    priceClp: 14990,
     includedBranches: 1,
     extraBranchClp: null,
+    conversationsLimit: 1500,
     ctaType: 'self-serve',
     features: [
-      { text: '1 sucursal · chat de menú embebido', included: true },
-      { text: 'Widget instalable en tu web o carta QR', included: true },
+      { text: '1 sucursal · 1.500 conversaciones/mes', included: true },
+      { text: 'Chat IA embebido y QR listo para imprimir', included: true },
       { text: 'Actualizaciones de carta ilimitadas', included: true },
-      { text: 'Estadísticas básicas (conversaciones, preguntas frecuentes)', included: true },
+      { text: 'PDF de alérgenos (Res. 20 Minsal)', included: true },
       { text: 'División de cuenta y cálculo de propina', included: true },
+      { text: 'Estadísticas básicas', included: true },
       { text: 'Soporte por email · 48–72 hrs', included: true },
+      { text: 'Generador de descripciones con IA', included: false },
+      { text: 'Captura de pedidos y reservas por chat', included: false },
       { text: 'Opiniones y reviews de comensales', included: false },
-      { text: 'Branding personalizado (logo y colores)', included: false },
-      { text: 'Analítica avanzada y exportación', included: false },
-      { text: 'Multi-sucursal', included: false },
     ],
   },
   pro: {
     id: 'pro',
     name: 'Pro',
-    subtitle: 'Para restaurantes que quieren conocer y fidelizar a sus clientes.',
+    subtitle: 'Para restaurantes que quieren crecer y conocer a sus clientes.',
     priceClp: 24990,
     includedBranches: 1,
     extraBranchClp: null,
+    conversationsLimit: 5000,
     featured: true,
     ctaType: 'self-serve',
     features: [
-      { text: 'Todo lo de Starter', included: true },
-      { text: 'Opiniones post-visita · el comensal califica y comenta', included: true },
-      { text: 'Respuestas del dueño a cada opinión desde el panel', included: true },
-      { text: 'Branding personalizado · tu logo y colores en el chat', included: true },
-      { text: 'Analítica avanzada · desglose por categoría y tendencias', included: true },
-      { text: 'Alertas por email ante opiniones o actividad inusual', included: true },
+      { text: 'Todo lo de Starter · 5.000 conversaciones/mes', included: true },
+      { text: 'Generador de descripciones con IA', included: true },
+      { text: 'Captura de pedidos (mesa → cocina en tiempo real)', included: true },
+      { text: 'Reservas por chat con confirmación automática', included: true },
+      { text: 'Motor de upsell inteligente configurable', included: true },
+      { text: 'Opiniones post-visita + respuestas del dueño', included: true },
+      { text: 'Branding personalizado (logo y colores)', included: true },
+      { text: 'Analítica avanzada + resumen semanal por email', included: true },
       { text: 'Soporte por chat · 24 hrs hábiles', included: true },
-      { text: 'Multi-sucursal · panel centralizado', included: false },
-      { text: 'Exportación CSV / PDF de reportes', included: false },
+      { text: 'Multi-sucursal · WhatsApp Business', included: false },
     ],
   },
   multi: {
@@ -87,31 +82,32 @@ export const PLANS: Record<Plan, PlanConfig> = {
     priceClp: 59990,
     includedBranches: 5,
     extraBranchClp: 8990,
+    conversationsLimit: 15000,
     ctaType: 'self-serve',
     features: [
-      { text: 'Todo lo de Pro', included: true },
-      { text: 'Panel central multi-sucursal · una sola vista para todos tus locales', included: true },
-      { text: 'Menús diferenciados por sucursal', included: true },
-      { text: 'Reportes consolidados del grupo', included: true },
+      { text: 'Todo lo de Pro · 15.000 conversaciones/mes', included: true },
+      { text: 'Panel central multi-sucursal (hasta 5 locales)', included: true },
+      { text: 'WhatsApp Business · mismo bot en tu número WA', included: true },
       { text: 'Exportación CSV y PDF de análisis y opiniones', included: true },
-      { text: 'Hasta 5 sucursales · locales adicionales a $8.990/mes neto', included: true },
-      { text: 'Soporte por chat · respuesta 12 hrs hábiles', included: true },
+      { text: 'Locales adicionales a $8.990/mes neto', included: true },
+      { text: 'Soporte dedicado · respuesta 12 hrs hábiles', included: true },
     ],
   },
   enterprise: {
     id: 'enterprise',
     name: 'Enterprise',
-    subtitle: 'Para grupos gastronómicos, cadenas con +5 locales o integradores que necesitan API y SLA garantizado.',
+    subtitle: 'Para grandes operadores, cadenas con +5 locales o integradores.',
     priceClp: null,
-    includedBranches: 5,
+    includedBranches: null,
     extraBranchClp: null,
+    conversationsLimit: null,
     ctaType: 'contact',
     features: [
+      { text: 'Conversaciones ilimitadas', included: true },
       { text: 'API + webhooks', included: true },
-      { text: 'SSO usuarios ilimitados', included: true },
+      { text: 'SSO · usuarios ilimitados', included: true },
       { text: 'Integración POS / delivery', included: true },
-      { text: 'SLA garantizado', included: true },
-      { text: 'Onboarding dedicado', included: true },
+      { text: 'SLA garantizado · onboarding dedicado', included: true },
       { text: 'White-label opcional', included: true },
       { text: 'Precio por volumen', included: true },
     ],

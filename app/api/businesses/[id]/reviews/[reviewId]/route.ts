@@ -18,7 +18,7 @@ export async function PATCH(
   const owner = await query('SELECT id FROM businesses WHERE id = $1 AND user_id = $2', [businessId, parseInt(session.user.id)]);
   if (owner.rows.length === 0) return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
 
-  if (!getFeatures(await getBusinessPlan(businessId)).hasOwnerResponse) {
+  if (!getFeatures(await getBusinessPlan(businessId)).ownerResponseToReviews) {
     return NextResponse.json({ error: 'Responder reseñas requiere el plan Pro' }, { status: 403 });
   }
 

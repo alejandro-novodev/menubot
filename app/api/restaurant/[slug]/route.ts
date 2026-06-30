@@ -18,7 +18,7 @@ export async function GET(
     // Reviews are only offered to diners when the business is on a plan that
     // includes them (Pro+). Legacy demo restaurants (no plan) never show them.
     const reviewsEnabled = source.dishColumn === 'business_id'
-      ? getFeatures(await getBusinessPlan(source.id)).hasReviews
+      ? getFeatures(await getBusinessPlan(source.id)).reviewsCollection
       : false;
 
     const p = source.profile;

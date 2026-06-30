@@ -46,7 +46,7 @@ export async function GET(
     // Translated menu is a Pro+ feature; the source stays Spanish otherwise.
     if (lang !== 'es' && source.dishColumn === 'business_id') {
       const features = getFeatures(await getBusinessPlan(source.id));
-      if (features.hasMenuTranslation) {
+      if (features.menuTranslation) {
         const tr = await translateMenu(
           dishes.map((d) => ({ id: d.id, name: d.name, description: d.description, ingredients: d.ingredients, allergens: d.allergens, category: d.category })),
           lang

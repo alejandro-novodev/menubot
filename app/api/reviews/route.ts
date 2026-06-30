@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Reviews are a Pro+ feature.
-    if (!getFeatures(await getBusinessPlan(source.id)).hasReviews) {
+    if (!getFeatures(await getBusinessPlan(source.id)).reviewsCollection) {
       return NextResponse.json({ error: 'Las reseñas no están habilitadas para este restaurante' }, { status: 403 });
     }
 

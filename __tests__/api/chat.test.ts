@@ -17,10 +17,37 @@ jest.mock('@anthropic-ai/sdk', () => ({
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { query } = require('@/lib/db') as { query: jest.Mock };
 
-const mockRestaurant = { id: 1, name: 'Izakaya Nami', slug: 'izakaya-nami', description: 'Test' };
+const mockBiz = {
+  id: 1,
+  name: 'El Mesón Austral',
+  slug: 'el-meson-austral',
+  description: 'Cocina chilena',
+  address: null,
+  maps_url: null,
+  phone: null,
+  hours: null,
+  notes: null,
+  instagram: null,
+  facebook: null,
+  tiktok: null,
+  whatsapp: null,
+  tripadvisor: null,
+  website: null,
+};
+
 const mockDishes = [
-  { id: 1, name: 'Karaage', description: 'Pollo frito', ingredients: 'pollo', price: 8500, category: 'entradas', allergens: 'gluten' },
+  {
+    id: 1,
+    name: 'Longanizas a la parrilla',
+    description: 'Longanizas artesanales con merkén',
+    ingredients: 'cerdo, especias, merkén',
+    price: 8900,
+    category: 'Carnes',
+    allergens: 'ninguno',
+    is_recommended: true,
+  },
 ];
+
 const emptyResult = { rows: [], command: '', rowCount: 0, oid: 0, fields: [] };
 
 function makeResult<T>(rows: T[]) {
@@ -35,17 +62,31 @@ function makeRequest(body: object) {
   });
 }
 
+/**
+ * resolveMenuSource makes 2 DB calls for a business-with-dishes:
+ *   1. businesses table
+ *   2. dishes COUNT
+ * Then the chat route fetches actual dish rows for the AI context:
+ *   3. dishes SELECT
+ * The logChatTurn calls that follow fail silently (non-fatal).
+ */
+function mockBusinessAndDishes() {
+  query
+    .mockResolvedValueOnce(makeResult([mockBiz]))
+    .mockResolvedValueOnce(makeResult([{ count: '1' }]))
+    .mockResolvedValueOnce(makeResult(mockDishes))
+    .mockResolvedValue(emptyResult); // logChatTurn queries fail silently
+}
+
 describe('POST /api/chat', () => {
   beforeEach(() => jest.clearAllMocks());
 
   it('returns assistant message for a valid request', async () => {
-    query
-      .mockResolvedValueOnce(makeResult([mockRestaurant]))
-      .mockResolvedValueOnce(makeResult(mockDishes));
+    mockBusinessAndDishes();
 
     const req = makeRequest({
       messages: [{ role: 'user', content: '¿Qué platos tienen?' }],
-      restaurantSlug: 'izakaya-nami',
+      restaurantSlug: 'el-meson-austral',
     });
 
     const response = await POST(req);
@@ -56,8 +97,7 @@ describe('POST /api/chat', () => {
   });
 
   it('returns 404 when restaurant is not found', async () => {
-    // resolveMenuSource checks businesses, then falls back to restaurants —
-    // both must come back empty for a 404.
+    // businesses empty, then legacy restaurants empty
     query.mockResolvedValueOnce(emptyResult).mockResolvedValueOnce(emptyResult);
 
     const req = makeRequest({ messages: [], restaurantSlug: 'nonexistent' });
@@ -71,16 +111,14 @@ describe('POST /api/chat', () => {
   it('returns 500 on database error', async () => {
     query.mockRejectedValueOnce(new Error('DB connection failed'));
 
-    const req = makeRequest({ messages: [], restaurantSlug: 'izakaya-nami' });
+    const req = makeRequest({ messages: [], restaurantSlug: 'el-meson-austral' });
     const response = await POST(req);
 
     expect(response.status).toBe(500);
   });
 
-  it('calls Anthropic with correct system prompt containing restaurant name', async () => {
-    query
-      .mockResolvedValueOnce(makeResult([mockRestaurant]))
-      .mockResolvedValueOnce(makeResult(mockDishes));
+  it('calls Anthropic with system prompt containing restaurant name', async () => {
+    mockBusinessAndDishes();
 
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const Anthropic = require('@anthropic-ai/sdk').default;
@@ -88,7 +126,7 @@ describe('POST /api/chat', () => {
 
     const req = makeRequest({
       messages: [{ role: 'user', content: 'Hola' }],
-      restaurantSlug: 'izakaya-nami',
+      restaurantSlug: 'el-meson-austral',
     });
 
     await POST(req);
@@ -96,7 +134,7 @@ describe('POST /api/chat', () => {
     if (mockCreate) {
       expect(mockCreate).toHaveBeenCalledWith(
         expect.objectContaining({
-          system: expect.stringContaining('Izakaya Nami'),
+          system: expect.stringContaining('El Mesón Austral'),
           model: 'claude-sonnet-4-20250514',
         })
       );
