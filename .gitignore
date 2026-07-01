@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local QA / debug harness — never ship (mint-session forges sessions from AUTH_SECRET)
+scripts/mint-session.ts
+scripts/seed-qa.ts
+test-logout.mjs
