@@ -19,6 +19,7 @@ interface DishRow {
   image: string | null;
   icon: string | null;
   is_recommended: boolean;
+  available: boolean;
 }
 
 export async function GET(
@@ -35,7 +36,7 @@ export async function GET(
     }
 
     const dishResult = await query<DishRow>(
-      `SELECT id, name, description, ingredients, allergens, price, category, image, icon, is_recommended
+      `SELECT id, name, description, ingredients, allergens, price, category, image, icon, is_recommended, available
        FROM dishes
        WHERE ${source.dishColumn} = $1
        ORDER BY category, name`,

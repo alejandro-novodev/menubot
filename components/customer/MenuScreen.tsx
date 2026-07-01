@@ -20,6 +20,7 @@ export interface MenuDish {
   image?: string | null;
   icon?: string | null;
   is_recommended?: boolean;
+  available?: boolean;
 }
 
 interface BusinessInfo {
@@ -184,6 +185,7 @@ function DishRow({ dish, onTap, lang }: { dish: MenuDish; onTap: () => void; lan
   const allergens = dish.allergens && dish.allergens !== 'ninguno'
     ? dish.allergens.split(',').map(s => s.trim()).filter(Boolean)
     : [];
+  const unavailable = dish.available === false;
 
   return (
     <button
@@ -203,6 +205,7 @@ function DishRow({ dish, onTap, lang }: { dish: MenuDish; onTap: () => void; lan
           background: 'var(--mb-surface)', border: '1px solid var(--mb-line)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 21, lineHeight: 1, marginTop: 1, overflow: 'hidden',
+          ...(unavailable ? { filter: 'grayscale(1)', opacity: 0.5 } : {}),
         }}
       >
         {dish.image
@@ -216,8 +219,18 @@ function DishRow({ dish, onTap, lang }: { dish: MenuDish; onTap: () => void; lan
           fontFamily: 'var(--font-space-grotesk, system-ui)',
           fontWeight: 600, fontSize: 15,
           letterSpacing: '-0.01em',
-          color: 'var(--mb-ink)',
-        }}>{dish.is_recommended && <span title={t(lang, 'chefPick')}>⭐ </span>}{dish.name}</span>
+          color: unavailable ? 'var(--mb-mut)' : 'var(--mb-ink)',
+        }}>{dish.is_recommended && <span title={t(lang, 'chefPick')}>⭐ </span>}{dish.name}
+          {unavailable && (
+            <span style={{
+              marginLeft: 7, display: 'inline-block', verticalAlign: 'middle',
+              fontFamily: 'var(--font-archivo, system-ui)', fontSize: 10, fontWeight: 700,
+              textTransform: 'uppercase', letterSpacing: '0.05em', lineHeight: 1.4,
+              color: '#B84B3D', background: 'rgba(184,75,61,0.10)', border: '1px solid rgba(184,75,61,0.28)',
+              borderRadius: 999, padding: '1px 8px',
+            }}>{t(lang, 'soldOut')}</span>
+          )}
+        </span>
         {dish.description && (
           <p style={{
             margin: 0, fontFamily: 'var(--font-archivo, system-ui)',
@@ -239,7 +252,8 @@ function DishRow({ dish, onTap, lang }: { dish: MenuDish; onTap: () => void; lan
           <span style={{
             fontFamily: 'var(--font-space-grotesk, system-ui)',
             fontWeight: 700, fontSize: 14.5,
-            color: 'var(--mb-ink)', whiteSpace: 'nowrap',
+            color: unavailable ? 'var(--mb-mut2)' : 'var(--mb-ink)', whiteSpace: 'nowrap',
+            textDecoration: unavailable ? 'line-through' : 'none',
           }}>
             {formatPrice(dish.price)}
           </span>

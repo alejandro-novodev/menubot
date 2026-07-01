@@ -20,6 +20,7 @@ interface Dish {
   image: string | null;
   icon: string | null;
   is_recommended: boolean;
+  available: boolean;
 }
 
 const ALLERGEN_OPTIONS = ['gluten', 'lácteos', 'mariscos', 'huevo', 'frutos secos', 'soya', 'ninguno'];
@@ -171,6 +172,12 @@ function DishModal({
             <input type="checkbox" checked={!!form.is_recommended} onChange={e => set('is_recommended', e.target.checked)} className="accent-[#C76B43] w-4 h-4 shrink-0" />
             <span className="text-sm app-ink">⭐ Recomendación del chef</span>
             <span className="text-xs app-mut2 ml-auto hidden sm:inline">se destaca y se prioriza en el chat</span>
+          </label>
+
+          <label className="flex items-center gap-2.5 cursor-pointer select-none app-surface2 border app-line rounded-xl px-3 py-2.5">
+            <input type="checkbox" checked={form.available !== false} onChange={e => set('available', e.target.checked)} className="accent-[#C76B43] w-4 h-4 shrink-0" />
+            <span className="text-sm app-ink">Disponible hoy</span>
+            <span className="text-xs app-mut2 ml-auto hidden sm:inline">si lo desmarcas, aparece “Agotado”</span>
           </label>
 
           {/* Visual: foto o ícono */}
@@ -366,6 +373,18 @@ function MenuEditor() {
     setDeleting(null);
   }
 
+  // Quick "mark as sold out / available" toggle — optimistic so it feels instant
+  // when a dish runs out mid-service.
+  async function toggleAvailable(dish: Dish) {
+    const next = !dish.available;
+    setDishes(ds => ds.map(d => d.id === dish.id ? { ...d, available: next } : d));
+    await fetch(`/api/dishes/${dish.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ available: next }),
+    });
+  }
+
   const filtered = dishes.filter(d =>
     !filter || d.name.toLowerCase().includes(filter.toLowerCase()) || (d.category ?? '').toLowerCase().includes(filter.toLowerCase())
   );
@@ -467,7 +486,7 @@ function MenuEditor() {
                   const missing = [!dish.description, !dish.price, !dish.category, !dish.ingredients, !dish.allergens].filter(Boolean).length;
                   return (
                     <div key={dish.id} className="flex items-center gap-3 app-surface border app-line rounded-xl px-3 py-2.5 group transition">
-                      <div className="w-9 h-9 rounded-lg app-surface2 flex items-center justify-center text-xl shrink-0 overflow-hidden">
+                      <div className={`w-9 h-9 rounded-lg app-surface2 flex items-center justify-center text-xl shrink-0 overflow-hidden ${dish.available ? '' : 'opacity-50 grayscale'}`}>
                         {dish.image
                           // eslint-disable-next-line @next/next/no-img-element
                           ? <img src={dish.image} alt="" className="w-full h-full object-cover" />
@@ -485,6 +504,13 @@ function MenuEditor() {
                           {dish.description && ` · ${dish.description.slice(0, 40)}${dish.description.length > 40 ? '...' : ''}`}
                         </p>
                       </div>
+                      <button
+                        onClick={() => toggleAvailable(dish)}
+                        title={dish.available ? 'Marcar como agotado' : 'Marcar como disponible'}
+                        className={`shrink-0 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition ${dish.available ? 'app-soft app-soft-hover app-line app-mut app-ink-hover' : 'bg-red-500/15 border-red-500/30 text-red-500 hover:bg-red-500/25'}`}
+                      >
+                        {dish.available ? 'Disponible' : 'Agotado'}
+                      </button>
                       <div className="flex gap-1.5 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition">
                         <button onClick={() => setModalDish(dish)}
                           className="text-xs app-mut app-ink-hover app-soft app-soft-hover px-2.5 py-1.5 rounded-lg transition">

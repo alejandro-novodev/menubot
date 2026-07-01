@@ -18,6 +18,7 @@ interface Dish {
   category: string;
   allergens: string;
   is_recommended: boolean;
+  available: boolean;
 }
 
 /** Build a human-readable restaurant-info block for the chat context. */
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
 
     const dishesResult = await query<Dish>(
       // Exclude image/icon — never send dish photos into the AI context.
-      `SELECT id, name, description, ingredients, price, category, allergens, is_recommended FROM dishes WHERE ${source.dishColumn} = $1 ORDER BY category, name`,
+      `SELECT id, name, description, ingredients, price, category, allergens, is_recommended, available FROM dishes WHERE ${source.dishColumn} = $1 ORDER BY category, name`,
       [source.id]
     );
 
@@ -116,6 +117,7 @@ export async function POST(req: NextRequest) {
         categoria: d.category,
         alergenos: d.allergens,
         recomendado_del_chef: d.is_recommended,
+        disponible: d.available,
       })),
       null,
       2
@@ -134,6 +136,7 @@ ${lang === 'es'
 - Si te preguntan algo NO relacionado con el restaurante (política, programación, clima, temas personales, etc.), declina amablemente en UNA frase y reconduce a la carta. Ejemplo: "Solo te puedo ayudar con la carta de ${source.name} 😊 ¿Quieres que te recomiende algo?".
 - No inventes platos, precios, ingredientes ni datos del local que no estén arriba. Si no sabes algo, dilo.
 - Cuando el cliente pida recomendaciones, prioriza y destaca los platos con "recomendado_del_chef": true (son las sugerencias del chef) y explica brevemente por qué le podrían gustar.
+- IMPORTANTE: NUNCA recomiendes ni sugieras platos con "disponible": false (están agotados hoy). Si el cliente pregunta específicamente por uno, dile con amabilidad que hoy no está disponible y ofrécele una alternativa parecida que sí lo esté.
 - Los precios están en pesos chilenos (CLP).
 - Si el cliente quiere sumar platos, calcular cuánto pagar, agregar propina o DIVIDIR la cuenta, usa SIEMPRE la herramienta "calcular_cuenta". NUNCA hagas la aritmética tú mismo. Si algún plato no se encuentra (campo "unmatched"), pídele al cliente que lo aclare. En Chile la propina sugerida es 10%; si no la mencionan, asume 10% y dilo. Presenta el total y, si hay varias personas, cuánto paga cada una.
 

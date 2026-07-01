@@ -53,7 +53,8 @@ CREATE TABLE IF NOT EXISTS dishes (
   ingredients TEXT,
   price INTEGER,
   category VARCHAR(100),
-  allergens TEXT
+  allergens TEXT,
+  available BOOLEAN NOT NULL DEFAULT true
 );
 
 -- ── Subscriptions ─────────────────────────────────────────────────────────

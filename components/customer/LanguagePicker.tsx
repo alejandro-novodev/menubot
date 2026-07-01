@@ -31,7 +31,7 @@ export function LanguagePicker({ value, onChange }: { value: LangCode; onChange:
         <>
           <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }} />
           <div style={{
-            position: 'absolute', top: 'calc(100% + 6px)', right: 0, zIndex: 41, minWidth: 150,
+            position: 'absolute', top: 'calc(100% + 6px)', left: 0, zIndex: 41, minWidth: 150,
             background: 'var(--mb-surface)', border: '1px solid var(--mb-line)', borderRadius: 12,
             boxShadow: '0 10px 30px rgba(0,0,0,0.18)', overflow: 'hidden', padding: 4,
           }}>

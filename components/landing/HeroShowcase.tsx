@@ -355,7 +355,7 @@ export function HeroShowcase() {
   const Active = SLIDES[active].render;
 
   return (
-    <section className="pt-20 pb-12 px-5">
+    <section id="producto" className="pt-20 pb-12 px-5">
       <div className="max-w-5xl mx-auto">
         <div className="grid lg:grid-cols-[1fr_300px] gap-10 xl:gap-14 items-start">
 
@@ -396,6 +396,21 @@ export function HeroShowcase() {
               </a>
             </div>
             <p className="text-xs text-[#9A9087] mb-7">Sin tarjeta · Sin contrato · Cancela cuando quieras</p>
+
+            {/* Mobile phone — visible between intro and features */}
+            <div className="lg:hidden my-6 flex flex-col items-center">
+              <Phone><Active /></Phone>
+              <div className="flex items-center gap-2 mt-4">
+                {SLIDES.map((s, i) => (
+                  <button
+                    key={s.key}
+                    onClick={() => pick(i)}
+                    aria-label={s.title}
+                    className={`h-2 rounded-full transition-all duration-300 ${i === active ? 'w-6 bg-accent' : 'w-2 bg-black/15 hover:bg-black/30'}`}
+                  />
+                ))}
+              </div>
+            </div>
 
             {/* Divider */}
             <div className="flex items-center gap-3 mb-4">
@@ -453,20 +468,6 @@ export function HeroShowcase() {
           </div>
         </div>
 
-        {/* ── Mobile: phone after feature list ── */}
-        <div className="lg:hidden mt-8 flex flex-col items-center">
-          <Phone><Active /></Phone>
-          <div className="flex items-center gap-2 mt-4">
-            {SLIDES.map((s, i) => (
-              <button
-                key={s.key}
-                onClick={() => pick(i)}
-                aria-label={s.title}
-                className={`h-2 rounded-full transition-all duration-300 ${i === active ? 'w-6 bg-accent' : 'w-2 bg-black/15'}`}
-              />
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );

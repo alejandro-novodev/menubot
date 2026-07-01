@@ -20,6 +20,9 @@ const FAQ = [
   { q: '¿Necesito saber de tecnología?', a: 'No. Subes tu carta en PDF o texto, nosotros la procesamos y te entregamos un QR listo para las mesas. El proceso completo toma menos de 30 minutos.' },
   { q: '¿El bot habla otros idiomas?', a: 'Sí. Detecta el idioma del comensal y responde en consecuencia — inglés, portugués y más. Ideal para restaurantes con turismo internacional.' },
   { q: '¿Puedo cambiar de plan en cualquier momento?', a: 'Sí. Al subir el cambio es inmediato; al bajar se aplica al siguiente ciclo de facturación.' },
+  { q: '¿Cuántas conversaciones incluye cada plan?', a: 'Starter: 1.500/mes · Pro: 5.000/mes · Multi: 15.000/mes · Enterprise: ilimitadas. Una "conversación" es una sesión de chat completa con un comensal. La mayoría de los locales no supera las 2.000 al mes.' },
+  { q: '¿Sirve para cumplir con la normativa de alérgenos?', a: 'Sí. Todos los planes incluyen el exportador de PDF de alérgenos según la Resolución N° 20 del Minsal. El documento muestra cada plato con sus alérgenos declarados y puede presentarse en inspecciones sanitarias.' },
+  { q: '¿Puedo generar descripciones para mis platos con IA?', a: 'Sí, disponible desde el plan Pro. El generador lee el nombre del plato y propone una descripción de una o dos frases en español chileno, los ingredientes principales y los alérgenos relevantes. Tú revisas y confirmas antes de guardar.' },
 ];
 
 const NAV_LINKS = [
@@ -141,6 +144,42 @@ export default function Home() {
             <span className="w-2 h-2 rounded-full bg-accent/40" />
             <span className="ml-2">Tu carta digital lista en &lt; 30 min</span>
           </div>
+        </div>
+      </section>
+
+      {/* ── Comparison: MenuBot vs QR clásico ── */}
+      <section className="py-16 px-5 border-t border-black/[0.06] bg-white">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-8">
+            <span className="inline-block text-xs font-semibold text-accent tracking-widest uppercase mb-3">¿Por qué no el QR clásico?</span>
+            <h2 className="text-3xl font-bold mb-3">Una carta que responde, no solo muestra</h2>
+            <p className="text-[#6B6259] text-sm">El QR clásico es un PDF online. MenuBot es un asistente que conoce tu carta.</p>
+          </div>
+          <div className="rounded-2xl border border-black/[0.09] overflow-hidden">
+            <div className="grid grid-cols-3 text-sm font-semibold bg-[#FAF6EF]">
+              <div className="px-4 py-3 text-[#6B6259]">Funcionalidad</div>
+              <div className="px-4 py-3 text-center text-[#9A9087]">QR clásico</div>
+              <div className="px-4 py-3 text-center text-accent">MenuBot</div>
+            </div>
+            {[
+              ['Carta digital con QR', true, true],
+              ['Asistente IA 24/7', false, true],
+              ['Multiidioma automático', false, true],
+              ['Recomendaciones personalizadas', false, true],
+              ['División de cuenta sin calculadora', false, true],
+              ['PDF alérgenos (Res. 20 Minsal)', false, true],
+              ['Analytics de conversaciones', false, true],
+              ['Reseñas y respuestas del dueño', false, true],
+              ['Generador de descripciones con IA', false, true],
+            ].map(([feat, classic, mb], i) => (
+              <div key={i} className={`grid grid-cols-3 text-sm border-t border-black/[0.06] ${i % 2 === 0 ? '' : 'bg-[#FAF6EF]/40'}`}>
+                <div className="px-4 py-3 text-[#2B2421]">{feat as string}</div>
+                <div className="px-4 py-3 text-center">{classic ? <span className="text-emerald-500 font-bold">✓</span> : <span className="text-[#C0B6AA]">—</span>}</div>
+                <div className="px-4 py-3 text-center">{mb ? <span className="text-accent font-bold">✓</span> : <span className="text-[#C0B6AA]">—</span>}</div>
+              </div>
+            ))}
+          </div>
+          <p className="text-center text-xs text-[#9A9087] mt-4">Precio QR clásico: gratis. MenuBot: desde $14.990/mes + IVA — el costo de 3 cafés al día.</p>
         </div>
       </section>
 
