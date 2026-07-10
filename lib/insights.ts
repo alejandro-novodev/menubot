@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { getAnthropicClient, recordUsage } from './anthropic';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const INSIGHTS_MODEL = 'claude-haiku-4-5-20251001';
 
 export interface SessionSummary {
   /** One short Spanish sentence describing what the diner asked about. */
@@ -30,18 +31,21 @@ No inventes temas que no aparezcan. Responde sólo sobre el contenido de la conv
  * should catch and leave the session unsummarized to retry later.
  */
 export async function summarizeSession(
-  messages: { role: string; content: string }[]
+  messages: { role: string; content: string }[],
+  businessId: number | null = null
 ): Promise<SessionSummary> {
   const transcript = messages
     .map((m) => `${m.role === 'user' ? 'Cliente' : 'Asistente'}: ${m.content}`)
     .join('\n');
 
+  const { client: anthropic, keySource } = await getAnthropicClient(businessId);
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: INSIGHTS_MODEL,
     max_tokens: 512,
     messages: [{ role: 'user', content: `${SUMMARY_PROMPT}\n\n--- Conversación ---\n${transcript}` }],
     output_config: { format: { type: 'json_schema', schema: SUMMARY_SCHEMA } },
   } as Anthropic.MessageCreateParamsNonStreaming);
+  recordUsage({ businessId, feature: 'insights', model: INSIGHTS_MODEL, keySource, usage: response.usage });
 
   const textBlock = response.content.find((b) => b.type === 'text');
   const raw = textBlock && textBlock.type === 'text' ? textBlock.text : '';

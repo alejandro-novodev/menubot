@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { query } from '@/lib/db';
 import { getPaymentClient } from '@/lib/payment';
-import { PLANS, withIva, annualMonthly } from '@/lib/plans';
+import { PLANS, withIva, annualMonthly, isPaidPlan } from '@/lib/plans';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -15,7 +15,8 @@ export async function POST(req: NextRequest) {
   };
 
   const planConfig = PLANS[plan as keyof typeof PLANS];
-  if (!planConfig || planConfig.priceClp === null) {
+  // Free is not purchasable; enterprise has custom pricing (contact CTA).
+  if (!planConfig || planConfig.priceClp === null || !isPaidPlan(plan)) {
     return NextResponse.json({ error: 'Plan inválido.' }, { status: 400 });
   }
 

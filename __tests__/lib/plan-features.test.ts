@@ -21,6 +21,24 @@ describe('getFeatures', () => {
     });
   });
 
+  describe('free plan', () => {
+    it('has Starter feature set with a 100 conversation limit', () => {
+      const f = getFeatures('free');
+      expect(f.menuChat).toBe(true);
+      expect(f.allergenPdf).toBe(true);
+      expect(f.basicAnalytics).toBe(true);
+      expect(f.conversationsLimit).toBe(100);
+    });
+
+    it('has no premium features', () => {
+      const f = getFeatures('free');
+      expect(f.reviewsCollection).toBe(false);
+      expect(f.advancedAnalytics).toBe(false);
+      expect(f.aiMenuDescriptionGenerator).toBe(false);
+      expect(f.menuTranslation).toBe(false);
+    });
+  });
+
   describe('starter plan', () => {
     it('has core features only', () => {
       const f = getFeatures('starter');

@@ -3,6 +3,7 @@ import Google from 'next-auth/providers/google';
 import Credentials from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { query } from '@/lib/db';
+import { sendEmail, buildAdminApprovalEmail } from '@/lib/email';
 import { authConfig } from './auth.config';
 
 interface UserRow {
@@ -66,8 +67,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (account?.provider === 'google') {
         const existing = await query<UserRow>('SELECT * FROM users WHERE email = $1', [user.email!]);
         let userId: number;
+        const isNewUser = existing.rows.length === 0;
 
-        if (existing.rows.length === 0) {
+        if (isNewUser) {
           const inserted = await query<{ id: number }>(
             `INSERT INTO users (name, email, email_verified, image, role)
              VALUES ($1, $2, NOW(), $3, 'owner') RETURNING id`,
@@ -89,6 +91,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Invite-only gate: block Google sign-in for accounts not yet enabled.
         // The account row still exists, so an admin can approve it afterward.
         if (!canSignIn({ role, approved })) {
+          // Notify the admin only on first sign-in (new row) so a pending user
+          // isn't stuck silently, and we don't email on every retry.
+          if (isNewUser) {
+            const adminEmail = process.env.ADMIN_EMAIL ?? 'alejandro.luza@gmail.com';
+            await sendEmail({
+              to: adminEmail,
+              subject: `🔔 Nuevo registro con Google pendiente: ${user.name ?? user.email}`,
+              html: buildAdminApprovalEmail({ name: user.name ?? user.email!, email: user.email! }),
+            }).catch(err => console.error('[auth] admin approval email error (non-fatal):', err));
+          }
           return '/auth/login?status=pending';
         }
 

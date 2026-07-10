@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   business_id INTEGER REFERENCES businesses(id),
-  plan VARCHAR(50) NOT NULL,             -- starter | pro | multi | enterprise
+  plan VARCHAR(50) NOT NULL,             -- free | trial | starter | pro | multi | enterprise
   status VARCHAR(30) NOT NULL DEFAULT 'pending',
   -- pending | active | cancelled | past_due
   payment_provider_id VARCHAR(255),      -- Flow.cl subscription ID

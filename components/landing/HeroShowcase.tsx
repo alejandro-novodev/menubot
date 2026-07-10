@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
+import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
 
 const P = {
   bg: '#FAF6EF',
@@ -327,15 +328,59 @@ function Phone({ children }: { children: React.ReactNode }) {
 }
 
 // ── Slides ───────────────────────────────────────────────────────────────────
+// Edge-style "What's new" deck: each slide is a full card with its visual on a
+// warm backdrop, a headline, a description and a CTA.
 
 const SLIDES = [
-  { key: 'chat',     icon: '💬', title: 'Asistente que conoce tu carta',     desc: 'Responde sobre ingredientes, alérgenos y maridajes, y recomienda según los gustos de cada cliente — 24/7.',        render: ChatMock },
-  { key: 'lang',     icon: '🌍', title: 'Carta en el idioma del comensal',   desc: 'Turistas de todo el mundo leen tu carta en inglés, portugués y más. El bot detecta el idioma automáticamente.',    render: MultiLangMock },
-  { key: 'menu',     icon: '📖', title: 'Carta digital, siempre al día',      desc: 'Fotos, descripciones y sugerencias del chef destacadas. Actualización instantánea desde tu panel.',               render: MenuMock },
-  { key: 'bill',     icon: '🧮', title: 'Divide la cuenta sin calculadora',   desc: 'Tus clientes suman lo que pidieron, agregan propina y dividen el total — con los precios reales de tu carta.',    render: BillMock },
-  { key: 'insights', icon: '📊', title: 'Descubre qué quieren tus clientes', desc: 'Cada conversación se resume: preguntas frecuentes, tendencias y la demanda que aún no estás cubriendo.',           render: InsightsMock },
-  { key: 'reviews',  icon: '⭐', title: 'Reseñas y respuestas del dueño',    desc: 'Los comensales califica su visita. Tú respondes desde el panel — fidelización real sin esfuerzo.',                render: ReviewsMock },
-  { key: 'qr',       icon: '📱', title: 'QR listo para tus mesas',           desc: 'Un QR único por local. Imprime la lámina o compártelo en Instagram, Google Maps y WhatsApp.',                      render: QRMock },
+  {
+    key: 'intro',
+    title: 'La carta que habla con tus clientes',
+    desc: 'Un asistente de IA que conoce tu menú, atiende en cualquier idioma y convierte cada visita en datos útiles para tu negocio.',
+    backdrop: 'linear-gradient(135deg, #F5DCC4 0%, #EBBD9C 100%)',
+    render: ChatMock,
+  },
+  {
+    key: 'lang',
+    title: 'Carta en el idioma del comensal',
+    desc: 'Turistas de todo el mundo leen tu carta en inglés, portugués y más. El bot detecta el idioma automáticamente.',
+    backdrop: 'linear-gradient(135deg, #DEE8DB 0%, #C3D5BD 100%)',
+    render: MultiLangMock,
+  },
+  {
+    key: 'menu',
+    title: 'Carta digital, siempre al día',
+    desc: 'Fotos, descripciones y sugerencias del chef destacadas. Actualización instantánea desde tu panel.',
+    backdrop: 'linear-gradient(135deg, #F3E6CB 0%, #E7D0A6 100%)',
+    render: MenuMock,
+  },
+  {
+    key: 'bill',
+    title: 'Divide la cuenta sin calculadora',
+    desc: 'Tus clientes suman lo que pidieron, agregan propina y dividen el total — con los precios reales de tu carta.',
+    backdrop: 'linear-gradient(135deg, #DCE4EC 0%, #BFCEDD 100%)',
+    render: BillMock,
+  },
+  {
+    key: 'insights',
+    title: 'Descubre qué quieren tus clientes',
+    desc: 'Cada conversación se resume: preguntas frecuentes, tendencias y la demanda que aún no estás cubriendo.',
+    backdrop: 'linear-gradient(135deg, #EADDD2 0%, #D9C2B0 100%)',
+    render: InsightsMock,
+  },
+  {
+    key: 'reviews',
+    title: 'Reseñas y respuestas del dueño',
+    desc: 'Los comensales califican su visita. Tú respondes desde el panel — fidelización real sin esfuerzo.',
+    backdrop: 'linear-gradient(135deg, #F6E4C6 0%, #EFCF9F 100%)',
+    render: ReviewsMock,
+  },
+  {
+    key: 'qr',
+    title: 'QR listo para tus mesas',
+    desc: 'Un QR único por local. Imprime la lámina o compártelo en Instagram, Google Maps y WhatsApp.',
+    backdrop: 'linear-gradient(135deg, #E2E7E2 0%, #C8D2C8 100%)',
+    render: QRMock,
+  },
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -344,130 +389,170 @@ export function HeroShowcase() {
   const { data: session } = useSession();
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
+  const touchX = useRef<number | null>(null);
 
   useEffect(() => {
     if (paused) return;
-    const id = setInterval(() => setActive(a => (a + 1) % SLIDES.length), 4200);
+    const id = setInterval(() => setActive(a => (a + 1) % SLIDES.length), 6500);
     return () => clearInterval(id);
   }, [paused]);
 
-  function pick(i: number) { setActive(i); setPaused(true); }
-  const Active = SLIDES[active].render;
+  const step = useCallback((dir: number) => {
+    setActive(a => (a + dir + SLIDES.length) % SLIDES.length);
+    setPaused(true);
+  }, []);
+
+  function go(i: number) { setActive(i); setPaused(true); }
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const tag = (e.target as HTMLElement)?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === 'ArrowRight') step(1);
+      else if (e.key === 'ArrowLeft') step(-1);
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [step]);
 
   return (
-    <section id="producto" className="pt-20 pb-12 px-5">
-      <div className="max-w-5xl mx-auto">
-        <div className="grid lg:grid-cols-[1fr_300px] gap-10 xl:gap-14 items-start">
+    <section
+      id="producto"
+      className="relative overflow-hidden text-white"
+      style={{ background: 'radial-gradient(120% 90% at 50% 0%, #2C211A 0%, #1B1310 45%, #120C09 100%)' }}
+    >
+      <style>{`
+        @media (prefers-reduced-motion: reduce) {
+          .mb-deck-card { transition: none !important; }
+        }
+      `}</style>
 
-          {/* ── Left: intro + all features ── */}
-          <div>
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 rounded-full px-4 py-1.5 mb-5 border border-black/[0.08] bg-white shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-xs text-[#5A524A] font-medium">Para restaurantes, bares y hoteles · 14 días gratis</span>
-            </div>
+      <h1 className="sr-only">MenuBot — la carta digital con IA que habla con tus clientes</h1>
 
-            {/* Headline */}
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.1] mb-4">
-              La carta que habla<br />
-              <span className="text-accent">con tus clientes</span>
-            </h1>
+      {/* Soft accent glow behind the deck */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[720px] w-[980px] -translate-x-1/2 -translate-y-1/2"
+        style={{ background: 'radial-gradient(closest-side, rgba(199,107,67,0.16), transparent 70%)', filter: 'blur(40px)' }}
+      />
+      {/* Faint floor reflection */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-56"
+        style={{ background: 'linear-gradient(to top, rgba(199,107,67,0.06), transparent)' }}
+      />
 
-            {/* Subtitle */}
-            <p className="text-[#6B6259] text-base leading-relaxed mb-6 max-w-md">
-              Un asistente de IA que conoce tu menú, atiende en cualquier idioma
-              y convierte cada visita en datos útiles para tu negocio.
-            </p>
-
-            {/* CTAs */}
-            <div className="flex flex-wrap gap-3 mb-2">
-              <Link
-                href={session?.user ? '/dashboard' : '/auth/register'}
-                className="rounded-xl bg-accent hover:bg-accent-lite active:scale-95 transition-all px-7 py-2.5 text-sm font-semibold text-white"
-                style={{ boxShadow: '0 6px 20px rgba(199,107,67,0.28)' }}
+      <div
+        className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col items-center justify-center px-4 pb-14 pt-24"
+        onTouchStart={e => { touchX.current = e.touches[0].clientX; }}
+        onTouchEnd={e => {
+          if (touchX.current === null) return;
+          const dx = e.changedTouches[0].clientX - touchX.current;
+          if (Math.abs(dx) > 48) step(dx < 0 ? 1 : -1);
+          touchX.current = null;
+        }}
+      >
+        {/* ── Card deck: every slide is a real card; neighbors peek at the
+               sides, dimmed and tilted, and glide as you navigate ── */}
+        <div className="grid w-full max-w-3xl">
+          {SLIDES.map((s, i) => {
+            // Shortest signed distance from the active card (wraps around)
+            let d = (((i - active) % SLIDES.length) + SLIDES.length) % SLIDES.length;
+            if (d > SLIDES.length / 2) d -= SLIDES.length;
+            const abs = Math.abs(d);
+            const on = d === 0;
+            const Mock = s.render;
+            return (
+              <div
+                key={s.key}
+                inert={!on}
+                aria-hidden={!on}
+                className="mb-deck-card col-start-1 row-start-1 flex flex-col overflow-hidden rounded-[28px] bg-[#2A2422] ring-1 ring-white/10"
+                style={{
+                  zIndex: on ? 20 : 10 - abs,
+                  opacity: on ? 1 : abs === 1 ? 0.45 : 0,
+                  transform: on
+                    ? 'none'
+                    : `translateX(${d * (abs === 1 ? 96 : 180)}%) translateY(${abs * 16}px) rotate(${Math.sign(d) * (5 + abs * 2)}deg) scale(${abs === 1 ? 0.88 : 0.8})`,
+                  boxShadow: on ? '0 32px 90px rgba(0,0,0,0.55)' : '0 20px 60px rgba(0,0,0,0.4)',
+                  transition: 'transform 700ms cubic-bezier(0.22,1,0.36,1), opacity 700ms ease, box-shadow 700ms ease',
+                }}
               >
-                {session?.user ? 'Ir a mi panel →' : 'Empezar gratis — 14 días →'}
-              </Link>
-              <a
-                href="#como-funciona"
-                className="rounded-xl bg-white hover:bg-[#F3ECE1] border border-black/10 transition px-7 py-2.5 text-sm font-medium text-[#5A524A]"
-              >
-                Cómo funciona ↓
-              </a>
-            </div>
-            <p className="text-xs text-[#9A9087] mb-7">Sin tarjeta · Sin contrato · Cancela cuando quieras</p>
+                {/* Visual */}
+                <div className="relative h-[280px] shrink-0 overflow-hidden sm:h-[360px]" style={{ background: s.backdrop }}>
+                  <div className="absolute left-1/2 top-6 origin-top -translate-x-1/2 scale-[0.64] sm:top-9 sm:scale-[0.8]">
+                    <Phone><Mock /></Phone>
+                  </div>
+                  {/* Soft fade into the card body, so the cropped phone doesn't end abruptly */}
+                  <div className="absolute inset-x-0 bottom-0 h-10" style={{ background: 'linear-gradient(to bottom, transparent, rgba(42,36,34,0.35))' }} />
+                </div>
 
-            {/* Mobile phone — visible between intro and features */}
-            <div className="lg:hidden my-6 flex flex-col items-center">
-              <Phone><Active /></Phone>
-              <div className="flex items-center gap-2 mt-4">
-                {SLIDES.map((s, i) => (
-                  <button
-                    key={s.key}
-                    onClick={() => pick(i)}
-                    aria-label={s.title}
-                    className={`h-2 rounded-full transition-all duration-300 ${i === active ? 'w-6 bg-accent' : 'w-2 bg-black/15 hover:bg-black/30'}`}
-                  />
-                ))}
+                {/* Text */}
+                <div className="flex flex-1 flex-col items-center justify-center px-6 pb-9 pt-7 text-center sm:px-14 sm:pb-10 sm:pt-8">
+                  <h2 className="text-2xl font-bold tracking-tight sm:text-[2rem] sm:leading-tight">{s.title}</h2>
+                  <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-white/65 sm:text-base">{s.desc}</p>
+
+                  {s.key === 'intro' ? (
+                    <>
+                      <Link
+                        href={session?.user ? '/dashboard' : '/auth/register'}
+                        className="mt-7 inline-block rounded-full bg-accent px-8 py-3 text-sm font-semibold text-white transition hover:bg-accent-lite active:scale-95"
+                        style={{ boxShadow: '0 8px 24px rgba(199,107,67,0.35)' }}
+                      >
+                        {session?.user ? 'Ir a mi panel →' : 'Empezar gratis — 14 días'}
+                      </Link>
+                      <p className="mt-3 text-xs text-white/40">Sin tarjeta · Sin contrato · Cancela cuando quieras</p>
+                    </>
+                  ) : (
+                    <Link
+                      href="/chat/el-meson-austral"
+                      className="mt-7 inline-block rounded-full bg-[#F6E7DA] px-8 py-3 text-sm font-semibold text-[#8A4526] transition hover:bg-white active:scale-95"
+                    >
+                      Probar ahora
+                    </Link>
+                  )}
+                </div>
               </div>
-            </div>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-px bg-black/[0.07]" />
-              <span className="text-xs font-semibold text-[#9A9087] uppercase tracking-widest whitespace-nowrap">Todo lo que incluye</span>
-              <div className="flex-1 h-px bg-black/[0.07]" />
-            </div>
-
-            {/* Feature grid — all 7 visible at once, 2 columns */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {SLIDES.map((s, i) => {
-                const on = i === active;
-                return (
-                  <button
-                    key={s.key}
-                    onClick={() => pick(i)}
-                    className={`text-left rounded-2xl border transition-all duration-200 ${
-                      on
-                        ? 'border-accent/40 bg-accent/[0.08] shadow-sm'
-                        : 'border-black/[0.07] bg-white hover:border-black/[0.14] hover:shadow-sm'
-                    }`}
-                    style={{ padding: on ? '12px 14px 14px' : '12px 14px' }}
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-xl leading-none">{s.icon}</span>
-                      <span className={`font-semibold text-sm leading-snug ${on ? 'text-accent' : 'text-[#2B2421]'}`}>
-                        {s.title}
-                      </span>
-                    </div>
-                    {on && (
-                      <p className="text-xs text-[#6B6259] leading-relaxed mt-2 pl-8">
-                        {s.desc}
-                      </p>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* ── Right: phone (sticky on desktop) ── */}
-          <div className="hidden lg:flex flex-col items-center sticky top-20">
-            <Phone><Active /></Phone>
-            {/* Dots */}
-            <div className="flex items-center gap-2 mt-5">
-              {SLIDES.map((s, i) => (
-                <button
-                  key={s.key}
-                  onClick={() => pick(i)}
-                  aria-label={s.title}
-                  className={`h-2 rounded-full transition-all duration-300 ${i === active ? 'w-6 bg-accent' : 'w-2 bg-black/15 hover:bg-black/30'}`}
-                />
-              ))}
-            </div>
-          </div>
+            );
+          })}
         </div>
 
+        {/* ── Dots ── */}
+        <div className="mt-7 flex items-center gap-2.5">
+          {SLIDES.map((s, i) => (
+            <button
+              key={s.key}
+              onClick={() => go(i)}
+              aria-label={s.title}
+              aria-current={i === active}
+              className={`h-2 rounded-full transition-all duration-300 ${i === active ? 'w-6 bg-white' : 'w-2 bg-white/25 hover:bg-white/50'}`}
+            />
+          ))}
+        </div>
+
+        {/* ── Prev / Next ── */}
+        <div className="mt-6 flex items-center gap-3">
+          <button
+            onClick={() => step(-1)}
+            aria-label="Anterior"
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-accent text-white transition hover:bg-accent-lite active:scale-95"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 4l-6 6 6 6" /></svg>
+          </button>
+          <button
+            onClick={() => step(1)}
+            className="flex items-center gap-3 rounded-full bg-[#F6E7DA] py-3 pl-7 pr-5 text-base font-semibold text-[#2B2421] ring-2 ring-accent/70 transition hover:bg-white active:scale-95"
+          >
+            Siguiente
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#C76B43" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 10h12M11 4l6 6-6 6" /></svg>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Bottom-left branding ── */}
+      <div className="pointer-events-none absolute bottom-5 left-6 hidden items-center gap-2.5 md:flex">
+        <LogoIcon size={24} />
+        <Wordmark size="md" className="text-white" />
       </div>
     </section>
   );

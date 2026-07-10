@@ -1,10 +1,22 @@
 // Central source of truth for subscription plans. All prices are in CLP.
 // priceClp is NET (before 19% IVA). Use withIva() for the amount to charge.
 
-export type Plan = 'starter' | 'pro' | 'multi' | 'enterprise';
+export type Plan = 'free' | 'starter' | 'pro' | 'multi' | 'enterprise';
 export type BillingCycle = 'monthly' | 'annual';
 
+// Public pricing order — 'free' is intentionally excluded so the pricing page
+// and landing PlanGrid don't grow a card for it.
 export const PLAN_ORDER: Plan[] = ['starter', 'pro', 'multi', 'enterprise'];
+
+export const PAID_PLANS: Plan[] = ['starter', 'pro', 'multi', 'enterprise'];
+
+/** Plans that get a dedicated Anthropic API key and are purchasable via Flow. */
+export function isPaidPlan(plan: string | null | undefined): boolean {
+  return PAID_PLANS.includes(plan as Plan);
+}
+
+/** Monthly conversation cap for the freemium tier. */
+export const FREE_CONVERSATIONS_LIMIT = 100;
 
 export const IVA_RATE = 0.19;
 export const ANNUAL_MONTHS_BILLED = 10;
@@ -30,6 +42,24 @@ export interface PlanConfig {
 }
 
 export const PLANS: Record<Plan, PlanConfig> = {
+  free: {
+    id: 'free',
+    name: 'Free',
+    subtitle: 'Para probar menubot con tu carta real, sin costo.',
+    priceClp: 0,
+    includedBranches: 1,
+    extraBranchClp: null,
+    conversationsLimit: FREE_CONVERSATIONS_LIMIT,
+    ctaType: 'self-serve',
+    features: [
+      { text: `1 sucursal · ${FREE_CONVERSATIONS_LIMIT} conversaciones/mes`, included: true },
+      { text: 'Chat IA embebido y QR listo para imprimir', included: true },
+      { text: 'Actualizaciones de carta ilimitadas', included: true },
+      { text: 'Estadísticas básicas', included: true },
+      { text: 'Generador de descripciones con IA', included: false },
+      { text: 'Opiniones y reviews de comensales', included: false },
+    ],
+  },
   starter: {
     id: 'starter',
     name: 'Starter',

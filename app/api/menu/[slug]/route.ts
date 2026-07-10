@@ -50,7 +50,8 @@ export async function GET(
       if (features.menuTranslation) {
         const tr = await translateMenu(
           dishes.map((d) => ({ id: d.id, name: d.name, description: d.description, ingredients: d.ingredients, allergens: d.allergens, category: d.category })),
-          lang
+          lang,
+          source.id
         );
         dishes = dishes.map((d) => {
           const t = tr.get(d.id);

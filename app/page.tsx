@@ -21,6 +21,7 @@ const FAQ = [
   { q: '¿El bot habla otros idiomas?', a: 'Sí. Detecta el idioma del comensal y responde en consecuencia — inglés, portugués y más. Ideal para restaurantes con turismo internacional.' },
   { q: '¿Puedo cambiar de plan en cualquier momento?', a: 'Sí. Al subir el cambio es inmediato; al bajar se aplica al siguiente ciclo de facturación.' },
   { q: '¿Cuántas conversaciones incluye cada plan?', a: 'Starter: 1.500/mes · Pro: 5.000/mes · Multi: 15.000/mes · Enterprise: ilimitadas. Una "conversación" es una sesión de chat completa con un comensal. La mayoría de los locales no supera las 2.000 al mes.' },
+  { q: '¿Qué pasa si supero las conversaciones de mi plan?', a: 'Tu asistente no se apaga: en los planes pagados el chat sigue atendiendo a tus clientes y te avisamos para ajustar el plan si tu local crece. Además puedes seguir tu consumo en tiempo real desde la sección "Uso" de tu panel.' },
   { q: '¿Sirve para cumplir con la normativa de alérgenos?', a: 'Sí. Todos los planes incluyen el exportador de PDF de alérgenos según la Resolución N° 20 del Minsal. El documento muestra cada plato con sus alérgenos declarados y puede presentarse en inspecciones sanitarias.' },
   { q: '¿Puedo generar descripciones para mis platos con IA?', a: 'Sí, disponible desde el plan Pro. El generador lee el nombre del plato y propone una descripción de una o dos frases en español chileno, los ingredientes principales y los alérgenos relevantes. Tú revisas y confirmas antes de guardar.' },
 ];
@@ -262,7 +263,7 @@ export default function Home() {
           </span>
           <div className="flex gap-5">
             <button onClick={() => openModal()} className="hover:text-[#6B6259] transition">Contacto</button>
-            <a href="/chat/el-meson-austral" className="hover:text-[#6B6259] transition">Demo</a>
+            <Link href="/chat/el-meson-austral" className="hover:text-[#6B6259] transition">Demo</Link>
             <a href="#precios" className="hover:text-[#6B6259] transition">Precios</a>
             <Link href="/auth/login" className="hover:text-[#6B6259] transition">Iniciar sesión</Link>
           </div>

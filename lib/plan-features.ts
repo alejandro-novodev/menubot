@@ -86,6 +86,12 @@ const STARTER: PlanFeatures = {
   whiteLabel: false,
 };
 
+// Freemium: Starter's feature set with a much lower conversation cap.
+const FREE: PlanFeatures = {
+  ...STARTER,
+  conversationsLimit: 100,
+};
+
 const PRO: PlanFeatures = {
   ...STARTER,
   conversationsLimit: 5000,
@@ -124,6 +130,7 @@ const ENTERPRISE: PlanFeatures = {
 };
 
 const FEATURES_BY_PLAN: Record<Plan, PlanFeatures> = {
+  free: FREE,
   starter: STARTER,
   pro: PRO,
   multi: MULTI,
@@ -142,7 +149,7 @@ export function getFeatures(plan: string | null | undefined): PlanFeatures {
 
 /** The lowest plan that first unlocks a given feature — used in upgrade prompts. */
 export function minPlanFor(feature: keyof PlanFeatures): Plan {
-  const order: Plan[] = ['starter', 'pro', 'multi', 'enterprise'];
+  const order: Plan[] = ['free', 'starter', 'pro', 'multi', 'enterprise'];
   return order.find((p) => {
     const val = FEATURES_BY_PLAN[p][feature];
     return val === true || (typeof val === 'number' && val > 0);

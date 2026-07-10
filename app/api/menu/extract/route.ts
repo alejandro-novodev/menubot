@@ -3,12 +3,13 @@ import { auth } from '@/auth';
 import { query } from '@/lib/db';
 import Anthropic from '@anthropic-ai/sdk';
 import { calcMenuCompleteness } from '@/lib/completeness';
+import { getAnthropicClient, recordUsage } from '@/lib/anthropic';
 import mammoth from 'mammoth';
 import ExcelJS from 'exceljs';
 
 export const runtime = 'nodejs';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const EXTRACT_MODEL = 'claude-sonnet-4-6';
 
 interface ExtractedDish {
   name: string;
@@ -229,12 +230,14 @@ export async function POST(req: NextRequest) {
     // ── Extract via Claude with structured outputs ──────────────────────────
     let parsed: { dishes: ExtractedDish[] };
     try {
+      const { client: anthropic, keySource } = await getAnthropicClient(businessId);
       const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: EXTRACT_MODEL,
         max_tokens: 8192,
         messages: [{ role: 'user', content }],
         output_config: { format: { type: 'json_schema', schema: DISH_SCHEMA } },
       } as Anthropic.MessageCreateParamsNonStreaming);
+      recordUsage({ businessId, feature: 'menu_extract', model: EXTRACT_MODEL, keySource, usage: response.usage });
 
       if (response.stop_reason === 'refusal') {
         throw new Error('refusal');

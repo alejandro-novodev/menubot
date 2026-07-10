@@ -1,4 +1,4 @@
-import { withIva, annualMonthly, formatClp, getPlan, PLANS, IVA_RATE, ANNUAL_MONTHS_BILLED } from '@/lib/plans';
+import { withIva, annualMonthly, formatClp, getPlan, isPaidPlan, PLANS, PLAN_ORDER, IVA_RATE, ANNUAL_MONTHS_BILLED } from '@/lib/plans';
 
 describe('withIva', () => {
   it('adds 19% IVA and rounds to nearest peso', () => {
@@ -77,7 +77,32 @@ describe('getPlan', () => {
   });
 });
 
+describe('isPaidPlan', () => {
+  it('paid plans are starter, pro, multi, enterprise', () => {
+    expect(isPaidPlan('starter')).toBe(true);
+    expect(isPaidPlan('pro')).toBe(true);
+    expect(isPaidPlan('multi')).toBe(true);
+    expect(isPaidPlan('enterprise')).toBe(true);
+  });
+
+  it('free, trial, null and unknown are not paid', () => {
+    expect(isPaidPlan('free')).toBe(false);
+    expect(isPaidPlan('trial')).toBe(false);
+    expect(isPaidPlan(null)).toBe(false);
+    expect(isPaidPlan('unknown')).toBe(false);
+  });
+});
+
 describe('PLANS config', () => {
+  it('free costs nothing and has a 100 conversation cap', () => {
+    expect(PLANS.free.priceClp).toBe(0);
+    expect(PLANS.free.conversationsLimit).toBe(100);
+  });
+
+  it('free is not in the public pricing order', () => {
+    expect(PLAN_ORDER).not.toContain('free');
+  });
+
   it('starter has a price', () => {
     expect(PLANS.starter.priceClp).toBeGreaterThan(0);
   });

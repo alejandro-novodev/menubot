@@ -3,14 +3,13 @@ import { NextRequest } from 'next/server';
 
 jest.mock('@/lib/db', () => ({ query: jest.fn() }));
 
+// Hoisted so it survives the client cache in lib/anthropic (the constructor
+// only runs once per key) and jest.clearAllMocks() between tests.
+const mockCreate = jest.fn();
 jest.mock('@anthropic-ai/sdk', () => ({
   __esModule: true,
   default: jest.fn().mockImplementation(() => ({
-    messages: {
-      create: jest.fn().mockResolvedValue({
-        content: [{ type: 'text', text: 'Aquí tienes información sobre nuestros platos.' }],
-      }),
-    },
+    messages: { create: mockCreate },
   })),
 }));
 
@@ -66,20 +65,31 @@ function makeRequest(body: object) {
  * resolveMenuSource makes 2 DB calls for a business-with-dishes:
  *   1. businesses table
  *   2. dishes COUNT
+ * Then the quota check for a new session:
+ *   3. active subscription (empty → starter, never blocked)
+ *   4. chat_sessions COUNT this month
  * Then the chat route fetches actual dish rows for the AI context:
- *   3. dishes SELECT
- * The logChatTurn calls that follow fail silently (non-fatal).
+ *   5. dishes SELECT
+ * The key-resolution and logChatTurn calls that follow get the default result.
  */
 function mockBusinessAndDishes() {
   query
     .mockResolvedValueOnce(makeResult([mockBiz]))
     .mockResolvedValueOnce(makeResult([{ count: '1' }]))
+    .mockResolvedValueOnce(emptyResult)
+    .mockResolvedValueOnce(makeResult([{ count: '0' }]))
     .mockResolvedValueOnce(makeResult(mockDishes))
-    .mockResolvedValue(emptyResult); // logChatTurn queries fail silently
+    .mockResolvedValue(emptyResult);
 }
 
 describe('POST /api/chat', () => {
-  beforeEach(() => jest.clearAllMocks());
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockCreate.mockResolvedValue({
+      content: [{ type: 'text', text: 'Aquí tienes información sobre nuestros platos.' }],
+      usage: { input_tokens: 100, output_tokens: 50 },
+    });
+  });
 
   it('returns assistant message for a valid request', async () => {
     mockBusinessAndDishes();
@@ -120,10 +130,6 @@ describe('POST /api/chat', () => {
   it('calls Anthropic with system prompt containing restaurant name', async () => {
     mockBusinessAndDishes();
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const Anthropic = require('@anthropic-ai/sdk').default;
-    const mockCreate = Anthropic.mock.results[0]?.value.messages.create;
-
     const req = makeRequest({
       messages: [{ role: 'user', content: 'Hola' }],
       restaurantSlug: 'el-meson-austral',
@@ -131,13 +137,11 @@ describe('POST /api/chat', () => {
 
     await POST(req);
 
-    if (mockCreate) {
-      expect(mockCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          system: expect.stringContaining('El Mesón Austral'),
-          model: 'claude-sonnet-4-20250514',
-        })
-      );
-    }
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        system: expect.stringContaining('El Mesón Austral'),
+        model: 'claude-sonnet-4-6',
+      })
+    );
   });
 });

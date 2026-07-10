@@ -349,6 +349,14 @@ function Step3({ businessId, slug, onDone }: { businessId: number; slug: string;
           {saving ? 'Guardando...' : 'Guardar →'}
         </button>
       </div>
+
+      {/* Escape hatch — a long menu shouldn't hold onboarding hostage. */}
+      <button
+        onClick={() => setCurrent(dishes.length)}
+        className="w-full text-xs app-mut2 app-ink-hover transition py-1"
+      >
+        Terminar por ahora (puedes completar el resto desde &quot;Gestionar carta&quot;)
+      </button>
     </div>
   );
 }

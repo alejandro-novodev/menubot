@@ -15,6 +15,7 @@
     "test:coverage": "jest --coverage",
     "seed": "tsx scripts/seed.ts",
     "seed:demo": "tsx scripts/seed-demo.ts",
+    "seed:test-users": "tsx scripts/seed-test-users.ts",
     "migrate": "tsx scripts/migrate.ts"
   },
   "dependencies": {

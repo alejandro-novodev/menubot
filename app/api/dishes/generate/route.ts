@@ -3,9 +3,9 @@ import { auth } from '@/auth';
 import { query } from '@/lib/db';
 import { getBusinessPlan } from '@/lib/subscription';
 import { getFeatures } from '@/lib/plan-features';
-import Anthropic from '@anthropic-ai/sdk';
+import { getAnthropicClient, recordUsage } from '@/lib/anthropic';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const GENERATE_MODEL = 'claude-sonnet-4-6';
 
 export async function POST(req: NextRequest) {
   const session = await auth();
@@ -35,8 +35,9 @@ export async function POST(req: NextRequest) {
   const restaurantContext = [biz.name, biz.description].filter(Boolean).join(' — ');
 
   try {
+    const { client: anthropic, keySource } = await getAnthropicClient(businessId);
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: GENERATE_MODEL,
       max_tokens: 400,
       messages: [{
         role: 'user',
@@ -53,6 +54,7 @@ Contexto del restaurante: ${restaurantContext}
 Nombre del plato: ${dishName.trim()}`,
       }],
     });
+    recordUsage({ businessId, feature: 'dish_generate', model: GENERATE_MODEL, keySource, usage: response.usage });
 
     const raw = response.content[0]?.type === 'text' ? response.content[0].text : '';
     // Extract JSON even if the model wraps it in markdown fences

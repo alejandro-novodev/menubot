@@ -1,6 +1,7 @@
 import { auth, signOut } from '@/auth';
 import { redirect } from 'next/navigation';
 import { query } from '@/lib/db';
+import { getChatQuota, type QuotaStatus } from '@/lib/quota';
 import Link from 'next/link';
 import { Suspense } from 'react';
 import { QRCard } from '@/components/dashboard/QRCard';
@@ -76,6 +77,12 @@ export default async function DashboardPage() {
   const subscription = subResult.rows[0] ?? null;
   const hasBusiness = businesses.length > 0;
 
+  // Monthly chat usage per business, shown on each card (never blocks the page).
+  const quotas = new Map<number, QuotaStatus>();
+  await Promise.all(businesses.map(async (b) => {
+    try { quotas.set(b.id, await getChatQuota(b.id)); } catch { /* card just omits the line */ }
+  }));
+
   // Calculate trial days left
   let trialDaysLeft = -1;
   if (subscription?.plan === 'trial' && subscription.ends_at) {
@@ -99,13 +106,16 @@ export default async function DashboardPage() {
         </Link>
         <div className="flex items-center gap-2 text-sm">
           {session.user.role === 'admin' && (
-            <Link href="/admin" className="hidden sm:inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-accent-lite bg-accent/10 hover:bg-accent/15 px-2.5 py-1.5 rounded-lg transition">
+            <Link href="/admin" className="inline-flex items-center gap-1 text-xs font-medium text-accent hover:text-accent-lite bg-accent/10 hover:bg-accent/15 px-2.5 py-1.5 rounded-lg transition">
               Admin
             </Link>
           )}
-          <Link href="/dashboard/billing" className="hidden sm:inline-flex items-center gap-1 text-xs font-medium app-mut app-ink-hover app-soft app-soft-hover border app-line px-2.5 py-1.5 rounded-lg transition">
+          <Link href="/dashboard/usage" className="inline-flex items-center gap-1 text-xs font-medium app-mut app-ink-hover app-soft app-soft-hover border app-line px-2.5 py-1.5 rounded-lg transition">
+            Uso
+          </Link>
+          <Link href="/dashboard/billing" className="inline-flex items-center gap-1 text-xs font-medium app-mut app-ink-hover app-soft app-soft-hover border app-line px-2.5 py-1.5 rounded-lg transition">
             {subscription ? (
-              <span className="capitalize">{subscription.plan === 'trial' ? '⏳ Trial' : `✓ ${subscription.plan}`}</span>
+              <span className="capitalize whitespace-nowrap">{subscription.plan === 'trial' ? '⏳ Trial' : `✓ ${subscription.plan}`}</span>
             ) : 'Plan'}
           </Link>
           <span className="hidden md:inline text-xs app-mut2 truncate max-w-[160px]" title={session.user.email ?? ''}>
@@ -181,6 +191,19 @@ export default async function DashboardPage() {
                   </div>
                 </div>
                 <CompletenessBar score={biz.menu_completeness} />
+                {(() => {
+                  const q = quotas.get(biz.id);
+                  if (!q) return null;
+                  const over = q.limit !== null && q.used >= q.limit;
+                  return (
+                    <Link href="/dashboard/usage" className="flex justify-between items-center mt-2 text-xs app-mut hover:opacity-80 transition">
+                      <span>Conversaciones este mes</span>
+                      <span className={over ? 'text-red-400 font-semibold' : q.warn ? 'text-yellow-500 font-semibold' : ''}>
+                        {q.used}{q.limit !== null ? ` / ${q.limit}` : ' · ilimitado'} →
+                      </span>
+                    </Link>
+                  );
+                })()}
                 {biz.menu_completeness < 80 && (
                   <Link href={`/dashboard/menu?biz=${biz.id}`} className="block mt-2 text-xs text-accent hover:text-accent-lite transition">
                     Completar información →

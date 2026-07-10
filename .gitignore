@@ -44,3 +44,6 @@ next-env.d.ts
 scripts/mint-session.ts
 scripts/seed-qa.ts
 test-logout.mjs
+
+# claude code local config
+/.claude/

@@ -72,10 +72,10 @@ export default async function BillingPage() {
                   ? 'bg-red-900/40 text-red-400'
                   : 'bg-yellow-900/40 text-yellow-400'
               }`}>
-                {subscription.status}
+                {{ active: 'activo', pending: 'pendiente', cancelled: 'cancelado', past_due: 'pago atrasado' }[subscription.status] ?? subscription.status}
               </span>
               {subscription.billing_cycle && subscription.plan !== 'trial' && (
-                <span className="text-xs app-mut2 capitalize">{subscription.billing_cycle}</span>
+                <span className="text-xs app-mut2">{subscription.billing_cycle === 'annual' ? 'Anual' : 'Mensual'}</span>
               )}
             </div>
             {trialDaysLeft >= 0 && (

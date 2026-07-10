@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
+import { AdminNav } from '@/components/admin/AdminNav';
 
 interface SubscriptionRow {
   id: number;
@@ -161,13 +161,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-[#1A1613] text-white">
-      <header className="border-b border-white/5 px-6 py-4 flex items-center justify-between">
-        <Link href="/dashboard" className="font-bold text-lg">
-          <span className="flex items-center gap-2"><LogoIcon size={26} /><Wordmark size="md" /></span>
-          <span className="ml-2 text-xs text-gray-500 font-normal">Admin</span>
-        </Link>
-        <Link href="/dashboard" className="text-xs text-gray-500 hover:text-gray-300 transition">← Dashboard</Link>
-      </header>
+      <AdminNav />
 
       <main className="max-w-6xl mx-auto px-5 py-8 space-y-8">
         {/* Access mode banner */}

@@ -57,7 +57,7 @@ export async function GET(
         [sid]
       );
       if (msgs.rows.length === 0) continue;
-      const { summary, topics } = await summarizeSession(msgs.rows);
+      const { summary, topics } = await summarizeSession(msgs.rows, businessId);
       await query(
         'UPDATE chat_sessions SET summary = $1, topics = $2, summarized_at = NOW() WHERE id = $3',
         [summary, JSON.stringify(topics), sid]

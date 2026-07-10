@@ -2,8 +2,9 @@ import { createHash } from 'crypto';
 import Anthropic from '@anthropic-ai/sdk';
 import { query } from './db';
 import { aiNameFor, type LangCode } from './languages';
+import { getAnthropicClient, recordUsage } from './anthropic';
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const TRANSLATE_MODEL = 'claude-haiku-4-5-20251001';
 
 export interface TranslatableDish {
   id: number;
@@ -50,7 +51,7 @@ const SCHEMA = {
   required: ['items'],
 } as const;
 
-async function callModel(dishes: TranslatableDish[], lang: LangCode): Promise<Map<number, DishTranslation>> {
+async function callModel(dishes: TranslatableDish[], lang: LangCode, businessId: number | null): Promise<Map<number, DishTranslation>> {
   const payload = dishes.map((d) => ({
     id: d.id, nombre: d.name, description: d.description, ingredients: d.ingredients, allergens: d.allergens, category: d.category,
   }));
@@ -63,12 +64,14 @@ async function callModel(dishes: TranslatableDish[], lang: LangCode): Promise<Ma
 Platos (JSON):
 ${JSON.stringify(payload, null, 2)}`;
 
+  const { client: anthropic, keySource } = await getAnthropicClient(businessId);
   const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model: TRANSLATE_MODEL,
     max_tokens: 4096,
     messages: [{ role: 'user', content: prompt }],
     output_config: { format: { type: 'json_schema', schema: SCHEMA } },
   } as Anthropic.MessageCreateParamsNonStreaming);
+  recordUsage({ businessId, feature: 'translate', model: TRANSLATE_MODEL, keySource, usage: response.usage });
 
   const block = response.content.find((b) => b.type === 'text');
   const raw = block && block.type === 'text' ? block.text : '';
@@ -81,7 +84,7 @@ ${JSON.stringify(payload, null, 2)}`;
  * cache and (re)translating only dishes whose content changed. Never throws —
  * falls back to source text on failure so the menu always renders.
  */
-export async function translateMenu(dishes: TranslatableDish[], lang: LangCode): Promise<Map<number, DishTranslation>> {
+export async function translateMenu(dishes: TranslatableDish[], lang: LangCode, businessId: number | null = null): Promise<Map<number, DishTranslation>> {
   const result = new Map<number, DishTranslation>();
   if (dishes.length === 0) return result;
 
@@ -107,7 +110,7 @@ export async function translateMenu(dishes: TranslatableDish[], lang: LangCode):
 
   if (stale.length > 0) {
     try {
-      const translated = await callModel(stale, lang);
+      const translated = await callModel(stale, lang, businessId);
       for (const d of stale) {
         const tr = translated.get(d.id) ?? { description: d.description, ingredients: d.ingredients, allergens: d.allergens, category: d.category };
         result.set(d.id, tr);

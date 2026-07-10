@@ -4,10 +4,13 @@ import { query } from '@/lib/db';
 import { resolveMenuSource, type MenuProfile } from '@/lib/menuSource';
 import { computeBillFromNames } from '@/lib/bill';
 import { resolveLang, aiNameFor } from '@/lib/languages';
+import { getAnthropicClient, recordUsage } from '@/lib/anthropic';
+import { getChatQuota } from '@/lib/quota';
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
+const CHAT_MODEL = 'claude-sonnet-4-6';
+
+const QUOTA_MESSAGE =
+  'Este restaurante alcanzó su límite de conversaciones del mes 😔. El menú sigue disponible arriba — ¡vuelve pronto para chatear!';
 
 interface Dish {
   id: number;
@@ -102,6 +105,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
     }
 
+    // Monthly quota: only real businesses, and only when a NEW conversation
+    // starts (in-flight sessions always finish). Free tier blocks at 100%;
+    // paid plans and trial are never blocked here.
+    if (source.dishColumn === 'business_id') {
+      let isNewSession = true;
+      if (sessionId) {
+        const ok = await query('SELECT 1 FROM chat_sessions WHERE id = $1 AND business_id = $2', [sessionId, source.id]);
+        isNewSession = ok.rows.length === 0;
+      }
+      if (isNewSession) {
+        try {
+          const quota = await getChatQuota(source.id);
+          if (quota.blocked) {
+            return NextResponse.json({ message: QUOTA_MESSAGE, sessionId: null, quotaExceeded: true });
+          }
+        } catch (err) {
+          console.error('Quota check failed (allowing chat):', err);
+        }
+      }
+    }
+
     const dishesResult = await query<Dish>(
       // Exclude image/icon — never send dish photos into the AI context.
       `SELECT id, name, description, ingredients, price, category, allergens, is_recommended, available FROM dishes WHERE ${source.dishColumn} = $1 ORDER BY category, name`,
@@ -131,7 +155,8 @@ ${profileBlock(source.name, source.description, source.profile)}
 Reglas:
 ${lang === 'es'
   ? '- Responde SIEMPRE en español chileno, con tono cercano y usando "tú". Sé conciso y útil.'
-  : `- IMPORTANTE: el cliente es turista. Responde SIEMPRE en ${aiNameFor(lang)}, con tono cercano y útil. El menú está en español; traduce la información de los platos al responder, pero MANTÉN los nombres de los platos en su español original (puedes añadir una breve traducción entre paréntesis la primera vez). Sé conciso.`}
+  : `- IMPORTANTE: el cliente eligió ${aiNameFor(lang)} como idioma. Responde en ${aiNameFor(lang)}, con tono cercano y útil — PERO si el cliente escribe claramente en otro idioma (por ejemplo español), responde en el idioma en que escribió. El menú está en español; traduce la información de los platos al responder, pero MANTÉN los nombres de los platos en su español original (puedes añadir una breve traducción entre paréntesis la primera vez). Sé conciso.`}
+- Formato: texto conversacional. Puedes usar **negrita** y emojis, pero NUNCA uses encabezados Markdown (#, ## o ###), tablas ni bloques de código — se muestran como texto plano y se ven mal en el chat.
 - Habla ÚNICAMENTE sobre este restaurante: su carta (platos, bebidas, ingredientes, alérgenos, recomendaciones) y la información del local de arriba (ubicación, horario, contacto, redes sociales y reseñas). Si te preguntan por la ubicación y hay un enlace de Google Maps, compártelo. Si preguntan por redes sociales o dónde dejar una reseña, comparte el enlace correspondiente si está disponible.
 - Si te preguntan algo NO relacionado con el restaurante (política, programación, clima, temas personales, etc.), declina amablemente en UNA frase y reconduce a la carta. Ejemplo: "Solo te puedo ayudar con la carta de ${source.name} 😊 ¿Quieres que te recomiende algo?".
 - No inventes platos, precios, ingredientes ni datos del local que no estén arriba. Si no sabes algo, dilo.
@@ -175,13 +200,17 @@ ${menuJson}`;
 
     const convo: Anthropic.MessageParam[] = messages.map((m) => ({ role: m.role, content: m.content }));
 
+    const bizId = source.dishColumn === 'business_id' ? source.id : null;
+    const { client: anthropic, keySource } = await getAnthropicClient(bizId);
+
     let response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: CHAT_MODEL,
       max_tokens: 1024,
       system: systemPrompt,
       tools,
       messages: convo,
     });
+    recordUsage({ businessId: bizId, feature: 'chat', model: CHAT_MODEL, keySource, usage: response.usage });
 
     // Tool-use loop: execute calcular_cuenta deterministically and feed results back.
     let guard = 0;
@@ -197,12 +226,13 @@ ${menuJson}`;
       convo.push({ role: 'assistant', content: response.content });
       convo.push({ role: 'user', content: toolResults });
       response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-6',
+        model: CHAT_MODEL,
         max_tokens: 1024,
         system: systemPrompt,
         tools,
         messages: convo,
       });
+      recordUsage({ businessId: bizId, feature: 'chat', model: CHAT_MODEL, keySource, usage: response.usage });
     }
 
     const textBlock = response.content.find((b) => b.type === 'text');
