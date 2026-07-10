@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Suspense } from 'react';
@@ -278,6 +278,53 @@ function DishModal({
   );
 }
 
+// Click-to-edit field for the dish rows: the view is a button; clicking swaps
+// in an autofocused input. Enter/blur saves, Escape cancels. Uncontrolled so
+// the value is read once on commit.
+function InlineField({ value, display, type = 'text', viewClass = '', inputClass = '', onSave }: {
+  value: string;
+  display: React.ReactNode;
+  type?: 'text' | 'number';
+  viewClass?: string;
+  inputClass?: string;
+  onSave: (v: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const cancelled = useRef(false);
+
+  if (!editing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        title="Clic para editar"
+        className={`cursor-text rounded px-1 -mx-1 text-left transition hover:bg-black/[0.045] ${viewClass}`}
+      >
+        {display}
+      </button>
+    );
+  }
+  return (
+    <input
+      autoFocus
+      type={type}
+      defaultValue={value}
+      onFocus={e => e.target.select()}
+      onBlur={e => {
+        setEditing(false);
+        if (cancelled.current) { cancelled.current = false; return; }
+        const v = e.target.value.trim();
+        if (v !== value) onSave(v);
+      }}
+      onKeyDown={e => {
+        if (e.key === 'Enter') e.currentTarget.blur();
+        else if (e.key === 'Escape') { cancelled.current = true; e.currentTarget.blur(); }
+      }}
+      className={`bg-transparent border-b border-accent outline-none ${inputClass}`}
+    />
+  );
+}
+
 function MenuEditor() {
   const params = useSearchParams();
   const bizId = parseInt(params.get('biz') ?? '0');
@@ -290,6 +337,7 @@ function MenuEditor() {
   const [modalDish, setModalDish] = useState<Partial<Dish> | null | false>(false);
   const [deleting, setDeleting] = useState<number | null>(null);
   const [filter, setFilter] = useState('');
+  const [catFilter, setCatFilter] = useState('');
   const [showImport, setShowImport] = useState(false);
   const [exporting, setExporting] = useState(false);
 
@@ -373,6 +421,18 @@ function MenuEditor() {
     setDeleting(null);
   }
 
+  // Inline row edits (name/price/description) — optimistic, then reload so the
+  // completeness score and category sorting stay honest.
+  async function patchDish(dish: Dish, patch: Partial<Dish>) {
+    setDishes(ds => ds.map(d => d.id === dish.id ? { ...d, ...patch } : d));
+    await fetch(`/api/dishes/${dish.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(patch),
+    });
+    await load();
+  }
+
   // Quick "mark as sold out / available" toggle — optimistic so it feels instant
   // when a dish runs out mid-service.
   async function toggleAvailable(dish: Dish) {
@@ -385,8 +445,32 @@ function MenuEditor() {
     });
   }
 
+  // Rename a category for every dish in it — after an import the category
+  // names often need cleanup, and per-dish edits would be painful.
+  async function renameCategory(from: string, to: string) {
+    const ids = dishes.filter(d => (d.category ?? 'Sin categoría') === from).map(d => d.id);
+    setDishes(ds => ds.map(d => (d.category ?? 'Sin categoría') === from ? { ...d, category: to } : d));
+    if (catFilter === from) setCatFilter(to);
+    await Promise.all(ids.map(id => fetch(`/api/dishes/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ category: to }),
+    })));
+    await load();
+  }
+
+  // Per-category totals + incomplete counts for the filter chips.
+  const catStats = dishes.reduce<Record<string, { total: number; incomplete: number }>>((acc, d) => {
+    const cat = d.category ?? 'Sin categoría';
+    acc[cat] ??= { total: 0, incomplete: 0 };
+    acc[cat].total++;
+    if (!d.description || !d.price || !d.category || !d.ingredients || !d.allergens) acc[cat].incomplete++;
+    return acc;
+  }, {});
+
   const filtered = dishes.filter(d =>
-    !filter || d.name.toLowerCase().includes(filter.toLowerCase()) || (d.category ?? '').toLowerCase().includes(filter.toLowerCase())
+    (!filter || d.name.toLowerCase().includes(filter.toLowerCase()) || (d.category ?? '').toLowerCase().includes(filter.toLowerCase()))
+    && (!catFilter || (d.category ?? 'Sin categoría') === catFilter)
   );
 
   const grouped = filtered.reduce<Record<string, Dish[]>>((acc, d) => {
@@ -462,11 +546,39 @@ function MenuEditor() {
         </div>
       )}
 
-      {/* Search */}
+      {/* Search + category filter chips */}
       <div className="px-5 py-3 border-b app-line">
         <input value={filter} onChange={e => setFilter(e.target.value)}
           className="w-full app-surface2 border app-line rounded-xl px-3 py-2 text-sm app-ink placeholder-gray-600 outline-none focus:border-accent/40 transition"
           placeholder="Buscar plato o categoría..." />
+        {dishes.length > 0 && (
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <button
+              onClick={() => setCatFilter('')}
+              className={`rounded-full text-xs font-semibold px-3 py-1.5 border transition ${
+                !catFilter ? 'bg-accent border-accent text-white' : 'app-surface2 app-mut app-line hover:border-accent/40'
+              }`}
+            >
+              Todo · {dishes.length}
+            </button>
+            {Object.entries(catStats).map(([cat, s]) => {
+              const on = catFilter === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setCatFilter(on ? '' : cat)}
+                  title={s.incomplete > 0 ? `${s.incomplete} plato${s.incomplete !== 1 ? 's' : ''} con campos pendientes` : 'Categoría completa'}
+                  className={`rounded-full text-xs font-semibold px-3 py-1.5 border transition ${
+                    on ? 'bg-accent border-accent text-white' : 'app-surface2 app-mut app-line hover:border-accent/40'
+                  }`}
+                >
+                  {capitalize(cat)} · {s.total}
+                  {s.incomplete > 0 && <span className={on ? 'text-white/85' : 'text-orange-400'}> ⚠{s.incomplete}</span>}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Dishes */}
@@ -483,7 +595,14 @@ function MenuEditor() {
         ) : (
           Object.entries(grouped).map(([cat, catDishes]) => (
             <div key={cat} className="mb-5">
-              <h3 className="text-xs font-semibold app-mut uppercase tracking-widest mb-2">{capitalize(cat)} ({catDishes.length})</h3>
+              <h3 className="mb-2">
+                <InlineField
+                  value={cat}
+                  display={<span className="text-xs font-semibold app-mut uppercase tracking-widest">{capitalize(cat)} ({catDishes.length})</span>}
+                  inputClass="w-full max-w-[280px] text-xs font-semibold app-ink uppercase tracking-widest"
+                  onSave={v => { if (v && v !== cat) renameCategory(cat, v); }}
+                />
+              </h3>
               <div className="space-y-1.5">
                 {catDishes.map(dish => {
                   const missing = [!dish.description, !dish.price, !dish.category, !dish.ingredients, !dish.allergens].filter(Boolean).length;
@@ -496,18 +615,43 @@ function MenuEditor() {
                           : (dish.icon || getDishEmoji(dish.name, dish.category ?? ''))}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium app-ink break-words min-w-0">{dish.is_recommended && <span title="Recomendación del chef">⭐ </span>}{dish.name}</p>
+                        <div className="flex items-center gap-2 min-w-0">
+                          <InlineField
+                            value={dish.name}
+                            display={<span className="text-sm font-medium app-ink break-words">{dish.is_recommended && <span title="Recomendación del chef">⭐ </span>}{dish.name}</span>}
+                            viewClass="min-w-0"
+                            inputClass="w-full max-w-[260px] text-sm font-medium app-ink"
+                            onSave={v => { if (v) patchDish(dish, { name: v }); }}
+                          />
                           {missing > 0 && (
                             <span className="text-xs text-orange-400 shrink-0">⚠ {missing} campo{missing !== 1 ? 's' : ''}</span>
                           )}
                         </div>
-                        <p className="text-sm font-bold app-ink mt-0.5">
-                          {dish.price ? formatPrice(dish.price) : <span className="text-xs font-normal text-orange-400">Sin precio</span>}
-                        </p>
-                        {dish.description && (
-                          <p className="text-xs app-mut leading-snug line-clamp-2">{dish.description}</p>
-                        )}
+                        <div className="mt-0.5">
+                          <InlineField
+                            value={dish.price?.toString() ?? ''}
+                            type="number"
+                            display={dish.price
+                              ? <span className="text-sm font-bold app-ink">{formatPrice(dish.price)}</span>
+                              : <span className="text-xs text-orange-400">Sin precio — agregar</span>}
+                            inputClass="w-28 text-sm font-bold app-ink"
+                            onSave={v => {
+                              const n = parseInt(v);
+                              patchDish(dish, { price: Number.isFinite(n) && n > 0 ? n : null });
+                            }}
+                          />
+                        </div>
+                        <div>
+                          <InlineField
+                            value={dish.description ?? ''}
+                            display={dish.description
+                              ? <span className="block text-xs app-mut leading-snug line-clamp-2">{dish.description}</span>
+                              : <span className="text-xs italic text-[#9A9087]">Agregar descripción…</span>}
+                            viewClass="block w-full"
+                            inputClass="w-full text-xs app-mut"
+                            onSave={v => patchDish(dish, { description: v || null })}
+                          />
+                        </div>
                       </div>
                       <button
                         onClick={() => toggleAvailable(dish)}
