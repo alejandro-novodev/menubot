@@ -8,6 +8,21 @@ import { ContactModal } from '@/components/landing/ContactModal';
 import { PlanGrid } from '@/components/landing/PlanGrid';
 import { LogoIcon, Wordmark } from '@/components/brand/Wordmark';
 
+const FEATURES = [
+  { icon: '💬', name: 'Asistente IA 24/7', desc: 'Un asistente que conoce tu carta completa: responde sobre ingredientes, alérgenos y maridajes al instante, incluso con el local cerrado.' },
+  { icon: '🌍', name: 'Multiidioma automático', desc: 'Detecta el idioma del comensal y responde en él — inglés, portugués y más. Ideal para restaurantes con turismo internacional.' },
+  { icon: '📱', name: 'Carta digital con QR', desc: 'Un QR único por local con lámina lista para imprimir, y un link para compartir en Instagram, Google Maps y WhatsApp.' },
+  { icon: '📄', name: 'Importación de carta con IA', desc: 'Sube tu carta en PDF, foto o planilla y la IA extrae platos, precios, ingredientes y alérgenos. Tu menú queda cargado en minutos.' },
+  { icon: '⭐', name: 'Recomendaciones personalizadas', desc: 'El bot sugiere platos según los gustos y restricciones de cada cliente, destacando lo más pedido — como tu mejor garzón.' },
+  { icon: '🧮', name: 'División de cuenta', desc: 'Tus clientes suman lo que pidieron, agregan propina y dividen el total entre los comensales — con los precios reales de tu carta.' },
+  { icon: '📝', name: 'Reseñas con respuesta del dueño', desc: 'Los comensales califican su visita al salir y tú respondes desde el panel. Fidelización real sin esfuerzo.' },
+  { icon: '📊', name: 'Insights de conversaciones', desc: 'Cada conversación se resume en datos útiles: preguntas frecuentes, tendencias y la demanda que aún no estás cubriendo.' },
+  { icon: '🌾', name: 'PDF de alérgenos (Res. 20 Minsal)', desc: 'Exporta el documento con los alérgenos declarados de cada plato, listo para presentar en inspecciones sanitarias. Incluido en todos los planes.' },
+  { icon: '✨', name: 'Descripciones con IA', desc: 'El generador propone la descripción, los ingredientes y los alérgenos de cada plato en español chileno; tú revisas y confirmas. Desde el plan Pro.' },
+  { icon: '🚫', name: 'Agotado en un toque', desc: 'Marca un plato como agotado desde tu panel y deja de aparecer en las recomendaciones al instante. Vuelve a activarlo igual de rápido.' },
+  { icon: '📈', name: 'Uso en tiempo real', desc: 'Sigue las conversaciones del mes desde la sección "Uso" de tu panel. Te avisamos antes de que llegues al límite de tu plan.' },
+];
+
 const STEPS = [
   { step: '01', icon: '🚀', title: 'Crea tu cuenta', desc: '14 días gratis, sin tarjeta. Configura el perfil de tu negocio en menos de un minuto.' },
   { step: '02', icon: '📄', title: 'Sube tu carta', desc: 'PDF, foto o imagen. La IA extrae los platos, precios e ingredientes automáticamente.' },
@@ -28,6 +43,7 @@ const FAQ = [
 
 const NAV_LINKS = [
   { label: 'El producto', href: '#producto' },
+  { label: 'Funciones', href: '#funciones' },
   { label: 'Cómo funciona', href: '#como-funciona' },
   { label: 'Precios', href: '#precios' },
   { label: 'Demo', href: '/chat/el-meson-austral' },
@@ -38,6 +54,7 @@ export default function Home() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState('');
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [openFeature, setOpenFeature] = useState<number | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   function openModal(plan = '') { setSelectedPlan(plan); setModalOpen(true); }
@@ -118,6 +135,41 @@ export default function Home() {
 
       {/* ── Hero + all features merged ── */}
       <HeroShowcase />
+
+      {/* ── Todas las funciones (clic para ver el detalle) ── */}
+      <section id="funciones" className="py-16 px-5 bg-white">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <span className="inline-block text-xs font-semibold text-accent tracking-widest uppercase mb-3">Funciones</span>
+            <h2 className="text-3xl font-bold mb-3">Todo lo que incluye</h2>
+            <p className="text-[#6B6259] text-sm">Toca cualquier función para ver qué hace.</p>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {FEATURES.map((f, i) => {
+              const open = openFeature === i;
+              return (
+                <button
+                  key={f.name}
+                  onClick={() => setOpenFeature(open ? null : i)}
+                  aria-expanded={open}
+                  className={`self-start text-left rounded-2xl border p-4 transition ${
+                    open
+                      ? 'border-accent/45 bg-accent/[0.06] shadow-[0_4px_16px_rgba(199,107,67,0.12)]'
+                      : 'border-black/[0.07] bg-[#FAF6EF] hover:border-accent/30 hover:shadow-sm'
+                  }`}
+                >
+                  <span className="flex items-center gap-3">
+                    <span className="w-9 h-9 shrink-0 rounded-xl bg-white border border-black/[0.06] flex items-center justify-center text-lg">{f.icon}</span>
+                    <span className={`flex-1 text-sm font-semibold leading-snug ${open ? 'text-accent' : 'text-[#2B2421]'}`}>{f.name}</span>
+                    <span className={`text-[#9A9087] text-lg leading-none transition-transform ${open ? 'rotate-45' : ''}`}>+</span>
+                  </span>
+                  {open && <span className="block mt-3 text-sm text-[#6B6259] leading-relaxed">{f.desc}</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
 
       {/* ── Cómo funciona ── */}
       <section id="como-funciona" className="py-16 px-5 border-t border-black/[0.06]">

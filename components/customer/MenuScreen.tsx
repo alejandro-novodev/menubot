@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { LogoIcon } from '@/components/brand/Wordmark';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { SocialLinks, type Socials } from '@/components/customer/SocialLinks';
@@ -285,6 +285,37 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
   const [active, setActive] = useState('');
   const visibleCats = active ? [active] : sorted;
 
+  // The chips row hides its scrollbar (mb-noscroll), which leaves desktop users
+  // with no way to reach off-screen categories. Give them two affordances:
+  // vertical mouse-wheel scrolls the row horizontally, and ‹ › arrows appear
+  // (on hover-capable devices) whenever there is overflow in that direction.
+  const chipsRef = useRef<HTMLDivElement>(null);
+  const [chipNav, setChipNav] = useState({ left: false, right: false });
+
+  const updateChipNav = () => {
+    const el = chipsRef.current;
+    if (!el) return;
+    setChipNav({
+      left: el.scrollLeft > 4,
+      right: el.scrollLeft + el.clientWidth < el.scrollWidth - 4,
+    });
+  };
+
+  useEffect(() => {
+    const el = chipsRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(updateChipNav);
+    ro.observe(el);
+    // Non-passive so the page behind doesn't scroll at the same time.
+    const onWheel = (e: WheelEvent) => {
+      if (el.scrollWidth <= el.clientWidth || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      el.scrollLeft += e.deltaY;
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => { ro.disconnect(); el.removeEventListener('wheel', onWheel); };
+  }, []);
+
   const totalDishes = sorted.reduce((n, c) => n + (categories[c]?.length ?? 0), 0);
 
   return (
@@ -380,11 +411,21 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
       </div>
 
       {/* Category chips */}
-      <div className="mb-noscroll" style={{
-        display: 'flex', gap: 8, overflowX: 'auto',
-        padding: '12px 20px 6px', flexShrink: 0,
-        position: 'sticky', top: 0,
-      }}>
+      <div style={{ position: 'sticky', top: 0, flexShrink: 0 }}>
+        <style>{`
+          .mb-chip-nav {
+            display: none; position: absolute; top: 12px; width: 28px; height: 28px;
+            border-radius: 999px; align-items: center; justify-content: center;
+            padding: 0; cursor: pointer; z-index: 3;
+            background: var(--mb-bg); border: 1px solid var(--mb-chip-line);
+            color: var(--mb-ink); box-shadow: 0 2px 10px rgba(0,0,0,0.18);
+          }
+          @media (hover: hover) and (pointer: fine) { .mb-chip-nav { display: flex; } }
+        `}</style>
+        <div ref={chipsRef} onScroll={updateChipNav} className="mb-noscroll" style={{
+          display: 'flex', gap: 8, overflowX: 'auto',
+          padding: '12px 20px 6px',
+        }}>
         {[{ key: '', label: t(lang, 'all') }, ...sorted.map(c => ({ key: c, label: capitalize(c) }))].map(chip => {
           const isActive = active === chip.key;
           return (
@@ -406,6 +447,27 @@ export function MenuScreen({ restaurantName, cuisine, categories, onAsk, showFlo
             </button>
           );
         })}
+        </div>
+        {chipNav.left && (
+          <button
+            className="mb-chip-nav"
+            style={{ left: 8 }}
+            aria-label={lang === 'es' ? 'Categorías anteriores' : 'Previous categories'}
+            onClick={() => chipsRef.current?.scrollBy({ left: -260, behavior: 'smooth' })}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 2L4 7l5 5" /></svg>
+          </button>
+        )}
+        {chipNav.right && (
+          <button
+            className="mb-chip-nav"
+            style={{ right: 8 }}
+            aria-label={lang === 'es' ? 'Más categorías' : 'More categories'}
+            onClick={() => chipsRef.current?.scrollBy({ left: 260, behavior: 'smooth' })}
+          >
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 2l5 5-5 5" /></svg>
+          </button>
+        )}
       </div>
 
       {/* Tap-to-ask hint */}

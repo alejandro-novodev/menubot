@@ -54,6 +54,72 @@ function ChatMock() {
   );
 }
 
+function UploadMock() {
+  const row = (icon: string, name: string, price: string, ok: boolean) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: P.surface, border: `1px solid ${ok ? P.line : 'rgba(199,107,67,0.45)'}`, borderRadius: 10, padding: '7px 10px', marginBottom: 6 }}>
+      <span style={{ fontSize: 15 }}>{icon}</span>
+      <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: P.ink, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: ok ? P.ink : P.accent, flexShrink: 0 }}>{price}</span>
+      <span style={{ fontSize: 12, color: ok ? '#3BA35F' : P.accent, flexShrink: 0 }}>{ok ? '✓' : '✎'}</span>
+    </div>
+  );
+  return (
+    <div style={{ height: '100%', background: P.bg }}>
+      <div style={{ padding: '14px 14px 10px', borderBottom: `1px solid ${P.line}`, background: P.surface }}>
+        <div style={{ fontSize: 13.5, fontWeight: 800, color: P.ink }}>Importar carta</div>
+        <div style={{ fontSize: 10, color: P.mut }}>PDF, foto o planilla — da igual el formato</div>
+      </div>
+      <div style={{ padding: '12px 12px 0' }}>
+        <div style={{ border: '1.5px dashed rgba(199,107,67,0.5)', borderRadius: 12, padding: '11px 12px', background: P.accentSoft, display: 'flex', alignItems: 'center', gap: 9 }}>
+          <span style={{ fontSize: 20 }}>📄</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: P.ink }}>carta-2019.pdf</div>
+            <div style={{ fontSize: 10, color: P.mut }}>2,3 MB</div>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 700, color: P.accent, flexShrink: 0 }}>Subiendo…</span>
+        </div>
+        <div style={{ margin: '12px 2px 4px' }}>
+          <div style={{ height: 5, borderRadius: 9, background: P.line, overflow: 'hidden' }}>
+            <div style={{ width: '72%', height: '100%', background: P.accent, borderRadius: 9 }} />
+          </div>
+          <div style={{ fontSize: 10.5, color: P.mut, marginTop: 5 }}>IA leyendo la carta… <b style={{ color: P.ink }}>14 de 19 platos</b></div>
+        </div>
+        <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.12em', color: P.accent, margin: '10px 2px 6px' }}>PLATOS DETECTADOS</div>
+        {row('🥟', 'Empanada de pino', '$2.900', true)}
+        {row('🥩', 'Asado de tira', '$14.900', true)}
+        {row('🍷', 'Copa de carmenere', '$4.500', false)}
+      </div>
+    </div>
+  );
+}
+
+function MoreMock() {
+  const row = (icon: string, label: string) => (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 9, background: P.surface, border: `1px solid ${P.line}`, borderRadius: 10, padding: '8px 11px', marginBottom: 6 }}>
+      <span style={{ fontSize: 15 }}>{icon}</span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: P.ink }}>{label}</span>
+      <span style={{ marginLeft: 'auto', color: P.mut2, fontSize: 13 }}>›</span>
+    </div>
+  );
+  return (
+    <div style={{ height: '100%', background: P.bg }}>
+      <div style={{ padding: '14px 14px 10px', borderBottom: `1px solid ${P.line}`, background: P.surface }}>
+        <div style={{ fontSize: 13.5, fontWeight: 800, color: P.ink }}>Todo lo que incluye</div>
+        <div style={{ fontSize: 10, color: P.mut }}>menubot para tu local</div>
+      </div>
+      <div style={{ padding: '10px 12px 0' }}>
+        {row('🌾', 'PDF de alérgenos (Minsal)')}
+        {row('✨', 'Descripciones con IA')}
+        {row('🚫', 'Agotado en un toque')}
+        {row('📈', 'Uso en tiempo real')}
+        {row('🖼️', 'Fotos de platos')}
+        {row('📝', 'Reseñas con respuesta')}
+        {row('💬', 'Y más…')}
+      </div>
+    </div>
+  );
+}
+
 function MultiLangMock() {
   const dish = (icon: string, name: string, desc: string, price: string, tags: string[]) => (
     <div style={{ display: 'flex', gap: 9, padding: '8px 4px', alignItems: 'flex-start' }}>
@@ -328,8 +394,10 @@ function Phone({ children }: { children: React.ReactNode }) {
 }
 
 // ── Slides ───────────────────────────────────────────────────────────────────
-// Edge-style "What's new" deck: each slide is a full card with its visual on a
-// warm backdrop, a headline, a description and a CTA.
+// Edge-style "What's new" deck that doubles as the installation script: after
+// the intro, the cards walk the full cycle in the order it actually happens —
+// owner sets up, diners use it, owner reads the results — closing with a
+// "more" card that jumps to the full feature list (#funciones).
 
 const SLIDES = [
   {
@@ -340,25 +408,53 @@ const SLIDES = [
     render: ChatMock,
   },
   {
+    key: 'upload',
+    title: 'Sube tu carta actual',
+    desc: 'PDF, foto o planilla — da igual el formato. La IA extrae platos, precios, ingredientes y alérgenos.',
+    backdrop: 'linear-gradient(135deg, #F3E6CB 0%, #E7D0A6 100%)',
+    render: UploadMock,
+  },
+  {
+    key: 'menu',
+    title: 'Revisa tu carta digital',
+    desc: 'Todo llega precargado a tu panel: corriges un precio, destacas la sugerencia del chef y queda siempre al día.',
+    backdrop: 'linear-gradient(135deg, #EADDD2 0%, #D9C2B0 100%)',
+    render: MenuMock,
+  },
+  {
+    key: 'qr',
+    title: 'Imprime el QR para tus mesas',
+    desc: 'Un QR único por local, listo en menos de 30 minutos. Imprime la lámina o compártelo en Instagram, Google Maps y WhatsApp.',
+    backdrop: 'linear-gradient(135deg, #E2E7E2 0%, #C8D2C8 100%)',
+    render: QRMock,
+  },
+  {
     key: 'lang',
-    title: 'Carta en el idioma del comensal',
-    desc: 'Turistas de todo el mundo leen tu carta en inglés, portugués y más. El bot detecta el idioma automáticamente.',
+    title: 'Escanea y lee en su idioma',
+    desc: 'Sin apps ni descargas. Turistas de todo el mundo leen tu carta en inglés, portugués y más — el idioma se detecta solo.',
     backdrop: 'linear-gradient(135deg, #DEE8DB 0%, #C3D5BD 100%)',
     render: MultiLangMock,
   },
   {
-    key: 'menu',
-    title: 'Carta digital, siempre al día',
-    desc: 'Fotos, descripciones y sugerencias del chef destacadas. Actualización instantánea desde tu panel.',
-    backdrop: 'linear-gradient(135deg, #F3E6CB 0%, #E7D0A6 100%)',
-    render: MenuMock,
+    key: 'chat',
+    title: 'Le pregunta lo que sea al asistente',
+    desc: 'Ingredientes, alérgenos, maridajes y recomendaciones según sus gustos — respondidos al instante, 24/7.',
+    backdrop: 'linear-gradient(135deg, #F5DCC4 0%, #EBBD9C 100%)',
+    render: ChatMock,
   },
   {
     key: 'bill',
     title: 'Divide la cuenta sin calculadora',
-    desc: 'Tus clientes suman lo que pidieron, agregan propina y dividen el total — con los precios reales de tu carta.',
+    desc: 'Suman lo que pidieron, agregan propina y dividen el total — con los precios reales de tu carta.',
     backdrop: 'linear-gradient(135deg, #DCE4EC 0%, #BFCEDD 100%)',
     render: BillMock,
+  },
+  {
+    key: 'reviews',
+    title: 'Deja su reseña al salir',
+    desc: 'Los comensales califican su visita y tú respondes desde el panel — fidelización real sin esfuerzo.',
+    backdrop: 'linear-gradient(135deg, #F6E4C6 0%, #EFCF9F 100%)',
+    render: ReviewsMock,
   },
   {
     key: 'insights',
@@ -368,18 +464,11 @@ const SLIDES = [
     render: InsightsMock,
   },
   {
-    key: 'reviews',
-    title: 'Reseñas y respuestas del dueño',
-    desc: 'Los comensales califican su visita. Tú respondes desde el panel — fidelización real sin esfuerzo.',
-    backdrop: 'linear-gradient(135deg, #F6E4C6 0%, #EFCF9F 100%)',
-    render: ReviewsMock,
-  },
-  {
-    key: 'qr',
-    title: 'QR listo para tus mesas',
-    desc: 'Un QR único por local. Imprime la lámina o compártelo en Instagram, Google Maps y WhatsApp.',
-    backdrop: 'linear-gradient(135deg, #E2E7E2 0%, #C8D2C8 100%)',
-    render: QRMock,
+    key: 'more',
+    title: 'Y esto es solo el comienzo',
+    desc: 'Alérgenos según normativa, descripciones con IA, platos agotados en un toque, uso en tiempo real y mucho más.',
+    backdrop: 'linear-gradient(135deg, #F5DCC4 0%, #D9C2B0 100%)',
+    render: MoreMock,
   },
 ];
 
@@ -503,6 +592,13 @@ export function HeroShowcase() {
                       </Link>
                       <p className="mt-3 text-xs text-white/40">Sin tarjeta · Sin contrato · Cancela cuando quieras</p>
                     </>
+                  ) : s.key === 'more' ? (
+                    <a
+                      href="#funciones"
+                      className="mt-7 inline-block rounded-full bg-[#F6E7DA] px-8 py-3 text-sm font-semibold text-[#8A4526] transition hover:bg-white active:scale-95"
+                    >
+                      Ver todas las funciones ↓
+                    </a>
                   ) : (
                     <Link
                       href="/chat/el-meson-austral"

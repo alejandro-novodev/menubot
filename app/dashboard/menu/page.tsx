@@ -435,7 +435,10 @@ function MenuEditor() {
       <div className="border-b app-line px-5 py-3">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-xs app-mut">{dishes.length} platos · Completeness <span className={`font-semibold ${scoreColor}`}>{completeness}% — {scoreTag}</span></span>
-          <Link href={`/chat/${bizSlug}`} target="_blank" className="text-xs text-accent hover:text-accent-lite transition">Ver carta →</Link>
+          <Link href={`/chat/${bizSlug}`} target="_blank"
+            className="shrink-0 border border-accent/40 text-accent hover:bg-accent/10 text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+            Ver carta →
+          </Link>
         </div>
         <div className="w-full app-surface2 rounded-full h-1.5">
           <div className={`h-1.5 rounded-full transition-all ${completeness >= 80 ? 'bg-emerald-500' : completeness >= 50 ? 'bg-yellow-500' : 'bg-orange-500'}`} style={{ width: `${completeness}%` }} />
@@ -499,10 +502,12 @@ function MenuEditor() {
                             <span className="text-xs text-orange-400 shrink-0">⚠ {missing} campo{missing !== 1 ? 's' : ''}</span>
                           )}
                         </div>
-                        <p className="text-xs app-mut">
-                          {dish.price ? formatPrice(dish.price) : <span className="text-orange-400">Sin precio</span>}
-                          {dish.description && ` · ${dish.description.slice(0, 40)}${dish.description.length > 40 ? '...' : ''}`}
+                        <p className="text-sm font-bold app-ink mt-0.5">
+                          {dish.price ? formatPrice(dish.price) : <span className="text-xs font-normal text-orange-400">Sin precio</span>}
                         </p>
+                        {dish.description && (
+                          <p className="text-xs app-mut leading-snug line-clamp-2">{dish.description}</p>
+                        )}
                       </div>
                       <button
                         onClick={() => toggleAvailable(dish)}
